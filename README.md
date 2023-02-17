@@ -1,12 +1,16 @@
 # Waveplot
 
-This is the git repository for the [waveplot](waveplot) source-code.
+This is the git repository for the [waveplot](https://www.waveplot.com) source-code.
 
-The code is freely available, and I ask that you cite it if you use it or the website.
+Please cite the following if you use the website
+
+CITATION
+
+## Running locally
 
 Each web app is in `apps/name_app.py`, where `name` changes based on the app. Supplemental functions are given in `apps/name.py`. 
 
-To run the code, first install the dependencies via `pip`
+To run the code, first install dependencies via `pip`
 
 ```
 pip install -r requirements.txt
