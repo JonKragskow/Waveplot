@@ -148,3 +148,8 @@
   text-align: center;
   vertical-align: middle;
 }
+
+/* Smaller font size for everything */
+html {
+  font-size: 14px;
+}
