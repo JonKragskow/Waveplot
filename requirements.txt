@@ -1,0 +1,6 @@
+numpy
+dash
+dash_bootstrap_components
+plotly
+inorgqm
+py3nj
