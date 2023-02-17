@@ -1,11 +1,11 @@
 ---
-title: 'Waveplot: An online wavefunction veiwer'
+title: Waveplot: An online wavefunction veiwer
 tags:
   - Python
-  - chemistry
-  - computational chemistry
-  - quantum chemistry
-- single molecule magnets
+  - Chemistry
+  - Computational chemistry
+  - Quantum chemistry
+  - Single molecule magnets
 authors:
   - name: Jon G. C. Kragskow
     orcid: 0000-0001-9488-8204
@@ -16,7 +16,6 @@ affiliations:
    index: 1
 date: 17 February 2023
 bibliography: paper.bib
-
 ---
 
 # Summary
