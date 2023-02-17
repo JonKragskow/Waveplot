@@ -313,7 +313,7 @@ spheroid_options = [
                                 type="color",
                                 value="#6D1773",
                                 style={
-                                    "height":"40px"
+                                    "height": "40px"
                                 }
                             )
                         ],
@@ -383,7 +383,7 @@ axis_options = [
                                 type="color",
                                 value="#E13022",
                                 style={
-                                    "height":"40px"
+                                    "height": "40px"
                                 }
                             )
                         ],

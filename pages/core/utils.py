@@ -306,7 +306,7 @@ def footer(name="Jon Kragskow", site="https://www.kragskow.dev"):
                     dcc.Download(id="download_theory_trigger"),
                     dbc.Button(
                         "Source Code",
-                        href="https://www.gitlab.com/jonkragskow/waveplot",
+                        href="https://www.github.com/jonkragskow/waveplot",
                         style={
                             "color": "",
                             "float": "right",
