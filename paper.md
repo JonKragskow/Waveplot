@@ -1,5 +1,5 @@
 ---
-title: Waveplot: An online wavefunction veiwer
+title: 'Waveplot: An online wavefunction viewer'
 tags:
   - Python
   - Chemistry
