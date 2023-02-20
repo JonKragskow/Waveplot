@@ -127,6 +127,9 @@ def _compute_heavy_a_val(J, mJ, n, k):
 
 def tri_normal(poly):
 
+    cent = poly[0]+poly[1]+poly[2]
+    cent /= 3
+
     a = np.cross(poly[0], poly[1])
     b = np.cross(poly[1], poly[2])
     c = np.cross(poly[2], poly[0])
@@ -138,7 +141,7 @@ def tri_normal(poly):
     else:
         mout = m
 
-    return mout
+    return cent
 
 
 def compute_trisurf(a_2, a_4, a_6):
@@ -183,7 +186,7 @@ def compute_trisurf(a_2, a_4, a_6):
         for neigh_simps in neighbour_simplices
     ])
 
-    return vertices, verts_to_simp, vert_normals
+    return vertices, verts_to_simp, normals
 
 
 def fns(pindex, triang):
@@ -517,6 +520,18 @@ if __name__ == "__main__":
                     marker={"color": 'red'},
                 )
             )
+
+
+        fig.add_trace(
+            go.Scatter3d(
+                x=norm[:,0],
+                y=norm[:,1],
+                z=norm[:,2],
+                mode="markers",
+                showlegend=False,
+                marker={"color": 'blue'},
+            )
+        )
 
         fig.show()
 
