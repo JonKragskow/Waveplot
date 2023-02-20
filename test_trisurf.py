@@ -26,31 +26,27 @@ import numpy as np
 import xyz_py as xyzp
 import xyz_py.atomic as atomic
 import dash_bootstrap_components as dbc
+import matplotlib.pyplot as plt
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
-def sievers_r(theta, phi, a_2, a_4, a_6):
+def sievers_r(theta, a_2, a_4, a_6):
 
-    c_0 = 3./4.*np.pi
+    c_0 = 3./(4.*np.pi)
     c_2 = a_2 / np.sqrt(4. * np.pi / 5)
     c_4 = a_4 / np.sqrt(4. * np.pi / 9)
     c_6 = a_6 / np.sqrt(4. * np.pi / 13)
 
-    0.25 * np.sqrt(5/np.pi) * (3 * np.cos(theta)**2 - 1)
-
-    # Calculate r, x, y, z values for each theta and phi
+    # Calculate r, x, y, z values for each theta
     r = c_0
     r += c_2 * 0.25 * np.sqrt(5/np.pi) * (3 * np.cos(theta)**2 - 1)
     r += c_4 * 3/16 * np.sqrt(1/np.pi) * (35 * np.cos(theta)**4 - 30 * np.cos(theta)**2 + 3) # noqa
     r += c_6 * 1/32 * np.sqrt(13/np.pi) * (231 * np.cos(theta)**6 - 315 * np.cos(theta)**4 + 105 * np.cos(theta)**2 - 5) # noqa
-    r = r**1./3.
+    r = r**(1./3)
 
     return r
-
-
-
 
 @functools.lru_cache(maxsize=32)
 def wigner3(a, b, c, d, e, f):
@@ -125,77 +121,81 @@ def _compute_heavy_a_val(J, mJ, n, k):
     return a_k
 
 
-def tri_normal(poly):
+def tri_normal(vertices: list['Vector']):
 
-    cent = poly[0]+poly[1]+poly[2]
-    cent /= 3
+    n = np.cross(
+        vertices[1].pos-vertices[0].pos,
+        vertices[2].pos-vertices[0].pos
+    )
+    vertices[0].normal += n
+    vertices[1].normal += n
+    vertices[2].normal += n
 
-    a = np.cross(poly[0], poly[1])
-    b = np.cross(poly[1], poly[2])
-    c = np.cross(poly[2], poly[0])
-
-    m = a + b + c
-
-    if la.norm(m) != 0.:
-        mout = m / la.norm(m)
-    else:
-        mout = m
-
-    return cent
+    return n
 
 
 def compute_trisurf(a_2, a_4, a_6):
 
+    print(a_2, a_4, a_6)
+
     # Create angular grid, with values of theta
-    phi = np.linspace(0, 2*np.pi, 12)
-    theta = np.linspace(0, np.pi, 6)
+    phi = np.linspace(0, np.pi*2, 51)
+    theta = np.linspace(0, np.pi, 51)
     u, v = np.meshgrid(phi, theta)
     u = u.flatten()
     v = v.flatten()
-    r = sievers_r(v, 0., a_2, a_4, a_6)
+    r = sievers_r(v, a_2, a_4, a_6)*2
 
-    # coordinates of sievers urface
+    feta = np.linspace(-np.pi, np.pi, 501)
+    arr = sievers_r(feta, a_2, a_4, a_6)
+
+    x = arr*np.cos(feta)
+    y = arr*np.sin(feta)
+
+    # coordinates of sievers surface
     x = r * np.sin(v)*np.cos(u)
     y = r * np.sin(v)*np.sin(u)
     z = r * np.cos(v)
-    vertices = np.array([x, y, z])
+    vertices = np.array([x, y, z]).T
     n_vertices = len(x)
+
+    vertices = np.array([
+        Vector(vertex)
+        for vertex in vertices
+    ])
 
     # Points on 2d grid
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     verts_to_simp = tri.simplices
-    print(np.max(verts_to_simp))
 
     # Calculate norm of each triangle
-    normals = np.array([
-        tri_normal(vertices.T[simp])
-        for simp in verts_to_simp
-    ])
+    for simp in verts_to_simp:
+        tri_normal(vertices[simp])
 
-    neighbour_simplices = [
-        fns(vit, tri)
-        for vit in range(n_vertices)
-    ]
+    normals = np.array(
+        [
+            vertex.normal 
+            if la.norm(vertex.normal) < 1E-9 else vertex.normal
+            for vertex in vertices
+        ]
+    )
 
-    # And then normal of each vertex as mean of normals
-    # of each triangle to which it belongs
-
-    vert_normals = np.array([
-        np.sum(normals[neigh_simps], axis=0)/len(neigh_simps)
-        for neigh_simps in neighbour_simplices
-    ])
+    vertices = np.array(
+        [
+            vertex.pos
+            for vertex in vertices
+        ]
+    )
 
     return vertices, verts_to_simp, normals
 
 
-def fns(pindex, triang):
-    neighbors = np.array([
-        sit
-        for sit, simplex in enumerate(triang.simplices)
-        if pindex in simplex
-    ])
-    return neighbors
+class Vector():
+    def __init__(self, pos) -> None:
+        self.pos = pos
+        self.normal = np.zeros(3)
+        pass
 
 
 def make_js_molstyle(style, labels_nn, radius_type, model_var):
@@ -355,17 +355,37 @@ if __name__ == "__main__":
             let viewer = $3Dmol.createViewer(element, config, id="viewer_canv");
 
             var atoms = eval(atoms_spec)
-
             var m = viewer.addModel();
+            m.addAtoms(atoms);
+            eval(mol_style);
+            
+            viewer.enableFog(false)
+
+            var vertices = [];
+            var normals = [];
+            var faces = [];
+
+            for (let i = 0; i < vert.length; i++) {
+                vertices.push(new $3Dmol.Vector3(vert[i][0],vert[i][1],vert[i][2]))
+            };
+
+            for (let i = 0; i < norm.length; i++) {
+                normals.push(new $3Dmol.Vector3(norm[i][0],norm[i][1],norm[i][2]))
+            };
+
+            for (let i = 0; i < tri.length; i++) {
+                faces.push(tri[i][0],tri[i][1],tri[i][2])
+            };
 
             viewer.addCustom(
-                {vertexArr:vert, faceArr:tri, normalArr:norm, color:'blue'}
+                {vertexArr:vertices, normalArr: normals, faceArr:faces, wireframe:false, color:'blue', smoothness: 1, opacity:1}
             );
 
             new_group = []
 
             viewer.zoomTo();
             viewer.render();
+            viewer.zoomTo();
 
             return new_group;
             }
@@ -412,128 +432,17 @@ if __name__ == "__main__":
             "m"
         )
 
-        j = 7.5
-        mj = 7.5
+        j = 8
+        mj = 8
+        l = 3
+        s = 0.5
+        n = 10
 
-        a_2 = _compute_heavy_a_val(j, mj, 9, 2)
-        a_4 = _compute_heavy_a_val(j, mj, 9, 4)
-        a_6 = _compute_heavy_a_val(j, mj, 9, 6)
+        a_vals = compute_a_vals(n, j, mj, l, s)
 
-        vert, v2s, norm = compute_trisurf(a_2, a_4, a_6)
+        print(a_vals)
 
-        vert = vert.T
-
-        print(np.shape(vert[:, 1]))
-        
-        import plotly.figure_factory as ff
-        fig = ff.create_trisurf(
-            x=vert[:, 0],
-            y=vert[:, 1],
-            z=vert[:, 2],
-            simplices=v2s,
-            aspectratio=dict(x=1, y=1, z=1)
-        )
-
-        # Turn off plotly gubbins
-        layout = go.Layout(
-            hovermode=False,
-            dragmode="orbit",
-            scene_aspectmode="cube",
-            scene=dict(
-                xaxis=dict(
-                    gridcolor="rgb(255, 255, 255)",
-                    zerolinecolor="rgb(255, 255, 255)",
-                    showbackground=False,
-                    showgrid=False,
-                    zeroline=False,
-                    title="",
-                    showline=False,
-                    ticks="",
-                    showticklabels=False,
-                    backgroundcolor="rgb(255, 255,255)",
-                    range=[-1,1]
-                ),
-                yaxis=dict(
-                    gridcolor="rgb(255, 255, 255)",
-                    zerolinecolor="rgb(255, 255, 255)",
-                    showgrid=False,
-                    zeroline=False,
-                    title="",
-                    showline=False,
-                    ticks="",
-                    showticklabels=False,
-                    backgroundcolor="rgb(255, 255,255)",
-                    range=[-1,1]
-                    ),
-                zaxis=dict(
-                    gridcolor="rgb(255, 255, 255)",
-                    zerolinecolor="rgb(255, 255, 255)",
-                    showgrid=False,
-                    title="",
-                    zeroline=False,
-                    showline=False,
-                    ticks="",
-                    showticklabels=False,
-                    backgroundcolor="rgb(255, 255,255)",
-                    range=[-1,1]
-                ),
-                aspectratio=dict(
-                    x=1,
-                    y=1,
-                    z=1
-                ),
-            ),
-            margin={
-                "l": 20,
-                "r": 30,
-                "t": 30,
-                "b": 20
-            }
-        )
-
-        fig.update_layout(layout)
-
-        #fig.show()
-        fig = make_subplots()
-        # Unblocked rays
-
-        fig.add_trace(
-            go.Scatter3d(
-                x=vert[:, 0],
-                y=vert[:, 1],
-                z=vert[:, 2],
-                mode="markers",
-                showlegend=False,
-                marker={"color": 'red'},
-            )
-        )
-
-        for t in v2s:
-            print(t)
-            fig.add_trace(
-                go.Scatter3d(
-                    x=vert[t, 0],
-                    y=vert[t, 1],
-                    z=vert[t, 2],
-                    mode="lines",
-                    showlegend=False,
-                    marker={"color": 'red'},
-                )
-            )
-
-
-        fig.add_trace(
-            go.Scatter3d(
-                x=norm[:,0],
-                y=norm[:,1],
-                z=norm[:,2],
-                mode="markers",
-                showlegend=False,
-                marker={"color": 'blue'},
-            )
-        )
-
-        fig.show()
+        vert, v2s, norm = compute_trisurf(*a_vals)
 
         vert = vert.tolist()
         v2s = v2s.tolist()
