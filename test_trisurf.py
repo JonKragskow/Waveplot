@@ -27,6 +27,9 @@ import xyz_py as xyzp
 import xyz_py.atomic as atomic
 import dash_bootstrap_components as dbc
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 
 def sievers_r(theta, phi, a_2, a_4, a_6):
 
@@ -123,6 +126,7 @@ def _compute_heavy_a_val(J, mJ, n, k):
 
 
 def tri_normal(poly):
+
     a = np.cross(poly[0], poly[1])
     b = np.cross(poly[1], poly[2])
     c = np.cross(poly[2], poly[0])
@@ -140,23 +144,25 @@ def tri_normal(poly):
 def compute_trisurf(a_2, a_4, a_6):
 
     # Create angular grid, with values of theta
-    phi = np.linspace(0, 2*np.pi, 20)
-    theta = np.linspace(0, np.pi, 20)
+    phi = np.linspace(0, 2*np.pi, 12)
+    theta = np.linspace(0, np.pi, 6)
     u, v = np.meshgrid(phi, theta)
     u = u.flatten()
     v = v.flatten()
     r = sievers_r(v, 0., a_2, a_4, a_6)
+
+    # coordinates of sievers urface
     x = r * np.sin(v)*np.cos(u)
     y = r * np.sin(v)*np.sin(u)
     z = r * np.cos(v)
-
     vertices = np.array([x, y, z])
-    
     n_vertices = len(x)
 
+    # Points on 2d grid
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     verts_to_simp = tri.simplices
+    print(np.max(verts_to_simp))
 
     # Calculate norm of each triangle
     normals = np.array([
@@ -172,10 +178,10 @@ def compute_trisurf(a_2, a_4, a_6):
     # And then normal of each vertex as mean of normals
     # of each triangle to which it belongs
 
-    vert_normals = [
+    vert_normals = np.array([
         np.sum(normals[neigh_simps], axis=0)/len(neigh_simps)
         for neigh_simps in neighbour_simplices
-    ]
+    ])
 
     return vertices, verts_to_simp, vert_normals
 
@@ -348,11 +354,10 @@ if __name__ == "__main__":
             var atoms = eval(atoms_spec)
 
             var m = viewer.addModel();
-            
-            m.addAtoms(atoms);
-            eval(mol_style);
 
-            viewer.addCustom()
+            viewer.addCustom(
+                {vertexArr:vert, faceArr:tri, normalArr:norm, color:'blue'}
+            );
 
             new_group = []
 
@@ -405,14 +410,120 @@ if __name__ == "__main__":
         )
 
         j = 7.5
-        mj = 1.5
+        mj = 7.5
 
         a_2 = _compute_heavy_a_val(j, mj, 9, 2)
         a_4 = _compute_heavy_a_val(j, mj, 9, 4)
         a_6 = _compute_heavy_a_val(j, mj, 9, 6)
 
-        vert, tri, norm = compute_trisurf(a_2, a_4, a_6)
+        vert, v2s, norm = compute_trisurf(a_2, a_4, a_6)
 
-        return molecule, style, vert, tri, norm
+        vert = vert.T
+
+        print(np.shape(vert[:, 1]))
+        
+        import plotly.figure_factory as ff
+        fig = ff.create_trisurf(
+            x=vert[:, 0],
+            y=vert[:, 1],
+            z=vert[:, 2],
+            simplices=v2s,
+            aspectratio=dict(x=1, y=1, z=1)
+        )
+
+        # Turn off plotly gubbins
+        layout = go.Layout(
+            hovermode=False,
+            dragmode="orbit",
+            scene_aspectmode="cube",
+            scene=dict(
+                xaxis=dict(
+                    gridcolor="rgb(255, 255, 255)",
+                    zerolinecolor="rgb(255, 255, 255)",
+                    showbackground=False,
+                    showgrid=False,
+                    zeroline=False,
+                    title="",
+                    showline=False,
+                    ticks="",
+                    showticklabels=False,
+                    backgroundcolor="rgb(255, 255,255)",
+                    range=[-1,1]
+                ),
+                yaxis=dict(
+                    gridcolor="rgb(255, 255, 255)",
+                    zerolinecolor="rgb(255, 255, 255)",
+                    showgrid=False,
+                    zeroline=False,
+                    title="",
+                    showline=False,
+                    ticks="",
+                    showticklabels=False,
+                    backgroundcolor="rgb(255, 255,255)",
+                    range=[-1,1]
+                    ),
+                zaxis=dict(
+                    gridcolor="rgb(255, 255, 255)",
+                    zerolinecolor="rgb(255, 255, 255)",
+                    showgrid=False,
+                    title="",
+                    zeroline=False,
+                    showline=False,
+                    ticks="",
+                    showticklabels=False,
+                    backgroundcolor="rgb(255, 255,255)",
+                    range=[-1,1]
+                ),
+                aspectratio=dict(
+                    x=1,
+                    y=1,
+                    z=1
+                ),
+            ),
+            margin={
+                "l": 20,
+                "r": 30,
+                "t": 30,
+                "b": 20
+            }
+        )
+
+        fig.update_layout(layout)
+
+        #fig.show()
+        fig = make_subplots()
+        # Unblocked rays
+
+        fig.add_trace(
+            go.Scatter3d(
+                x=vert[:, 0],
+                y=vert[:, 1],
+                z=vert[:, 2],
+                mode="markers",
+                showlegend=False,
+                marker={"color": 'red'},
+            )
+        )
+
+        for t in v2s:
+            print(t)
+            fig.add_trace(
+                go.Scatter3d(
+                    x=vert[t, 0],
+                    y=vert[t, 1],
+                    z=vert[t, 2],
+                    mode="lines",
+                    showlegend=False,
+                    marker={"color": 'red'},
+                )
+            )
+
+        fig.show()
+
+        vert = vert.tolist()
+        v2s = v2s.tolist()
+        norm = norm.tolist()
+
+        return molecule, style, vert, v2s, norm
 
     app.run_server(debug=True, port=8051)
