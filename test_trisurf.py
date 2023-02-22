@@ -19,6 +19,7 @@ import numpy.linalg as la
 import py3nj
 import functools
 from scipy.spatial import Delaunay
+import scipy.special as ssp
 
 import dash
 from dash import html, Input, Output, dcc, callback
@@ -27,6 +28,7 @@ import xyz_py as xyzp
 import xyz_py.atomic as atomic
 import dash_bootstrap_components as dbc
 import matplotlib.pyplot as plt
+import inorgqm.multi_electron as iqme
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -134,9 +136,192 @@ def tri_normal(vertices: list['Vector']):
     return n
 
 
-def compute_trisurf(a_2, a_4, a_6):
+def set_z_alignment(coords, new_z, old_z):
+    """
+    Calculates rotation matrix which rotates old_z onto new_z, then applies
+    this rotation to coordinates
 
-    print(a_2, a_4, a_6)
+    Parameters
+    ----------
+    coords : np.ndarray
+        Atomic coordinates as (n_atoms,3) array
+    new_z : np.ndarray
+        Vector of new z axis in old_z frame
+    old_z : np.ndarray
+        Vector of old z axis in old_z frame
+
+    Returns
+    -------
+    np.ndarray
+        Coordinates after rotation
+    """
+
+    new_z /= la.norm(new_z)
+    new_z = np.array(new_z)
+
+    x = np.cross(new_z, old_z)/la.norm(np.cross(new_z, old_z))
+
+    A = np.array(
+        [
+            [0, -x[2], x[1]],
+            [x[2], 0, -x[0]],
+            [-x[1], x[0], 0]
+        ]
+    )
+    theta = np.arccos(np.dot(new_z, old_z)/(la.norm(new_z)*la.norm(old_z)))
+
+    # Rodriguez rotation
+    R = np.eye(3, 3) + np.sin(theta)*A + (1-np.cos(theta))*(A @ A)
+
+    coords = (R @ coords.T).T
+
+    return coords
+
+
+def calc_oef(n, J, L, S):
+    """
+    Calculate operator equivalent factors for Stevens Crystal Field
+    Hamiltonian in |J, mJ> basis
+
+    Using the approach of
+    https://arxiv.org/pdf/0803.4358.pdf
+
+    Parameters:
+        n (int) : number of electrons in f shell
+        J (int) : J Quantum number
+        L (int) : L Quantum number
+        S (int) : S Quantum number
+
+    Returns:
+        oefs (np.array) : array of operator equivalent factors for
+                          each parameter k,q
+    """
+
+    def _oef_lambda(p, J, L, S):
+        lam = (-1)**(J+L+S+p)*(2*J+1)
+        lam *= wigner6(J, J, p, L, L, S)/wigner3(p, L, L, 0, L, -L)
+        return lam
+
+    def _oef_k(p, k, n):
+        K = 7. * wigner3(p, 3, 3, 0, 0, 0)
+        if n <= 7:
+            n_max = n
+        else:
+            n_max = n-7
+            if k == 0:
+                K -= np.sqrt(7)
+
+        Kay = 0
+        for j in range(1, n_max+1):
+            Kay += (-1.)**j * wigner3(k, 3, 3, 0, 4-j, j-4)
+
+        return K*Kay
+
+    def _oef_RedJ(J, p):
+        return 1./(2.**p) * (factorial(2*J+p+1)/factorial(2*J-p))**0.5
+
+    # Calculate OEFs and store in array
+    # Each parameter Bkq has its own parameter
+    oef = np.zeros(27)
+    shift = 0
+    for k in range(2, np.min([6, int(2*J)])+2, 2):
+        oef[shift:shift + 2*k+1] = float(_oef_lambda(k, J, L, S))
+        oef[shift:shift + 2*k+1] *= float(_oef_k(k, k, n) / _oef_RedJ(J, k))
+        shift += 2*k + 1
+
+    return oef
+
+
+
+
+def factorial(n):
+    if n == 1:
+        return n
+    else:
+        return n*factorial(n-1)
+
+
+def walter_r(theta, phi):
+
+    bkq = [
+        1., # TODO B00
+        0.,
+        0.,
+        0.5,
+        0.,
+        0.5*np.sqrt(3),
+        0.,
+        0.,
+        0.,
+        0.,
+        0/125,
+        0.,
+        0.25*np.sqrt(5),
+        0.,
+        0.25*np.sqrt(70),
+        0.,
+        0.125*np.sqrt(35),
+        0.,
+        0.,
+        0.,
+        0.,
+        0.,
+        0.,
+        1./16.,
+        0.,
+        np.sqrt(210)/32,
+        0.,
+        np.sqrt(210)/16,
+        0.,
+        np.sqrt(7)*3/16,
+        0.,
+        np.sqrt(462)/32
+    ]
+    stev_coeff = compute_CF_coeffs(4., bkq)
+
+    oef = calc_oef(4, 4, 6, 2)
+
+    # Calculate r, x, y, z values for each theta
+    r = 3./(4.*np.pi)
+    #B20
+    r += np.sqrt(5/(4*np.pi))  * oef[2] * stev_coeff[2, 0] * ssp.sph_harm(0, 2, phi, theta)
+    #B22
+    #B40
+    r += np.sqrt(9/(4*np.pi))  * oef[10] * stev_coeff[10, 0] * 3/16 * np.sqrt(1/np.pi) * (35 * np.cos(theta)**4 - 30 * np.cos(theta)**2 + 3) # noqa
+    #B60
+    r += np.sqrt(13/(4*np.pi)) * oef[21] * stev_coeff[21, 0] * 1/32 * np.sqrt(13/np.pi) * (231 * np.cos(theta)**6 - 315 * np.cos(theta)**4 + 105 * np.cos(theta)**2 - 5) # noqa
+    r = r**(1./3)
+
+    r = np.real(r)
+
+    return r
+
+
+def compute_CF_coeffs(J, bkq):
+
+    k_max = 6
+
+    _, _, jz, jp, jm, _ = iqme.calc_ang_mom_ops(J)
+
+    stev_ops = iqme.calc_stev_ops(k_max, J, jp, jm, jz)[1::2]
+
+    hcf, vals, vecs = iqme.calc_HCF(J, bkq, stev_ops, k_max=k_max)
+
+    raor = [
+        [kit, qit]
+        for kit, k in enumerate(range(2, 8, 2))
+        for qit, q in enumerate(range(-k, k+1))
+    ]
+
+    stev_coeff = np.array([
+        np.diag(la.inv(vecs) @ stev_ops[kit, qit] @ vecs)
+        for kit, qit in raor
+    ])
+
+    return stev_coeff
+
+
+def compute_trisurf(a_2, a_4, a_6):
 
     # Create angular grid, with values of theta
     phi = np.linspace(0, np.pi*2, 51)
@@ -144,30 +329,28 @@ def compute_trisurf(a_2, a_4, a_6):
     u, v = np.meshgrid(phi, theta)
     u = u.flatten()
     v = v.flatten()
-    r = sievers_r(v, a_2, a_4, a_6)*2
+    #r = sievers_r(v, a_2, a_4, a_6)*2
 
-    feta = np.linspace(-np.pi, np.pi, 501)
-    arr = sievers_r(feta, a_2, a_4, a_6)
+    r = walter_r(v, u)
 
-    x = arr*np.cos(feta)
-    y = arr*np.sin(feta)
+    # Points on 2d grid
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    verts_to_simp = tri.simplices
 
     # coordinates of sievers surface
     x = r * np.sin(v)*np.cos(u)
     y = r * np.sin(v)*np.sin(u)
     z = r * np.cos(v)
     vertices = np.array([x, y, z]).T
-    n_vertices = len(x)
+
+    # Rotate spheroid
+    vertices = set_z_alignment(vertices, [0,1,0], [0,0,1])
 
     vertices = np.array([
         Vector(vertex)
         for vertex in vertices
     ])
-
-    # Points on 2d grid
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    verts_to_simp = tri.simplices
 
     # Calculate norm of each triangle
     for simp in verts_to_simp:
@@ -310,7 +493,7 @@ if __name__ == "__main__":
     app.layout = html.Div(children=[
         html.Div(
             id="viewer",
-            style={"height": "50vh"}
+            style={"height": "70vh"}
         ),
         html.Div(
             id="options",
@@ -356,8 +539,8 @@ if __name__ == "__main__":
 
             var atoms = eval(atoms_spec)
             var m = viewer.addModel();
-            m.addAtoms(atoms);
-            eval(mol_style);
+            // m.addAtoms(atoms);
+            // eval(mol_style);
             
             viewer.enableFog(false)
 
@@ -378,7 +561,7 @@ if __name__ == "__main__":
             };
 
             viewer.addCustom(
-                {vertexArr:vertices, normalArr: normals, faceArr:faces, wireframe:false, color:'blue', smoothness: 1, opacity:1}
+                {vertexArr:vertices, normalArr: normals, faceArr:faces, wireframe:true, color:'blue', smoothness: 1, opacity:1}
             );
 
             new_group = []
