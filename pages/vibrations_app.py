@@ -610,11 +610,7 @@ layout = html.Div(
                             ),
                             dbc.Col(
                                 children=vib_options+plot_options+save_options,
-                                className="col-6",
-                                style={
-                                    "overflow-y": "auto",
-                                    "overflow-x": "hidden"
-                                }
+                                className="col-6"
                             )
                         ])
                     ],

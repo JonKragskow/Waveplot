@@ -777,11 +777,7 @@ layout = html.Div(
                         ),
                         html.Div(
                             options,
-                            className="col-6-options",
-                            style={
-                                "overflow-y": "auto",
-                                "overflow-x": "hidden"
-                            }
+                            className="col-6-options"
                         )
                     ],
                     style={

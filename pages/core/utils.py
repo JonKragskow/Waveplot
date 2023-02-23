@@ -219,6 +219,19 @@ def dash_id(page: str):
 
 
 def create_navbar(current_path):
+    """
+    Creates navbar element for current_page
+
+    Parameters
+    ----------
+    current_page : str
+        Name of webpage which navbar will appear on
+
+    Returns
+    -------
+    dbc.NavbarSimple
+        Navbar focussed on current page, with other pages included
+    """
 
     paths = [
         page['path'] for page in page_registry.values()
@@ -244,6 +257,51 @@ def create_navbar(current_path):
                 )
             )
 
+    # Icons for navbar
+    # these are hyperlinked
+    icons = dbc.Row(
+        [
+            dbc.Col(
+                html.A(
+                    html.I(
+                        className="fab fa-github fa-2x",
+                        style={
+                            'color': 'white'
+                        }
+                    ),
+                    href="https://github.com/jonkragskow/waveplot"
+                )
+            ),
+            dbc.Col(
+                html.A(
+                    html.I(
+                        className="fa-solid fa-question fa-2x",
+                        style={
+                            'color': 'white'
+                        }
+                    ),
+                    href="/assets/waveplot_docs.pdf",
+                )
+            ),
+            # dbc.Col(
+            #     html.A(
+            #         html.I(
+            #             className="fa-solid fa-book fa-2x",
+            #             style={
+            #                 'color': 'white'
+            #             }
+            #         ),
+            #         href="PAPER_URL"
+            #     )
+            # )
+        ],
+        style={
+            'position': 'absolute',
+            'right': '40px'
+        },
+        class_name='nav_buttons'
+    )
+
     navbar = dbc.NavbarSimple(
         children=[
             dbc.NavItem(dbc.NavLink(current_name, href=current_path)),
@@ -253,6 +311,7 @@ def create_navbar(current_path):
                 in_navbar=True,
                 label="More",
             ),
+            html.Div(icons)
         ],
         brand="Waveplot",
         brand_href="/",
@@ -261,15 +320,6 @@ def create_navbar(current_path):
         links_left=True,
     )
     return navbar
-
-
-@callback(
-    Output("download_theory_trigger", "data"),
-    Input("download_theory", "n_clicks"),
-    prevent_initial_call=True,
-)
-def func(n_clicks):
-    return dcc.send_file("./data/waveplot_docs.pdf")
 
 
 def footer(name="Jon Kragskow", site="https://www.kragskow.dev"):
