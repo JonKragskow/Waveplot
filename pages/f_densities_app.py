@@ -23,14 +23,14 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import numpy as np
-import numpy.linalg as la
+import xyz_py as xyzp
 
 from .core import sievers
-from .core import utils
+from .core import utils as ut
 
 ID_PREFIX = "aniso"
 
-id = utils.dash_id(ID_PREFIX)
+id = ut.dash_id(ID_PREFIX)
 
 PAGE_NAME = '4f Densities'
 PAGE_PATH = '/f-densities'
@@ -50,9 +50,9 @@ register_page(
 # Load default xyz file and get bonds for z axis
 default_xyz = "assets/nature.xyz"
 
-labels, coords = utils.load_xyz(default_xyz)
-labels, labels_nn, coords = utils.process_labels_coords(labels, coords)
-default_bonds = utils.create_bond_choices(labels, coords)
+labels, coords = xyzp.load_xyz(default_xyz)
+labels, labels_nn, coords = ut.process_labels_coords(labels, coords)
+default_bonds = ut.create_bond_choices(labels, coords)
 
 """
 Webpage layout
@@ -213,6 +213,25 @@ spheroid_options = [
                         ],
                         class_name="col-6-checkbox"
                     ),
+                    dbc.Col(
+                        children=[
+                            dbc.InputGroup(
+                                [
+                                    dbc.InputGroupText(
+                                        "Wireframe"
+                                    ),
+                                    dbc.InputGroupText(
+                                        dbc.Checkbox(
+                                            value=False,
+                                            id=id("wireframe_toggle")
+                                        )
+                                    )
+                                ],
+                                class_name="mb-3"
+                            )
+                        ],
+                        class_name="col-6-checkbox"
+                    ),
                 ]
             ),
             dbc.Row(
@@ -251,7 +270,7 @@ spheroid_options = [
                             [
                                 dbc.Select(
                                     options=default_bonds,
-                                    value="0,6",
+                                    value="0,3",
                                     id=id("bond_select"),
                                     style={
                                         "textAlign": "center"
@@ -766,7 +785,9 @@ layout = html.Div(
                                             className="molecule_div"
                                         ),
                                         dcc.Store(id=id("atom_store")),
-                                        dcc.Store(id=id("spheroid_store")),
+                                        dcc.Store(id=id("vert_store")),
+                                        dcc.Store(id=id("tri_store")),
+                                        dcc.Store(id=id("norm_store")),
                                         dcc.Store(id=id("axis_store")),
                                         dcc.Store(id=id("style_store")),
                                         dcc.Store(id=id("labels_store"))
@@ -790,7 +811,7 @@ layout = html.Div(
             ],
             className="main_wrapper"
         ),
-        utils.footer()
+        ut.footer()
     ]
 )
 
@@ -864,17 +885,17 @@ def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
         raise PreventUpdate
 
     # Read labels and coordinates
-    labels, coords = utils.parse_xyz_file(
+    labels, coords = ut.parse_xyz_file(
         xyz_file
     )
-    labels, labels_nn, coords = utils.process_labels_coords(labels, coords)
+    labels, labels_nn, coords = ut.process_labels_coords(labels, coords)
 
     # Check if structure has been changed, if so reset alignment vector
     # and centre label
     button_id = callback_context.triggered[0]['prop_id'].split('.')[0]
     if id("xyz_file") in button_id:
         # Regenerate list of alignments to choose from
-        align_choices = utils.create_bond_choices(labels, coords)
+        align_choices = ut.create_bond_choices(labels, coords)
         bond_select_display = "{:d},{:d}".format(*align_choices[0]["value"])
         bond_select = bond_select_display
         centre_label = labels[0]
@@ -894,7 +915,6 @@ def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
         bond_toggle = {}
         vector_toggle = {"display": "none"}
     elif align_type == "vector":
-        print(vector_select)
         if None in vector_select:
             vector_select = [0., 0., 1.]
         z_vec = np.array([float(x) for x in vector_select])
@@ -904,10 +924,10 @@ def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
     # Rotate molecular z axis onto specified z axis
     mol_z = [0., 1., 0.]
     if np.sum(np.abs(z_vec - mol_z)) != 0.:
-        coords = set_z_alignment(coords, z_vec, mol_z)
+        coords = ut.set_z_alignment(coords, z_vec, mol_z)
 
     # Create list of atom labels for centering, and set center
-    centre_choices, centre_index, _ = utils.define_centres(
+    centre_choices, centre_index, _ = ut.define_centres(
         labels,
         coords,
         centre_label
@@ -918,24 +938,24 @@ def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
 
     # Create list of bonding dictionaries
     if len(labels) > 1:
-        adjacency = utils.get_adjacency(
+        adjacency = ut.get_adjacency(
             labels,
             coords,
             adjust_cutoff={"Dy": 1.6}
         )
 
     # Create molecule
-    molecule = utils.make_js_molecule(
+    molecule = ut.make_js_molecule(
         coords, labels_nn, adjacency
     )
     # Style molecule
-    mol_style_js = utils.make_js_molstyle(mol_style, labels_nn, 'atomic', 'm')
+    mol_style_js = ut.make_js_molstyle(mol_style, labels_nn, 'atomic', 'm')
 
     # Add Numbered atom labels
-    labels_js = utils.make_js_label(coords, labels, viewer_var="viewer")
+    labels_js = ut.make_js_label(coords, labels, viewer_var="viewer")
 
     # Create axis cylinder
-    axis = utils.make_js_cylinder(
+    axis = ut.make_js_cylinder(
         start_coords=[0, +axis_length/2., 0],
         end_coords=[0, -axis_length/2., 0],
         color=axis_colour,
@@ -949,7 +969,9 @@ def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
 
 
 outputs = [
-    Output(id("spheroid_store"), "data"),
+    Output(id("vert_store"), "data"),
+    Output(id("tri_store"), "data"),
+    Output(id("norm_store"), "data"),
     Output(id("J_value"), "invalid"),
     Output(id("mJ_value"), "invalid"),
     Output(id("L_value"), "invalid"),
@@ -977,48 +999,62 @@ def update_spheroid(J, mJ, L, S, n, scale):
         "n": False
     }
 
+    vert = no_update
+    tri = no_update
+    norm = no_update
+
     # Check for Nonetype
     if None in [J, mJ, L, S, n, scale]:
-        spheroid = no_update
+        return vert, tri, norm, *invalidity.values()
 
     # Less than half filled, ignore L and S (set to dummy values)
     if n > 7:
         L = 10
         S = 10
+    
+    # J half integer, mJ not
+    if np.ceil(J) != J:
+        if np.ceil(mJ) == mJ:
+            invalidity['mJ'] = True
+    
+    # mJ half integer, J not
+    if np.ceil(J) == J:
+        if np.ceil(mJ) != mJ:
+            invalidity['J'] = True
 
     for name, qn in zip(["J", "mJ", "L", "S"], [2*J, 2*mJ, L, 2*S]):
         if np.ceil(qn) != qn:
-            spheroid = no_update
             invalidity[name] = True
 
     if n < 7:
         if J not in np.arange(np.abs(L-S), L + S + 1., 1.):
-            spheroid = no_update
             invalidity["J"] = True
         elif L <= 0:
-            spheroid = no_update
             invalidity["L"] = True
         elif S <= 0:
-            spheroid = no_update
             invalidity["S"] = True
 
     if J <= 0:
-        spheroid = no_update
         invalidity["J"] = True
 
     if mJ > J or mJ <= 0:
-        spheroid = no_update
         invalidity["mJ"] = True
 
     # Check number of f-electrons
     if n < 1 or n > 13 or n == 7:
-        spheroid = no_update
         invalidity["n"] = True
 
     if not any(invalidity.values()):
-        spheroid = create_spheroid_iso(n, J, mJ, L, S, scale)
+        
+        a_vals = sievers.compute_a_vals(n, J, mJ, L, S)
+        
+        vert, tri, norm = sievers.compute_trisurf(*a_vals)
 
-    return spheroid, *invalidity.values()
+        vert = vert.tolist()
+        tri = tri.tolist()
+        norm = norm.tolist()
+
+    return vert, tri, norm, *invalidity.values()
 
 
 # Clientside callback for image download
@@ -1043,25 +1079,12 @@ clientside_callback(
 )
 
 
-@callback(
-    Output(id("download_cube_trigger"), "data"),
-    [
-        Input(id("download_cube_btn"), "n_clicks"),
-        Input(id("spheroid_store"), "data")
-    ],
-    prevent_initial_call=True,
-)
-def func(n_clicks, data_str):
-    if callback_context.triggered_id == id("spheroid_store"):
-        return
-    else:
-        return dict(content=data_str, filename="spheroid.cube")
-
-
 # Clientside callback for molecule viewer
 clientside_callback(
     """
-    function (atoms_spec, mol_style_js, spheroid, labels_js, axis, molecule_toggle, spheroid_toggle, labels_toggle, axis_toggle, spheroid_colour, x, y, z, zoom, qx, qy, qz, qw) {
+    function (atoms_spec, mol_style_js, vert, tri, norm, labels_js, axis, \
+        molecule_toggle, spheroid_toggle, wireframe_toggle, labels_toggle, \
+            axis_toggle, spheroid_colour, x, y, z, zoom, qx, qy, qz, qw) {
 
         let element = document.getElementById("density_mol_div");
 
@@ -1082,8 +1105,33 @@ clientside_callback(
             eval(mol_style_js);
         }
         if (spheroid_toggle) {
-            var voldata = new $3Dmol.VolumeData(spheroid, "cube");
-            viewer.addIsosurface(voldata, {isoval: 0.55, color: spheroid_colour, smoothness: 5});
+            
+            var vertices = [];
+            var normals = [];
+            var faces = [];
+
+            for (let i = 0; i < vert.length; i++) {
+                vertices.push(new $3Dmol.Vector3(vert[i][0],vert[i][1],vert[i][2]))
+            };
+
+            for (let i = 0; i < norm.length; i++) {
+                normals.push(new $3Dmol.Vector3(norm[i][0],norm[i][1],norm[i][2]))
+            };
+
+            for (let i = 0; i < tri.length; i++) {
+                faces.push(tri[i][0],tri[i][1],tri[i][2])
+            };
+
+            viewer.addCustom(
+                {
+                    vertexArr:vertices,
+                    normalArr: normals,
+                    faceArr:faces,
+                    wireframe:wireframe_toggle,
+                    color:spheroid_colour
+                }
+            );
+
         }
 
         if (labels_toggle) {
@@ -1128,11 +1176,14 @@ clientside_callback(
     [
         Input(id("atom_store"), "data"),
         Input(id("style_store"), "data"),
-        Input(id("spheroid_store"), "data"),
+        Input(id("vert_store"), "data"),
+        Input(id("tri_store"), "data"),
+        Input(id("norm_store"), "data"),
         Input(id("labels_store"), "data"),
         Input(id("axis_store"), "data"),
         Input(id("molecule_toggle"), "value"),
         Input(id("spheroid_toggle"), "value"),
+        Input(id("wireframe_toggle"), "value"),
         Input(id("labels_toggle"), "value"),
         Input(id("axis_toggle"), "value"),
         Input(id("spheroid_colour"), "value"),
@@ -1146,92 +1197,3 @@ clientside_callback(
         Input(id("view_qw"), "value")
     ]
 )
-
-
-def create_spheroid_iso(n, J, mJ, L, S, scale):
-    """
-    Creates an object which specifies an isosurface corresponding to the
-    Sievers charge density surface for a given electronic configuration of
-    the f shell.
-
-    Parameters
-    ----------
-    n : int
-        Number of f electrons
-    J : float
-        J quantum number
-    mJ : float
-        mJ quantum number
-    L : float
-        L quantum number
-    S : float
-        S quantum number
-    scale : float
-        Arbitrary scale factor for isosurface size
-
-    Returns
-    -------
-    str
-        contents of isosurface cube file as string
-    """
-
-    if n > 7:
-        comment = "{:d} f electrons, J={:.1f}, mJ={:.1f}".format(n, J, mJ)
-    else:
-        comment = "{:d} f electrons, J={:.1f}, mJ={:.1f}, L={:d}, S={:.1f}".format( # noqa
-            n, J, mJ, L, S
-        )
-
-    a_vals = sievers.compute_a_vals(n, J, mJ, L, S)
-    cube_str = sievers.compute_isosurface(
-        *a_vals,
-        40,
-        40,
-        40,
-        scale=scale,
-        comment=comment
-    )
-
-    return cube_str
-
-
-def set_z_alignment(coords, new_z, old_z):
-    """
-    Calculates rotation matrix which rotates old_z onto new_z, then applies
-    this rotation to coordinates
-
-    Parameters
-    ----------
-    coords : np.ndarray
-        Atomic coordinates as (n_atoms,3) array
-    new_z : np.ndarray
-        Vector of new z axis in old_z frame
-    old_z : np.ndarray
-        Vector of old z axis in old_z frame
-
-    Returns
-    -------
-    np.ndarray
-        Coordinates after rotation
-    """
-
-    new_z /= la.norm(new_z)
-    new_z = np.array(new_z)
-
-    x = np.cross(new_z, old_z)/la.norm(np.cross(new_z, old_z))
-
-    A = np.array(
-        [
-            [0, -x[2], x[1]],
-            [x[2], 0, -x[0]],
-            [-x[1], x[0], 0]
-        ]
-    )
-    theta = np.arccos(np.dot(new_z, old_z)/(la.norm(new_z)*la.norm(old_z)))
-
-    # Rodriguez rotation
-    R = np.eye(3, 3) + np.sin(theta)*A + (1-np.cos(theta))*(A @ A)
-
-    coords = (R @ coords.T).T
-
-    return coords
