@@ -348,7 +348,7 @@ spheroid_options = [
                             dbc.Input(
                                 id=id("spheroid_scale"),
                                 type="number",
-                                value=10,
+                                value=2,
                                 style={
                                     "textAlign": "center"
                                 }
