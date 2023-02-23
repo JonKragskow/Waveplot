@@ -20,26 +20,99 @@ import numpy.linalg as la
 import py3nj
 import functools
 import inorgqm.multi_electron as iqme
+from scipy.spatial import Delaunay
 
+from . import utils as ut
 
-@functools.lru_cache(maxsize=32)
-def sievers_r(theta, phi, a_2, a_4, a_6):
+def sievers_r(theta, a_2, a_4, a_6):
 
-    c_0 = 3./4.*np.pi
+    c_0 = 3./(4.*np.pi)
     c_2 = a_2 / np.sqrt(4. * np.pi / 5)
     c_4 = a_4 / np.sqrt(4. * np.pi / 9)
     c_6 = a_6 / np.sqrt(4. * np.pi / 13)
 
-    0.25 * np.sqrt(5/np.pi) * (3 * np.cos(theta)**2 - 1)
-
-    # Calculate r, x, y, z values for each theta and phi
+    # Calculate r, x, y, z values for each theta
     r = c_0
     r += c_2 * 0.25 * np.sqrt(5/np.pi) * (3 * np.cos(theta)**2 - 1)
     r += c_4 * 3/16 * np.sqrt(1/np.pi) * (35 * np.cos(theta)**4 - 30 * np.cos(theta)**2 + 3) # noqa
     r += c_6 * 1/32 * np.sqrt(13/np.pi) * (231 * np.cos(theta)**6 - 315 * np.cos(theta)**4 + 105 * np.cos(theta)**2 - 5) # noqa
-    r = r**1./3.
+    r = r**(1./3)
 
     return r
+
+
+def tri_normal(vertices: list['Vector']):
+
+    n = np.cross(
+        vertices[1].pos-vertices[0].pos,
+        vertices[2].pos-vertices[0].pos
+    )
+    vertices[0].normal += n
+    vertices[1].normal += n
+    vertices[2].normal += n
+
+    return n
+
+
+
+def compute_trisurf(a_2, a_4, a_6):
+
+    # Create angular grid, with values of theta
+    phi = np.linspace(0, np.pi, 51)
+    theta = np.linspace(0, np.pi*2, 51)
+    u, v = np.meshgrid(phi, theta)
+    u = u.flatten()
+    v = v.flatten()
+    r = sievers_r(v, a_2, a_4, a_6)*2
+
+    #r = walter_r(v, u)
+
+    # Points on 2d grid
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    verts_to_simp = tri.simplices
+
+    # coordinates of sievers surface
+    x = r * np.sin(v)*np.cos(u)
+    y = r * np.sin(v)*np.sin(u)
+    z = r * np.cos(v)
+    vertices = np.array([x, y, z]).T
+
+    # Rotate spheroid
+    vertices = ut.set_z_alignment(vertices, [0,1,0], [0,0,1])
+
+    vertices = np.array([
+        Vector(vertex)
+        for vertex in vertices
+    ])
+
+    # Calculate norm of each triangle
+    for simp in verts_to_simp:
+        tri_normal(vertices[simp])
+
+    normals = np.array(
+        [
+            vertex.normal 
+            if la.norm(vertex.normal) < 1E-9 else vertex.normal
+            for vertex in vertices
+        ]
+    )
+
+    vertices = np.array(
+        [
+            vertex.pos
+            for vertex in vertices
+        ]
+    )
+
+    return vertices, verts_to_simp, normals
+
+
+class Vector():
+    def __init__(self, pos) -> None:
+        self.pos = pos
+        self.normal = np.zeros(3)
+        pass
 
 
 @functools.lru_cache(maxsize=32)
