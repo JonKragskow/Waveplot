@@ -607,23 +607,8 @@ viewer_options = [html.Div(
                 ],
                 className="mb-3",
                 style={"textAlign": "center"}
-            ),
-            dbc.Col(
-                [
-                    dbc.Button(
-                        "Download 4f density .cube file",
-                        color="primary",
-                        className="me-1",
-                        id=id("download_cube_btn")
-                    ),
-                    dcc.Download(id=id("download_cube_trigger")),
-                    html.Div(id=id('hidden-div2'), style={'display': 'none'})
-                ],
-                className="mb-3",
-                style={"textAlign": "center"}
-            ),
-            html.Div(id=id('hidden-div3'), style={'display': 'none'})
-        ], className="align-items-center"),
+            )
+        ]
     ]
 )]
 
