@@ -608,7 +608,7 @@ viewer_options = [html.Div(
                 className="mb-3",
                 style={"textAlign": "center"}
             )
-        ]
+        ])
     ]
 )]
 
