@@ -339,33 +339,6 @@ def footer(name="Jon Kragskow", site="https://www.kragskow.dev"):
                             'boxShadow': 'none',
                             'textalign': 'top'
                         }
-                    ),
-                    dbc.Button(
-                        "Theory",
-                        id="download_theory",
-                        style={
-                            "color": "",
-                            "float": "left",
-                            "marginLeft": "5px",
-                            'backgroundColor': 'transparent',
-                            'borderColor': 'transparent',
-                            'boxShadow': 'none',
-                            'textalign': 'top'
-                        }
-                    ),
-                    dcc.Download(id="download_theory_trigger"),
-                    dbc.Button(
-                        "Source Code",
-                        href="https://www.github.com/jonkragskow/waveplot",
-                        style={
-                            "color": "",
-                            "float": "right",
-                            "marginRight": "5px",
-                            'backgroundColor': 'transparent',
-                            'borderColor': 'transparent',
-                            'boxShadow': 'none',
-                            'textalign': 'top'
-                        }
                     )
                 ]
             )
