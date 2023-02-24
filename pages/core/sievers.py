@@ -58,8 +58,8 @@ def tri_normal(vertices: list['Vector']):
 def compute_trisurf(a_2, a_4, a_6, scale=2):
 
     # Create angular grid, with values of theta
-    phi = np.linspace(0, np.pi, 51)
-    theta = np.linspace(0, np.pi, 51)
+    phi = np.linspace(0, np.pi, 30)
+    theta = np.linspace(0, np.pi*2, 100)
     u, v = np.meshgrid(phi, theta)
     u = u.flatten()
     v = v.flatten()
