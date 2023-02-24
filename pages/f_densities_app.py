@@ -1022,7 +1022,7 @@ def update_spheroid(J, mJ, L, S, n, scale):
     if J <= 0:
         invalidity["J"] = True
 
-    if mJ > J or mJ <= 0:
+    if mJ > J or mJ < J-np.ceil(J):
         invalidity["mJ"] = True
 
     # Check number of f-electrons
