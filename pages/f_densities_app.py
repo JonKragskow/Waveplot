@@ -524,7 +524,7 @@ viewer_options = [html.Div(
                         ),
                         dbc.Input(
                             id=id("view_zoom"),
-                            value="",
+                            value=107.9,
                             type="number"
                         )
                     ],
