@@ -24,6 +24,7 @@ from scipy.spatial import Delaunay
 
 from . import utils as ut
 
+
 def sievers_r(theta, a_2, a_4, a_6):
 
     c_0 = 3./(4.*np.pi)
@@ -54,7 +55,6 @@ def tri_normal(vertices: list['Vector']):
     return n
 
 
-
 def compute_trisurf(a_2, a_4, a_6, scale=2):
 
     # Create angular grid, with values of theta
@@ -65,7 +65,7 @@ def compute_trisurf(a_2, a_4, a_6, scale=2):
     v = v.flatten()
     r = sievers_r(v, a_2, a_4, a_6) * scale
 
-    #r = walter_r(v, u)
+    #  r = walter_r(v, u)
 
     # Points on 2d grid
     points2D = np.vstack([u, v]).T
@@ -79,7 +79,7 @@ def compute_trisurf(a_2, a_4, a_6, scale=2):
     vertices = np.array([x, y, z]).T
 
     # Rotate spheroid
-    vertices = ut.set_z_alignment(vertices, [0,1,0], [0,0,1])
+    vertices = ut.set_z_alignment(vertices, [0, 1, 0], [0, 0, 1])
 
     vertices = np.array([
         Vector(vertex)
@@ -92,7 +92,7 @@ def compute_trisurf(a_2, a_4, a_6, scale=2):
 
     normals = np.array(
         [
-            vertex.normal 
+            vertex.normal
             if la.norm(vertex.normal) < 1E-9 else vertex.normal
             for vertex in vertices
         ]

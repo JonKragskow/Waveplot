@@ -996,12 +996,12 @@ def update_spheroid(J, mJ, L, S, n, scale):
     if n > 7:
         L = 10
         S = 10
-    
+
     # J half integer, mJ not
     if np.ceil(J) != J:
         if np.ceil(mJ) == mJ:
             invalidity['mJ'] = True
-    
+
     # mJ half integer, J not
     if np.ceil(J) == J:
         if np.ceil(mJ) != mJ:
@@ -1030,9 +1030,9 @@ def update_spheroid(J, mJ, L, S, n, scale):
         invalidity["n"] = True
 
     if not any(invalidity.values()):
-        
+
         a_vals = sievers.compute_a_vals(n, J, mJ, L, S)
-        
+
         vert, tri, norm = sievers.compute_trisurf(*a_vals, scale)
 
         vert = vert.tolist()
@@ -1090,7 +1090,7 @@ clientside_callback(
             eval(mol_style_js);
         }
         if (spheroid_toggle) {
-            
+
             var vertices = [];
             var normals = [];
             var faces = [];
@@ -1126,7 +1126,7 @@ clientside_callback(
         if (axis_toggle) {
             eval(axis);
         }
-        
+
         viewer.render();
 
         if (document.getElementById("aniso_view_zoom").value == ""){
@@ -1148,7 +1148,7 @@ clientside_callback(
             parseFloat(document.getElementById("aniso_view_qw").value)
         ])
 
-        // Mouse movement 
+        // Mouse movement
         viewer.getCanvas().addEventListener("wheel", (event) => { updateViewText("aniso", viewer) }, false)
         viewer.getCanvas().addEventListener("mouseup", (event) => { updateViewText("aniso", viewer) }, false)
         viewer.getCanvas().addEventListener("touchend", (event) => { updateViewText("aniso", viewer) }, false)
