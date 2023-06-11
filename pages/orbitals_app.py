@@ -1380,8 +1380,8 @@ def set_2d_layout(wf_type, text_size, gridlines, x_up, x_low):
     """
 
     y_labels = {
-        "RDF": r"$4 \pi r^2 R(r)^2$",
-        "RWF": r"$R(r)$"
+        'RDF': '4πr<sup>2</sup>R(r)<sup>2</sup>',
+        "RWF": "R(r)"
     }
 
     layout = go.Layout(
@@ -1392,7 +1392,7 @@ def set_2d_layout(wf_type, text_size, gridlines, x_up, x_low):
                     "showline": True,
                     "range": [x_low, x_up],
                     "title": {
-                        "text": r"$ r \ (a_0)$",
+                        "text": 'r (a<sub>0</sub>)',
                         "font": {"size": text_size, "color": "black"}
                     },
                     "ticks": "outside",
