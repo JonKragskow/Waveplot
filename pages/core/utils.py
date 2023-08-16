@@ -278,7 +278,7 @@ def parse_xyz_file(xyz_file):
 
     # Local default just load
     if ".xyz" in xyz_file:
-        labels, coords = xyzp.load_xyz(xyz_file)
+        labels, coords = xyzp.load_xyz(xyz_file, capitalise=True)
     # Read binary encoded string containing file, decode and then read as
     # stringio object
     else:
@@ -287,9 +287,15 @@ def parse_xyz_file(xyz_file):
         _, content_string = xyz_file.split(",")
         decoded = base64.b64decode(content_string).decode('utf8')
         xyz_file_str = io.StringIO(decoded)
-        labels = np.loadtxt(xyz_file_str, skiprows=2, usecols=(0), dtype=str)
+        labels = np.atleast_1d(
+            np.loadtxt(xyz_file_str, skiprows=2, usecols=(0), dtype=str)
+        )
+        labels = [
+            lab.capitalize() for lab in labels
+        ]
         xyz_file_str.seek(0)
         coords = np.loadtxt(xyz_file_str, skiprows=2, usecols=(1, 2, 3))
+        coords = np.asarray(coords)
 
     return labels, coords
 
