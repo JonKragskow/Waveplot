@@ -16,11 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from dash import html, dcc, callback_context, no_update, register_page,\
-    callback, clientside_callback
+from dash import html, dcc, no_update, register_page, \
+    callback, clientside_callback, State, Input, Output, ctx
 
 from dash.exceptions import PreventUpdate
-from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import numpy as np
 import xyz_py as xyzp
@@ -49,10 +48,6 @@ register_page(
 
 # Load default xyz file and get bonds for z axis
 default_xyz = "assets/nature.xyz"
-
-labels, coords = xyzp.load_xyz(default_xyz)
-labels, labels_nn, coords = ut.process_labels_coords(labels, coords)
-default_bonds = ut.create_bond_choices(labels, coords)
 
 """
 Webpage layout
@@ -172,7 +167,7 @@ surface_options = [
                             ],
                             class_name="mb-3",
                         ),
-                    ]),
+                    ])
                 ],
                 style={"display": "none"}
             )
@@ -269,7 +264,7 @@ spheroid_options = [
                         children=dbc.InputGroup(
                             [
                                 dbc.Select(
-                                    options=default_bonds,
+                                    options={'Dy-C': [0, 1]},
                                     value="0,3",
                                     id=id("bond_select"),
                                     style={
@@ -348,7 +343,7 @@ spheroid_options = [
                             dbc.Input(
                                 id=id("spheroid_scale"),
                                 type="number",
-                                value=2,
+                                value=10,
                                 style={
                                     "textAlign": "center"
                                 }
@@ -383,7 +378,7 @@ axis_options = [
                             ),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
-                                    value=True,
+                                    value=False,
                                     id=id("axis_toggle")
                                 )
                             )
@@ -524,7 +519,7 @@ viewer_options = [html.Div(
                         ),
                         dbc.Input(
                             id=id("view_zoom"),
-                            value=107.9,
+                            value="",
                             type="number"
                         )
                     ],
@@ -607,8 +602,9 @@ viewer_options = [html.Div(
                 ],
                 className="mb-3",
                 style={"textAlign": "center"}
-            )
-        ])
+            ),
+            html.Div(id=id('hidden-div3'), style={'display': 'none'})
+        ], className="align-items-center"),
     ]
 )]
 
@@ -632,7 +628,10 @@ molecule_options = [
                                 dbc.Button(
                                     "Select .xyz file",
                                     color="primary",
-                                    className="me-1"
+                                    className="me-1",
+                                    style={
+                                        'width': '100%'
+                                    }
                                 ),
                             ],
                             style={
@@ -646,6 +645,93 @@ molecule_options = [
                     ],
                     style={"textAlign": "center"}
                 ),
+                dbc.Col([
+                    dbc.Button(
+                        'Edit bonds',
+                        id=id('open_bond_modal'),
+                        color='primary',
+                        className='me-1',
+                        n_clicks=0,
+                        style={
+                            'textAlign': 'center',
+                            'width': '100%'
+                        }
+                    ),
+                    dbc.Modal(
+                        [
+                            dbc.ModalHeader(dbc.ModalTitle('Edit Bonds')),
+                            dbc.ModalBody(
+                                html.Div(
+                                    [
+                                        (
+                                            'Select atoms from dropdown,'
+                                            ' then click '
+                                            'enable/disable to toggle bonds.'
+                                            '\n This is purely cosmetic.\n'
+                                        ),
+                                        dbc.InputGroup(
+                                            [
+                                                dbc.Select(
+                                                    id=id('bond_atom_1'),
+                                                    options=[
+                                                        {
+                                                            'label': 'Dy1',
+                                                            'value': 0
+                                                        }
+                                                    ],
+                                                    value=0,
+                                                    placeholder='Atom 1',
+                                                    style={
+                                                        'textAlign': 'center', # noqa
+                                                        'verticalAlign': 'middle', # noqa
+                                                        'horizontalAlign': 'middle', # noqa
+                                                        'display': 'inline'
+                                                    }
+                                                ),
+                                                dbc.Select(
+                                                    id=id('bond_atom_2'),
+                                                    options=[
+                                                        {
+                                                            'label': 'Dy1',
+                                                            'value': 0
+                                                        }
+                                                    ],
+                                                    value=0,
+                                                    placeholder='Atom 2',
+                                                    style={
+                                                        'textAlign': 'center', # noqa
+                                                        'verticalAlign': 'middle', # noqa
+                                                        'horizontalAlign': 'middle', # noqa
+                                                        'display': 'inline'
+                                                    }
+                                                )
+                                            ],
+                                            class_name='mb-3',
+                                        ),
+                                        dbc.Button(
+                                            'Enable/Disable',
+                                            id=id(
+                                                'enable_disable_button'
+                                            ),
+                                            color='primary'
+                                        )
+                                    ]
+                                )
+                            ),
+                            dbc.ModalFooter(
+                                dbc.Button(
+                                    'Close',
+                                    id=id('close_bond_modal'),
+                                    className='ms-auto',
+                                    n_clicks=0.,
+                                    color='primary'
+                                )
+                            ),
+                        ],
+                        id=id('bond_modal'),
+                        is_open=False,
+                    )
+                ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
@@ -663,15 +749,11 @@ molecule_options = [
                             dbc.Select(
                                 options=[
                                     {
-                                        "label": "C.O.M.",
-                                        "value": "COM"
-                                    },
-                                    {
                                         "label": "Dy1",
-                                        "value": "Dy1"
+                                        "value": 0
                                     }
                                 ],
-                                value="Dy1",
+                                value=0,
                                 id=id('centre_select'),
                                 style={
                                     "textAlign": "center",
@@ -775,7 +857,10 @@ layout = html.Div(
                                         dcc.Store(id=id("norm_store")),
                                         dcc.Store(id=id("axis_store")),
                                         dcc.Store(id=id("style_store")),
-                                        dcc.Store(id=id("labels_store"))
+                                        dcc.Store(id=id("js_label_store")),
+                                        dcc.Store(id=id('coord_store')),
+                                        dcc.Store(id=id('label_store')),
+                                        dcc.Store(id=id('adj_store')),
                                     ]
                                 ),
                             ],
@@ -816,7 +901,7 @@ def toggle_l_s(n):
     if n == 7:
         raise PreventUpdate
     elif n > 7:
-        on_off = {"display": "none"}
+        on_off = {}
     else:
         on_off = {}
 
@@ -824,23 +909,139 @@ def toggle_l_s(n):
 
 
 outputs = [
-    Output(id("atom_store"), "data"),
-    Output(id("style_store"), "data"),
-    Output(id("labels_store"), "data"),
-    Output(id("axis_store"), "data"),
-    Output(id("bond_select"), "options"),
-    Output(id("centre_select"), "options"),
-    Output(id("centre_select"), "value"),
-    Output(id("bond_select"), "value"),
-    Output(id("vector_select_wrapper"), "style"),
-    Output(id("bond_select_wrapper"), "style"),
-
+    Output(id('coord_store'), 'data'),
+    Output(id('label_store'), 'data'),
+    Output(id('centre_select'), 'options'),
+    Output(id('centre_select'), 'value'),
+    Output(id('bond_atom_1'), 'options'),
+    Output(id('bond_atom_2'), 'options'),
+    Output(id('bond_select'), 'options')
 ]
 
 inputs = [
-    Input(id("xyz_file"), "contents"),
-    Input(id("molecule_toggle"), "value"),
-    Input(id("molecule_style"), "value"),
+    Input(id('xyz_file'), 'contents')
+]
+
+
+@callback(outputs, inputs)
+def update_xyz(xyz_file):
+    '''
+    Callback for loading a new xyz file
+    '''
+    # Check for Nonetypes
+    if xyz_file is None:
+        raise PreventUpdate
+
+    # Read labels and coordinates
+    labels, coords = ut.parse_xyz_file(
+        xyz_file
+    )
+
+    # Single atom, ignore.
+    if len(labels) == 1:
+        return no_update, no_update, no_update, no_update, no_update, no_update
+
+    labels, _, coords = ut.process_labels_coords(labels, coords)
+
+    centres = [
+        {'label': lab, 'value': it}
+        for it, lab in enumerate(labels)
+    ]
+
+    bonds = ut.create_bond_choices(labels, coords)
+
+    return coords, labels, centres, '0', centres, centres, bonds
+
+
+@callback(
+    Output(id('style_store'), 'data'),
+    [
+        Input(id('label_store'), 'data'),
+        Input(id('molecule_style'), 'value')
+    ]
+)
+def update_molstyle(labels, mol_style):
+    '''
+    Updates javascript molstyle based on user selection
+    '''
+    labels_nn = xyzp.remove_label_indices(labels)
+    mol_style_js = ut.make_js_molstyle(
+        mol_style, labels_nn, 'atomic', model_var='m'
+    )
+
+    return mol_style_js
+
+
+@callback(
+    Output(id('bond_modal'), 'is_open'),
+    [
+        Input(id('open_bond_modal'), 'n_clicks'),
+        Input(id('close_bond_modal'), 'n_clicks')
+    ],
+    [State(id('bond_modal'), 'is_open')],
+)
+def toggle_modal(n1, n2, is_open):
+    'Toggles display of modal'
+    if n1 or n2:
+        return not is_open
+    return is_open
+
+
+@callback(
+    Output(id('adj_store'), 'data'),
+    [
+        Input(id('label_store'), 'data'),
+        Input(id('coord_store'), 'data'),
+        Input(id('enable_disable_button'), 'n_clicks')
+    ],
+    [
+        State(id('adj_store'), 'data'),
+        State(id('bond_atom_1'), 'value'),
+        State(id('bond_atom_2'), 'value')
+    ]
+)
+def update_adjacency(labels, coords, n_clicks, adjacency, atom_1, atom_2):
+    '''
+    Callback to update adjacency matrix
+    '''
+
+    # Update with user enable/disable bonds
+    if ctx.triggered_id == id('enable_disable_button'):
+        if atom_1 == atom_2:
+            return no_update
+
+        adjacency = np.asarray(adjacency)
+
+        index_1 = int(atom_1)
+        index_2 = int(atom_2)
+
+        adjacency[index_1, index_2] -= 1
+        adjacency[index_1, index_2] = abs(adjacency[index_1, index_2])
+        adjacency[index_2, index_1] = adjacency[index_1, index_2]
+
+    # Update for new coordinates
+    else:
+        adjacency = xyzp.get_adjacency(
+            labels,
+            coords,
+            adjust_cutoff={'Dy': 1.6}
+        )
+
+    return adjacency
+
+
+outputs = [
+    Output(id("atom_store"), "data"),
+    Output(id("js_label_store"), "data"),
+    Output(id("axis_store"), "data"),
+    Output(id("vector_select_wrapper"), "style"),
+    Output(id("bond_select_wrapper"), "style"),
+]
+
+inputs = [
+    Input(id("coord_store"), "data"),
+    Input(id("label_store"), "data"),
+    Input(id("adj_store"), "data"),
     Input(id("axis_colour"), "value"),
     Input(id("axis_width"), "value"),
     Input(id("axis_length"), "value"),
@@ -854,41 +1055,23 @@ inputs = [
     Input(id("align_type"), "value")
 ]
 
-
 @callback(outputs, inputs)
-def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
-               axis_length, bond_select, vector_select, centre_label,
-               align_type):
+def update_app(coords, labels, adjacency, axis_colour,
+               axis_width, axis_length, bond_select, vector_select,
+               centre_index, align_type):
 
     elements = [
-        xyz_file, mol_toggle, mol_style, axis_colour, axis_width, axis_length,
-        bond_select, vector_select, centre_label, align_type
+        coords, labels, adjacency, axis_colour,
+        axis_width, axis_length, bond_select, vector_select, centre_index,
+        align_type
     ]
+
 
     # Check for Nonetype
     if None in elements:
         raise PreventUpdate
 
-    # Read labels and coordinates
-    labels, coords = ut.parse_xyz_file(
-        xyz_file
-    )
-    labels, labels_nn, coords = ut.process_labels_coords(labels, coords)
-
-    # Check if structure has been changed, if so reset alignment vector
-    # and centre label
-    button_id = callback_context.triggered[0]['prop_id'].split('.')[0]
-    if id("xyz_file") in button_id:
-        # Regenerate list of alignments to choose from
-        align_choices = ut.create_bond_choices(labels, coords)
-        bond_select_display = "{:d},{:d}".format(*align_choices[0]["value"])
-        bond_select = bond_select_display
-        centre_label = labels[0]
-        centre_label_display = centre_label
-    else:
-        centre_label_display = no_update
-        align_choices = no_update
-        bond_select_display = no_update
+    coords = np.asarray(coords)
 
     # Choose z-alignment vector from either bonds or raw vector input
     if align_type == "bond":
@@ -911,46 +1094,31 @@ def update_app(xyz_file, mol_toggle, mol_style, axis_colour, axis_width,
     if np.sum(np.abs(z_vec - mol_z)) != 0.:
         coords = ut.set_z_alignment(coords, z_vec, mol_z)
 
-    # Create list of atom labels for centering, and set center
-    centre_choices, centre_index, _ = ut.define_centres(
-        labels,
-        coords,
-        centre_label
-    )
-
     # Shift coords to centre
+    centre_index = int(centre_index)
+    
     coords -= coords[centre_index]
 
-    # Create list of bonding dictionaries
-    if len(labels) > 1:
-        adjacency = ut.get_adjacency(
-            labels,
-            coords,
-            adjust_cutoff={"Dy": 1.6}
-        )
+    labels_nn = xyzp.remove_label_indices(labels)
 
     # Create molecule
     molecule = ut.make_js_molecule(
         coords, labels_nn, adjacency
     )
-    # Style molecule
-    mol_style_js = ut.make_js_molstyle(mol_style, labels_nn, 'atomic', 'm')
 
     # Add Numbered atom labels
     labels_js = ut.make_js_label(coords, labels, viewer_var="viewer")
 
     # Create axis cylinder
     axis = ut.make_js_cylinder(
-        start_coords=[0, +axis_length/2., 0],
-        end_coords=[0, -axis_length/2., 0],
+        start_coords=[0, +axis_length / 2., 0],
+        end_coords=[0, -axis_length / 2., 0],
         color=axis_colour,
         width=axis_width,
         viewer_var='viewer'
     )
 
-    return molecule, mol_style_js, labels_js, axis, align_choices, \
-        centre_choices, centre_label_display, bond_select_display, \
-        vector_toggle, bond_toggle
+    return molecule, labels_js, axis, vector_toggle, bond_toggle
 
 
 outputs = [
@@ -961,7 +1129,7 @@ outputs = [
     Output(id("mJ_value"), "invalid"),
     Output(id("L_value"), "invalid"),
     Output(id("S_value"), "invalid"),
-    Output(id("n_value"), "invalid"),
+    Output(id("n_value"), "invalid")
 ]
 
 inputs = [
@@ -992,11 +1160,6 @@ def update_spheroid(J, mJ, L, S, n, scale):
     if None in [J, mJ, L, S, n, scale]:
         return vert, tri, norm, *invalidity.values()
 
-    # Less than half filled, ignore L and S (set to dummy values)
-    if n > 7:
-        L = 10
-        S = 10
-
     # J half integer, mJ not
     if np.ceil(J) != J:
         if np.ceil(mJ) == mJ:
@@ -1007,14 +1170,12 @@ def update_spheroid(J, mJ, L, S, n, scale):
         if np.ceil(mJ) != mJ:
             invalidity['J'] = True
 
-    for name, qn in zip(["J", "mJ", "L", "S"], [2*J, 2*mJ, L, 2*S]):
+    for name, qn in zip(["J", "mJ", "L", "S"], [2 * J, 2 * mJ, L, 2 * S]):
         if np.ceil(qn) != qn:
             invalidity[name] = True
 
     if n < 7:
-        if J not in np.arange(np.abs(L-S), L + S + 1., 1.):
-            invalidity["J"] = True
-        elif L <= 0:
+        if L <= 0:
             invalidity["L"] = True
         elif S <= 0:
             invalidity["S"] = True
@@ -1022,7 +1183,7 @@ def update_spheroid(J, mJ, L, S, n, scale):
     if J <= 0:
         invalidity["J"] = True
 
-    if mJ > J or mJ < J-np.ceil(J):
+    if mJ > J or mJ <= 0:
         invalidity["mJ"] = True
 
     # Check number of f-electrons
@@ -1033,8 +1194,7 @@ def update_spheroid(J, mJ, L, S, n, scale):
 
         a_vals = sievers.compute_a_vals(n, J, mJ, L, S)
 
-        vert, tri, norm = sievers.compute_trisurf(*a_vals, scale)
-
+        vert, tri, norm = sievers.compute_trisurf(*a_vals)
         vert = vert.tolist()
         tri = tri.tolist()
         norm = norm.tolist()
@@ -1090,7 +1250,7 @@ clientside_callback(
             eval(mol_style_js);
         }
         if (spheroid_toggle) {
-
+            
             var vertices = [];
             var normals = [];
             var faces = [];
@@ -1126,7 +1286,7 @@ clientside_callback(
         if (axis_toggle) {
             eval(axis);
         }
-
+        
         viewer.render();
 
         if (document.getElementById("aniso_view_zoom").value == ""){
@@ -1148,12 +1308,11 @@ clientside_callback(
             parseFloat(document.getElementById("aniso_view_qw").value)
         ])
 
-        // Mouse movement
+        // Mouse movement 
         viewer.getCanvas().addEventListener("wheel", (event) => { updateViewText("aniso", viewer) }, false)
         viewer.getCanvas().addEventListener("mouseup", (event) => { updateViewText("aniso", viewer) }, false)
         viewer.getCanvas().addEventListener("touchend", (event) => { updateViewText("aniso", viewer) }, false)
 
-        console.log(zoom_level)
         return zoom_level
         }
     """, # noqa
@@ -1164,7 +1323,7 @@ clientside_callback(
         Input(id("vert_store"), "data"),
         Input(id("tri_store"), "data"),
         Input(id("norm_store"), "data"),
-        Input(id("labels_store"), "data"),
+        Input(id("js_label_store"), "data"),
         Input(id("axis_store"), "data"),
         Input(id("molecule_toggle"), "value"),
         Input(id("spheroid_toggle"), "value"),
