@@ -27,17 +27,17 @@ from . import utils as ut
 
 def sievers_r(theta, a_2, a_4, a_6):
 
-    c_0 = 3./(4.*np.pi)
+    c_0 = 3. / (4. * np.pi)
     c_2 = a_2 / np.sqrt(4. * np.pi / 5)
     c_4 = a_4 / np.sqrt(4. * np.pi / 9)
     c_6 = a_6 / np.sqrt(4. * np.pi / 13)
 
     # Calculate r, x, y, z values for each theta
     r = c_0
-    r += c_2 * 0.25 * np.sqrt(5/np.pi) * (3 * np.cos(theta)**2 - 1)
-    r += c_4 * 3/16 * np.sqrt(1/np.pi) * (35 * np.cos(theta)**4 - 30 * np.cos(theta)**2 + 3) # noqa
-    r += c_6 * 1/32 * np.sqrt(13/np.pi) * (231 * np.cos(theta)**6 - 315 * np.cos(theta)**4 + 105 * np.cos(theta)**2 - 5) # noqa
-    r = r**(1./3)
+    r += c_2 * 0.25 * np.sqrt(5 / np.pi) * (3 * np.cos(theta)**2 - 1)
+    r += c_4 * 3 / 16 * np.sqrt(1 / np.pi) * (35 * np.cos(theta)**4 - 30 * np.cos(theta)**2 + 3) # noqa
+    r += c_6 * 1 / 32 * np.sqrt(13 / np.pi) * (231 * np.cos(theta)**6 - 315 * np.cos(theta)**4 + 105 * np.cos(theta)**2 - 5) # noqa
+    r = r**(1. / 3)
 
     return r
 
@@ -45,8 +45,8 @@ def sievers_r(theta, a_2, a_4, a_6):
 def tri_normal(vertices: list['Vector']):
 
     n = np.cross(
-        vertices[1].pos-vertices[0].pos,
-        vertices[2].pos-vertices[0].pos
+        vertices[1].pos - vertices[0].pos,
+        vertices[2].pos - vertices[0].pos
     )
     vertices[0].normal += n
     vertices[1].normal += n
@@ -59,7 +59,7 @@ def compute_trisurf(a_2, a_4, a_6, scale=2):
 
     # Create angular grid, with values of theta
     phi = np.linspace(0, np.pi, 30)
-    theta = np.linspace(0, np.pi*2, 70)
+    theta = np.linspace(0, np.pi * 2, 70)
     u, v = np.meshgrid(phi, theta)
     u = u.flatten()
     v = v.flatten()
@@ -73,8 +73,8 @@ def compute_trisurf(a_2, a_4, a_6, scale=2):
     verts_to_simp = tri.simplices
 
     # coordinates of sievers surface
-    x = r * np.sin(v)*np.cos(u)
-    y = r * np.sin(v)*np.sin(u)
+    x = r * np.sin(v) * np.cos(u)
+    y = r * np.sin(v) * np.sin(u)
     z = r * np.cos(v)
     vertices = np.array([x, y, z]).T
 
@@ -126,9 +126,9 @@ def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=""):
     y = np.linspace(y_min, y_max, n_y)
     z = np.linspace(z_min, z_max, n_z)
 
-    x_step = x[1]-x[0]
-    y_step = y[1]-y[0]
-    z_step = z[1]-z[0]
+    x_step = x[1] - x[0]
+    y_step = y[1] - y[0]
+    z_step = z[1] - z[0]
 
     iso = np.zeros([n_x, n_y, n_z])
     for xit, xval in enumerate(x):
@@ -136,13 +136,13 @@ def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=""):
             for zit, zval in enumerate(z):
                 r_grid = np.sqrt(xval**2 + yval**2 + zval**2)
                 if r_grid > 0:
-                    theta = np.arccos(yval/r_grid)
+                    theta = np.arccos(yval / r_grid)
                 else:
                     theta = 0.
                 phi = np.arctan2(xval, zval)
                 r_func = sievers_r(theta, phi, a_2, a_4, a_6)
-                if r_grid-r_func < 0:
-                    iso[xit, yit, zit] = np.abs(r_grid-r_func)
+                if r_grid - r_func < 0:
+                    iso[xit, yit, zit] = np.abs(r_grid - r_func)
 
     x_min *= scale
     y_min *= scale
@@ -180,12 +180,12 @@ def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=""):
 @functools.lru_cache(maxsize=32)
 def wigner3(a, b, c, d, e, f):
 
-    a = int(2*a)
-    b = int(2*b)
-    c = int(2*c)
-    d = int(2*d)
-    e = int(2*e)
-    f = int(2*f)
+    a = int(2 * a)
+    b = int(2 * b)
+    c = int(2 * c)
+    d = int(2 * d)
+    e = int(2 * e)
+    f = int(2 * f)
 
     return py3nj.wigner3j(a, b, c, d, e, f)
 
@@ -193,29 +193,29 @@ def wigner3(a, b, c, d, e, f):
 @functools.lru_cache(maxsize=32)
 def wigner6(a, b, c, d, e, f):
 
-    a = int(2*a)
-    b = int(2*b)
-    c = int(2*c)
-    d = int(2*d)
-    e = int(2*e)
-    f = int(2*f)
+    a = int(2 * a)
+    b = int(2 * b)
+    c = int(2 * c)
+    d = int(2 * d)
+    e = int(2 * e)
+    f = int(2 * f)
 
     return py3nj.wigner6j(a, b, c, d, e, f)
 
 
 def compute_a_vals(n, J, mJ, L, S):
 
-    k_max = min(6, int(2*J+1))
+    k_max = min(6, int(2 * J + 1))
 
     a_vals = []
 
     if n == 7:
         a_vals = [0., 0., 0.]
     elif n < 7:
-        for k in range(2, k_max+2, 2):
+        for k in range(2, k_max + 2, 2):
             a_vals.append(_compute_light_a_val(n, J, mJ, L, S, k))
     else:
-        for k in range(2, k_max+2, 2):
+        for k in range(2, k_max + 2, 2):
             a_vals.append(_compute_heavy_a_val(J, mJ, n, k))
 
     return a_vals
@@ -223,29 +223,29 @@ def compute_a_vals(n, J, mJ, L, S):
 
 def _compute_light_a_val(n, J, mJ, L, S, k):
 
-    a_k = np.sqrt(4*np.pi/(2*k+1))
-    a_k *= (-1)**(2*J-mJ+L+S)
-    a_k *= 7./(np.sqrt(4*np.pi)) * (2*J + 1) * np.sqrt(2*k+1)
-    a_k *= wigner3(J, k, J, -mJ, 0, mJ)/wigner3(L, k, L, -L, 0, L)
+    a_k = np.sqrt(4 * np.pi / (2 * k + 1))
+    a_k *= (-1)**(2 * J - mJ + L + S)
+    a_k *= 7. / (np.sqrt(4 * np.pi)) * (2 * J + 1) * np.sqrt(2 * k + 1)
+    a_k *= wigner3(J, k, J, -mJ, 0, mJ) / wigner3(L, k, L, -L, 0, L)
     a_k *= wigner6(L, J, S, J, L, k)
     a_k *= wigner3(k, 3, 3, 0, 0, 0)
     summa = 0
-    for it in range(1, n+1):
-        summa += (-1)**it * wigner3(k, 3, 3, 0, (4-it), (it-4))
+    for it in range(1, n + 1):
+        summa += (-1)**it * wigner3(k, 3, 3, 0, (4 - it), (it - 4))
     a_k *= summa
 
     return a_k
 
 
 def _compute_heavy_a_val(J, mJ, n, k):
-    a_k = np.sqrt(4*np.pi/(2*k+1))
-    a_k *= (-1)**(J-mJ)
-    a_k *= 7/(np.sqrt(4*np.pi))
-    a_k *= wigner3(J, k, J, -mJ, 0, mJ)/wigner3(J, k, J, -J, 0, J)
-    a_k *= np.sqrt(2*k+1)*wigner3(k, 3, 3, 0, 0, 0)
+    a_k = np.sqrt(4 * np.pi / (2 * k + 1))
+    a_k *= (-1)**(J - mJ)
+    a_k *= 7 / (np.sqrt(4 * np.pi))
+    a_k *= wigner3(J, k, J, -mJ, 0, mJ) / wigner3(J, k, J, -J, 0, J)
+    a_k *= np.sqrt(2 * k + 1) * wigner3(k, 3, 3, 0, 0, 0)
     summa = 0
-    for it in range(1, n-6):
-        summa += (-1)**it * wigner3(k, 3, 3, 0, (4-it), (it-4))
+    for it in range(1, n - 6):
+        summa += (-1)**it * wigner3(k, 3, 3, 0, (4 - it), (it - 4))
     a_k *= summa
     return a_k
 
@@ -262,7 +262,7 @@ def compute_CF_coeffs(J):
     hcf, vals, vecs = iqme.calc_HCF(J, cfps, stev_ops, kmax=k_max)
 
     k_vals = [2, 4, 6]
-    for kit in range(k_max/2):
+    for kit in range(k_max / 2):
         k = k_vals[kit]
-        for qit in range(2*k+1):
+        for qit in range(2 * k + 1):
             stev_ops[kit, qit] = la.inv(vecs) @ stev_ops[kit, qit] @ vecs

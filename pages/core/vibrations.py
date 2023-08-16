@@ -25,17 +25,17 @@ def factorial(n):
     if n == 0:
         return 1
     else:
-        return n * factorial(n-1)
+        return n * factorial(n - 1)
 
 
 def hermite(n, x):
 
     if n == 0:
-        return x*0 + 1
+        return x * 0 + 1
     elif n == 1:
-        return 2*x
+        return 2 * x
     else:
-        return 2*x*hermite(n-1, x) - 2*n*hermite(n-2, x)
+        return 2 * x * hermite(n - 1, x) - 2 * n * hermite(n - 2, x)
 
 
 def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
@@ -68,17 +68,17 @@ def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
     m *= 1.6605E-27  # kg (g mol^-1)
 
     # Angular frequency
-    omega = np.sqrt(k/m)  # s^-1
+    omega = np.sqrt(k / m)  # s^-1
 
     hbar = 1.0545718E-34  # m2 kg / s
-    state_E = np.array([hbar*omega*(n + 0.5) for n in range(0, max_n+1)])  # J
+    state_E = np.array([hbar * omega * (n + 0.5) for n in range(0, max_n + 1)]) # noqa
 
     # Harmonic potential
     # E = 1/2 kx^2
-    max_x = np.sqrt((max_n + 0.5) * 2*hbar*omega/k)
+    max_x = np.sqrt((max_n + 0.5) * 2 * hbar * omega / k)
 
     displacement = np.linspace(-max_x, max_x, 100)  # m
-    harmonic_E = 0.5*k*displacement**2  # J
+    harmonic_E = 0.5 * k * displacement**2  # J
 
     # Find zero point displacement
     zpd = np.sqrt(hbar * omega / k)  # m
@@ -103,7 +103,7 @@ def calculate_mu(w, k):
         Reduced mass mu (g mol^-1)
     """
 
-    mu = k/w**2
+    mu = k / w**2
     mu /= 1.6605E-27
 
     return mu
@@ -151,7 +151,7 @@ def harmonic_wf(n, x):
 
     h = hermite(n, x)
 
-    N = 1./(2**n * factorial(n)*np.sqrt(np.pi)**0.5)
+    N = 1. / (2**n * factorial(n) * np.sqrt(np.pi)**0.5)
 
     wf = h * N * np.exp(-x**2 * 0.5)
 

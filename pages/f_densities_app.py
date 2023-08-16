@@ -1055,6 +1055,7 @@ inputs = [
     Input(id("align_type"), "value")
 ]
 
+
 @callback(outputs, inputs)
 def update_app(coords, labels, adjacency, axis_colour,
                axis_width, axis_length, bond_select, vector_select,
@@ -1065,7 +1066,6 @@ def update_app(coords, labels, adjacency, axis_colour,
         axis_width, axis_length, bond_select, vector_select, centre_index,
         align_type
     ]
-
 
     # Check for Nonetype
     if None in elements:
@@ -1096,7 +1096,7 @@ def update_app(coords, labels, adjacency, axis_colour,
 
     # Shift coords to centre
     centre_index = int(centre_index)
-    
+
     coords -= coords[centre_index]
 
     labels_nn = xyzp.remove_label_indices(labels)

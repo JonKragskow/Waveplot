@@ -17,7 +17,7 @@
 """
 import plotly.colors as pc
 import dash_bootstrap_components as dbc
-from dash import html, dcc, callback, page_registry
+from dash import html, page_registry
 import io
 import base64
 from dash.exceptions import PreventUpdate
@@ -338,7 +338,7 @@ def make_js_molecule(coords, labels_nn, adjacency):
         atdict["bonds"] = [
             jt for (jt, oz) in enumerate(adjacency[it]) if oz
         ]
-        atdict["bondOrder"] = [1]*n_bonds[it]
+        atdict["bondOrder"] = [1] * n_bonds[it]
         molecule.append(atdict)
 
     return molecule
@@ -463,18 +463,18 @@ def make_js_cylinder(end_coords, color, viewer_var, width=1., scale=1.,
     cylinder = '{}'.format(viewer_var)
     cylinder += '.addCylinder({\n'
     cylinder += '    start: {x:'
-    cylinder += '{:f}'.format(start_coords[0]*scale)
+    cylinder += '{:f}'.format(start_coords[0] * scale)
     cylinder += ', y:'
-    cylinder += '{:f}'.format(start_coords[1]*scale)
+    cylinder += '{:f}'.format(start_coords[1] * scale)
     cylinder += ', z:'
-    cylinder += '{:f}'.format(start_coords[2]*scale)
+    cylinder += '{:f}'.format(start_coords[2] * scale)
     cylinder += '},\n'
     cylinder += '    end: {x:'
-    cylinder += '{:f}'.format(end_coords[0]*scale)
+    cylinder += '{:f}'.format(end_coords[0] * scale)
     cylinder += ', y:'
-    cylinder += '{:f}'.format(end_coords[1]*scale)
+    cylinder += '{:f}'.format(end_coords[1] * scale)
     cylinder += ', z:'
-    cylinder += '{:f}'.format(end_coords[2]*scale)
+    cylinder += '{:f}'.format(end_coords[2] * scale)
     cylinder += '},\n'
     cylinder += '    radius: {:f},\n'.format(width)
     cylinder += '    toCap: 1,\n'
@@ -511,11 +511,11 @@ def make_js_sphere(coords, color, viewer_var, scale=1.):
     sphere = '{}'.format(viewer_var)
     sphere += '.addSphere({\n'
     sphere += '    center: {x:'
-    sphere += '{:f}'.format(coords[0]*scale)
+    sphere += '{:f}'.format(coords[0] * scale)
     sphere += ', y:'
-    sphere += '{:f}'.format(coords[1]*scale)
+    sphere += '{:f}'.format(coords[1] * scale)
     sphere += ', z:'
-    sphere += '{:f}'.format(coords[2]*scale)
+    sphere += '{:f}'.format(coords[2] * scale)
     sphere += '},\n'
     sphere += '    radius: 0.1,\n'
     sphere += "    color: '{}',\n".format(color)
@@ -580,7 +580,7 @@ def add_label_indices(labels, style='per_element'):
 
     # Just number the atoms 1->N regardless of element
     if style == 'sequential':
-        labels_wn = ['{}{:d}'.format(lab, it+1)
+        labels_wn = ['{}{:d}'.format(lab, it + 1)
                      for (it, lab) in enumerate(labels)]
 
     # Index by element Dy1, Dy2, N1, N2, etc.
@@ -780,7 +780,7 @@ def get_bonds(labels, coords, neigh_list=None, verbose=True, style='indices'):
 
     # Print number of bonds to screen
     if verbose:
-        print('{:d}'.format(n_bonds)+' bonds')
+        print('{:d}'.format(n_bonds) + ' bonds')
 
     return bonds
 
@@ -863,7 +863,7 @@ def set_z_alignment(coords, new_z, old_z):
     new_z /= la.norm(new_z)
     new_z = np.array(new_z)
 
-    x = np.cross(new_z, old_z)/la.norm(np.cross(new_z, old_z))
+    x = np.cross(new_z, old_z) / la.norm(np.cross(new_z, old_z))
 
     A = np.array(
         [
@@ -872,10 +872,10 @@ def set_z_alignment(coords, new_z, old_z):
             [-x[1], x[0], 0]
         ]
     )
-    theta = np.arccos(np.dot(new_z, old_z)/(la.norm(new_z)*la.norm(old_z)))
+    theta = np.arccos(np.dot(new_z, old_z) / (la.norm(new_z) * la.norm(old_z)))
 
     # Rodriguez rotation
-    R = np.eye(3, 3) + np.sin(theta)*A + (1-np.cos(theta))*(A @ A)
+    R = np.eye(3, 3) + np.sin(theta) * A + (1 - np.cos(theta)) * (A @ A)
 
     coords = (R @ coords.T).T
 
