@@ -662,67 +662,21 @@ orb_customise_3d = [
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText("Colours"),
-                        dbc.Select(
+                        dbc.Input(
                             id=id("colours_3d_a"),
-                            options=[
-                                {
-                                    "label": "Purple",
-                                    "value": "purple"
-                                },
-                                {
-                                    "label": "Blue",
-                                    "value": "blue"
-                                },
-                                {
-                                    "label": "Orange",
-                                    "value": "orange"
-                                },
-                                {
-                                    "label": "Yellow",
-                                    "value": "yellow"
-                                },
-                                {
-                                    "label": "Red",
-                                    "value": "red"
-                                },
-                                {
-                                    "label": "Green",
-                                    "value": "green"
-                                }
-                            ],
-                            style={"textAlign": "center"},
-                            value="yellow",
+                            type="color",
+                            value="#491688",
+                            style={
+                                "height": "40px"
+                            }
                         ),
-                        dbc.Select(
+                        dbc.Input(
                             id=id("colours_3d_b"),
-                            options=[
-                                {
-                                    "label": "Purple",
-                                    "value": "purple"
-                                },
-                                {
-                                    "label": "Blue",
-                                    "value": "blue"
-                                },
-                                {
-                                    "label": "Orange",
-                                    "value": "orange"
-                                },
-                                {
-                                    "label": "Yellow",
-                                    "value": "yellow"
-                                },
-                                {
-                                    "label": "Red",
-                                    "value": "red"
-                                },
-                                {
-                                    "label": "Green",
-                                    "value": "green"
-                                }
-                            ],
-                            style={},
-                            value="purple",
+                            type="color",
+                            value="#ffeb0a",
+                            style={
+                                "height": "40px"
+                            }
                         )
                     ],
                     class_name="mb-2"
