@@ -70,10 +70,12 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
 
     oc = io.StringIO()
 
-    oc.write(
-        "Vibrational wavefunction data calculated using waveplot.com\n" +
-        "A tool by Jon Kragskow\n"
+    header = (
+        'Vibrational wavefunction data calculated using waveplot.com\n'
+        'A tool by Jon Kragskow\n'
     )
+
+    oc.write(header)
 
     oc.write("\nState energies (cm-1)\n")
     for se in state_e:
@@ -82,7 +84,7 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
     oc.write(
         "\nDisplacement (A), Harmonic potential (cm-1)\n"
     )
-    for di, se in zip(displacement*10E10, harmonic_e):
+    for di, se in zip(displacement * 10E10, harmonic_e):
         oc.write("{:.6f} {:.6f}\n".format(di, se))
 
     oc.write(
@@ -92,7 +94,7 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
     # transpose so rows are displacement
     harmonic_wf = harmonic_wf.T
 
-    for di, row in zip(displacement*10E10, harmonic_wf):
+    for di, row in zip(displacement * 10E10, harmonic_wf):
         oc.write("{:.8f} ".format(di))
         for state_wf in row:
             oc.write("{:.8f} ".format(state_wf))
@@ -609,7 +611,7 @@ layout = html.Div(
                                 className="col-6"
                             ),
                             dbc.Col(
-                                children=vib_options+plot_options+save_options,
+                                children=vib_options + plot_options +save_options, # noqa
                                 className="col-6"
                             )
                         ])
@@ -623,7 +625,7 @@ layout = html.Div(
                 ),
             ],
             className="main_wrapper"
-            ),
+        ),
         utils.footer()
     ]
 )
@@ -804,8 +806,8 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     if sum([ang_wn_fix, lin_wn_fix, fc_fix, mu_fix]) != 2 or ang_wn_fix and lin_wn_fix: # noqa
 
         out_contents = "data:text/csv;charset=utf-8," + urllib.parse.quote(
-                ""
-            )
+            ''
+        )
         fig = make_subplots()
 
         rounded = [
@@ -821,28 +823,28 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     #  Calculate missing parameters
     if ang_wn_fix and not lin_wn_fix:
         omega = ang_wn * light
-        lin_wn = ang_wn/(2*np.pi)
+        lin_wn = ang_wn / (2 * np.pi)
         if fc_fix and not mu_fix:
             mu = vibrations.calculate_mu(omega, fc)
         elif not fc_fix and mu_fix:
             fc = vibrations.calculate_k(omega, mu)
     elif lin_wn_fix and not ang_wn_fix:
-        omega = lin_wn * 2*np.pi * light
-        ang_wn = lin_wn*2*np.pi
+        omega = lin_wn * 2 * np.pi * light
+        ang_wn = lin_wn * 2 * np.pi
         if fc_fix and not mu_fix:
             mu = vibrations.calculate_mu(omega, fc)
         elif not fc_fix and mu_fix:
             fc = vibrations.calculate_k(omega, mu)
     elif not ang_wn_fix and not lin_wn_fix:
-        ang_wn = np.sqrt(fc/(mu*1.6605E-27)) / light
-        lin_wn = ang_wn/(2*np.pi)
+        ang_wn = np.sqrt(fc / (mu * 1.6605E-27)) / light
+        lin_wn = ang_wn / (2 * np.pi)
 
     if max_n is None:
         max_n = 5
 
     # Read frequency or proxy frequency and convert to angular frequency in s-1
     omega = ang_wn * light
-    omega = lin_wn * 2*np.pi * light
+    omega = lin_wn * 2 * np.pi * light
 
     if fc == 0:
         fc = 480
@@ -868,7 +870,7 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
         # Plot harmonic energy curve
         fig.add_trace(
             go.Scatter(
-                x=displacement*10E10,
+                x=displacement * 10E10,
                 y=harmonic_e,
                 hoverinfo="skip",
                 line={
@@ -884,14 +886,14 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
         for it, state in enumerate(state_e):
             fig.add_trace(
                 go.Scatter(
-                    x=displacement*10E10,
-                    y=[state]*displacement.size,
+                    x=displacement * 10E10,
+                    y=[state] * displacement.size,
                     line={
                         "width": state_linewidth,
                         "color": state_colour
                     },
                     name="n = {}".format(it),
-                    hovertemplate="%{x} "+u"\u212B"+" <br>%{y} cm⁻¹<br>"
+                    hovertemplate="%{x} " + u"\u212B" + " <br>%{y} cm⁻¹<br>"
                 ),
                 secondary_y=False
             )
@@ -906,16 +908,16 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     elif wf_colour == "normal":
         wf_colour = utils.def_cols + utils.tol_cols[1:] + utils.wong_cols
 
-    wf = np.zeros([max_n+1, displacement.size])
+    wf = np.zeros([max_n + 1, displacement.size])
 
     # Plot harmonic wavefunction
     if toggle_wf:
-        for n in range(0, max_n+1):
-            wf[n] = vibrations.harmonic_wf(n, displacement*10E10)
+        for n in range(0, max_n + 1):
+            wf[n] = vibrations.harmonic_wf(n, displacement * 10E10)
             fig.add_trace(
                 go.Scatter(
-                    x=displacement*10E10,
-                    y=wf[n]*(n+1)*wf_scale + n*(lin_wn)+state_e[0],
+                    x=displacement * 10E10,
+                    y=wf[n] * (n + 1) * wf_scale + n * (lin_wn) + state_e[0],
                     hoverinfo="skip",
                     line={
                         "width": wf_linewidth,
