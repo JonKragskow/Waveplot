@@ -46,8 +46,8 @@ register_page(
     description=PAGE_DESCRIPTION
 )
 
-# Load default xyz file and get bonds for z axis
-default_xyz = "assets/nature.xyz"
+# Load default xyz file
+DEFAULT_XYZ = "assets/nature.xyz"
 
 """
 Webpage layout
@@ -640,7 +640,7 @@ molecule_options = [
                                 'textAlign': 'center',
                             },
                             id=id("xyz_file"),
-                            contents=default_xyz,
+                            contents=DEFAULT_XYZ,
                         )
                     ],
                     style={"textAlign": "center"}
@@ -1207,7 +1207,7 @@ clientside_callback(
     """
     function (dummy) {
 
-        let canvas = document.getElementById("viewer_canvas");
+        var canvas = document.getElementById("viewer_canvas");
         if (canvas == null){
             return;
         }
