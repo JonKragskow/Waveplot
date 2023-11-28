@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,10 +14,10 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 
 from dash import html, dcc, callback_context, register_page, callback, \
-    clientside_callback
+    clientside_callback, ClientsideFunction
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output
@@ -32,7 +32,7 @@ from .core import utils
 PAGE_NAME = 'Orbitals'
 PAGE_PATH = '/orbitals'
 PAGE_IMAGE = 'assets/Orbitals.png'
-PAGE_DESCRIPTION = "Interactive atomic orbitals and radial wavefunctions"
+PAGE_DESCRIPTION = 'Interactive atomic orbitals and radial wavefunctions'
 
 register_page(
     __name__,
@@ -44,33 +44,33 @@ register_page(
     description=PAGE_DESCRIPTION
 )
 
-id = utils.dash_id("orb")
+id = utils.dash_id('orb')
 
 
 main_plot = html.Div(
-    id=id("main_visual_wrapper"),
+    id=id('main_visual_wrapper'),
     children=[
         html.Div(
-            id=id("2d_visual_wrapper"),
+            id=id('2d_visual_wrapper'),
             children=[
                 dcc.Graph(
-                    id=id("2d_plot"),
+                    id=id('2d_plot'),
                     className='plot_area',
                     mathjax=True
                 )
             ]
         ),
         html.Div(
-            id=id("3d_visual_wrapper"),
+            id=id('3d_visual_wrapper'),
             children=[
                 dcc.Loading(
                     children=[
                         html.Div(
-                            id="orb_mol_div",
-                            className="molecule_div"
+                            id='orb_mol_div',
+                            className='molecule_div'
                         ),
-                        dcc.Store(id=id("orbital_store"), data=""),
-                        dcc.Store(id=id("isoval_store"), data=0),
+                        dcc.Store(id=id('orbital_store'), data=''),
+                        dcc.Store(id=id('isoval_store'), data=0),
                     ]
                 )
             ]
@@ -79,76 +79,76 @@ main_plot = html.Div(
 )
 
 orb_name_2d = dcc.Dropdown(
-    id=id("orb_name_2d"),
+    id=id('orb_name_2d'),
     style={
-        "textAlign": "left"
+        'textAlign': 'left'
     },
     options=[
-        {"label": "1s", "value": "1s"},
-        {"label": "2s", "value": "2s"},
-        {"label": "3s", "value": "3s"},
-        {"label": "4s", "value": "4s"},
-        {"label": "5s", "value": "5s"},
-        {"label": "6s", "value": "6s"},
-        {"label": "7s", "value": "7s"},
-        {"label": "2p", "value": "2p"},
-        {"label": "3p", "value": "3p"},
-        {"label": "4p", "value": "4p"},
-        {"label": "5p", "value": "5p"},
-        {"label": "6p", "value": "6p"},
-        {"label": "7p", "value": "7p"},
-        {"label": "3d", "value": "3d"},
-        {"label": "4d", "value": "4d"},
-        {"label": "5d", "value": "5d"},
-        {"label": "6d", "value": "6d"},
-        {"label": "7d", "value": "7d"},
-        {"label": "4f", "value": "4f"},
-        {"label": "5f", "value": "5f"},
-        {"label": "6f", "value": "6f"},
-        {"label": "7f", "value": "7f"},
+        {'label': '1s', 'value': '1s'},
+        {'label': '2s', 'value': '2s'},
+        {'label': '3s', 'value': '3s'},
+        {'label': '4s', 'value': '4s'},
+        {'label': '5s', 'value': '5s'},
+        {'label': '6s', 'value': '6s'},
+        {'label': '7s', 'value': '7s'},
+        {'label': '2p', 'value': '2p'},
+        {'label': '3p', 'value': '3p'},
+        {'label': '4p', 'value': '4p'},
+        {'label': '5p', 'value': '5p'},
+        {'label': '6p', 'value': '6p'},
+        {'label': '7p', 'value': '7p'},
+        {'label': '3d', 'value': '3d'},
+        {'label': '4d', 'value': '4d'},
+        {'label': '5d', 'value': '5d'},
+        {'label': '6d', 'value': '6d'},
+        {'label': '7d', 'value': '7d'},
+        {'label': '4f', 'value': '4f'},
+        {'label': '5f', 'value': '5f'},
+        {'label': '6f', 'value': '6f'},
+        {'label': '7f', 'value': '7f'},
     ],
-    value=["1s", "2p", "3d", "4f"],
+    value=['1s', '2p', '3d', '4f'],
     multi=True,  # browser autocomplete needs to be killed here, when they implement it # noqa
-    placeholder="Orbital..."
+    placeholder='Orbital...'
 )
 
 orb_name_3d = dbc.Select(
-    id=id("orb_name_3d"),
+    id=id('orb_name_3d'),
     style={
-        "textAlign": "left"
+        'textAlign': 'left'
     },
     options=[
-        {"label": "1s", "value": "1s"},
-        {"label": "2s", "value": "2s"},
-        {"label": "3s", "value": "3s"},
-        {"label": "4s", "value": "4s"},
-        {"label": "5s", "value": "5s"},
-        {"label": "6s", "value": "6s"},
-        {"label": "2p", "value": "2p"},
-        {"label": "3p", "value": "3p"},
-        {"label": "4p", "value": "4p"},
-        {"label": "5p", "value": "5p"},
-        {"label": "6p", "value": "6p"},
-        {"label": "3dz²", "value": "3dz2"},
-        {"label": "4dz²", "value": "4dz2"},
-        {"label": "5dz²", "value": "5dz2"},
-        {"label": "6dz²", "value": "6dz2"},
-        {"label": "3dxy", "value": "3dxy"},
-        {"label": "4dxy", "value": "4dxy"},
-        {"label": "5dxy", "value": "5dxy"},
-        {"label": "6dxy", "value": "6dxy"},
-        {"label": "4fz³", "value": "4fz3"},
-        {"label": "5fz³", "value": "5fz3"},
-        {"label": "6fz³", "value": "6fz3"},
-        {"label": "4fxyz", "value": "4fxyz"},
-        {"label": "5fxyz", "value": "5fxyz"},
-        {"label": "6fxyz", "value": "6fxyz"},
-        {"label": "4fyz²", "value": "4fyz2"},
-        {"label": "5fyz²", "value": "5fyz2"},
-        {"label": "6fyz²", "value": "6fyz2"},
+        {'label': '1s', 'value': '1s'},
+        {'label': '2s', 'value': '2s'},
+        {'label': '3s', 'value': '3s'},
+        {'label': '4s', 'value': '4s'},
+        {'label': '5s', 'value': '5s'},
+        {'label': '6s', 'value': '6s'},
+        {'label': '2p', 'value': '2p'},
+        {'label': '3p', 'value': '3p'},
+        {'label': '4p', 'value': '4p'},
+        {'label': '5p', 'value': '5p'},
+        {'label': '6p', 'value': '6p'},
+        {'label': '3dz²', 'value': '3dz2'},
+        {'label': '4dz²', 'value': '4dz2'},
+        {'label': '5dz²', 'value': '5dz2'},
+        {'label': '6dz²', 'value': '6dz2'},
+        {'label': '3dxy', 'value': '3dxy'},
+        {'label': '4dxy', 'value': '4dxy'},
+        {'label': '5dxy', 'value': '5dxy'},
+        {'label': '6dxy', 'value': '6dxy'},
+        {'label': '4fz³', 'value': '4fz3'},
+        {'label': '5fz³', 'value': '5fz3'},
+        {'label': '6fz³', 'value': '6fz3'},
+        {'label': '4fxyz', 'value': '4fxyz'},
+        {'label': '5fxyz', 'value': '5fxyz'},
+        {'label': '6fxyz', 'value': '6fxyz'},
+        {'label': '4fyz²', 'value': '4fyz2'},
+        {'label': '5fyz²', 'value': '5fyz2'},
+        {'label': '6fyz²', 'value': '6fyz2'},
     ],
-    value="",
-    placeholder="Select an orbital"
+    value='',
+    placeholder='Select an orbital'
 )
 
 
@@ -157,17 +157,17 @@ orb_select = [
         dbc.Col(
             html.H4(
                 style={
-                    "textAlign": "center",
+                    'textAlign': 'center',
                     },
-                children="Orbital"
+                children='Orbital'
             )
         ),
         dbc.Col(
             html.H4(
                 style={
-                    "textAlign": "center",
+                    'textAlign': 'center',
                     },
-                children="Function"
+                children='Function'
             )
         )
     ]),
@@ -175,40 +175,40 @@ orb_select = [
         dbc.Col(
             children=[
                 html.Div(
-                    id=id("orb_name_2d_container"),
+                    id=id('orb_name_2d_container'),
                     children=orb_name_2d,
                     style={}
                 ),
                 html.Div(
-                    id=id("orb_name_3d_container"),
+                    id=id('orb_name_3d_container'),
                     children=orb_name_3d,
-                    style={"display": None}
+                    style={'display': None}
                 )
             ]
         ),
         dbc.Col(
             children=[
                 dbc.Select(
-                    id=id("function_type"),
+                    id=id('function_type'),
                     style={
-                        "textAlign": "center",
-                        "display": "block"
+                        'textAlign': 'center',
+                        'display': 'block'
                     },
                     options=[
                         {
-                         "label": "Radial Distribution Function",
-                         "value": "RDF"
+                         'label': 'Radial Distribution Function',
+                         'value': 'RDF'
                         },
                         {
-                         "label": "Radial Wave Function",
-                         "value": "RWF"
+                         'label': 'Radial Wave Function',
+                         'value': 'RWF'
                         },
                         {
-                         "label": "3D Surface",
-                         "value": "3DWF"
+                         'label': '3D Surface',
+                         'value': '3DWF'
                         }
                     ],
-                    value="RDF",
+                    value='RDF',
                 )
             ]
         )
@@ -217,23 +217,23 @@ orb_select = [
 
 save_options = [
     html.Div(
-        id=id("save_container"),
+        id=id('save_container'),
         children=[
             dbc.Row([
                 dbc.Col([
                     html.H4(
                         style={
-                            "textAlign": "center",
+                            'textAlign': 'center',
                         },
-                        children="Save Options",
-                        id=id("save_options_header")
+                        children='Save Options',
+                        id=id('save_options_header')
                     ),
                     dbc.Tooltip(
-                        children="Use the camera button in the top right of \
-                                the plot to save an image",
-                        target=id("save_options_header"),
+                        children='Use the camera button in the top right of \
+                                the plot to save an image',
+                        target=id('save_options_header'),
                         style={
-                            "textAlign": "center",
+                            'textAlign': 'center',
                         },
                     )
                 ])
@@ -243,41 +243,41 @@ save_options = [
                     dbc.Col(
                         dbc.InputGroup(
                             [
-                                dbc.InputGroupText("Output height"),
+                                dbc.InputGroupText('Output height'),
                                 dbc.Input(
-                                    id=id("save_height_in"),
+                                    id=id('save_height_in'),
                                     placeholder=500,
-                                    type="number",
+                                    type='number',
                                     value=500,
                                     style={
-                                        "textAlign": "center",
-                                        "verticalAlign": "middle",
-                                        "horizontalAlign": "middle"
+                                        'textAlign': 'center',
+                                        'verticalAlign': 'middle',
+                                        'horizontalAlign': 'middle'
                                     }
                                 ),
-                                dbc.InputGroupText("px"),
+                                dbc.InputGroupText('px'),
                             ],
-                            class_name="mb-3",
+                            class_name='mb-3',
                         ),
                     ),
                     dbc.Col(
                         dbc.InputGroup(
                             [
-                                dbc.InputGroupText("Output width"),
+                                dbc.InputGroupText('Output width'),
                                 dbc.Input(
-                                    id=id("save_width_in"),
+                                    id=id('save_width_in'),
                                     placeholder=500,
-                                    type="number",
+                                    type='number',
                                     value=500,
                                     style={
-                                        "textAlign": "center",
-                                        "verticalAlign": "middle",
-                                        "horizontalAlign": "middle"
+                                        'textAlign': 'center',
+                                        'verticalAlign': 'middle',
+                                        'horizontalAlign': 'middle'
                                     }
                                 ),
-                                dbc.InputGroupText("px"),
+                                dbc.InputGroupText('px'),
                             ],
-                            class_name="mb-3",
+                            class_name='mb-3',
                         ),
                     )
                 ]
@@ -285,48 +285,48 @@ save_options = [
             dbc.Row([
                 dbc.Col(
                     html.Div(
-                        id=id("download_link_box"),
+                        id=id('download_link_box'),
                         children=[
                             dbc.Button(
-                                "Download Data",
-                                id=id("download_data"),
+                                'Download Data',
+                                id=id('download_data'),
                                 style={
                                     'boxShadow': 'none',
                                     'textalign': 'top'
                                 }
                             ),
-                            dcc.Download(id=id("download_data_trigger")),
-                            dcc.Store(id=id("download_store"), data="")
+                            dcc.Download(id=id('download_data_trigger')),
+                            dcc.Store(id=id('download_store'), data='')
                         ]
                     ),
-                    style={"textAlign": "center"}
+                    style={'textAlign': 'center'}
                 ),
                 dbc.Col(
                     [
                         dbc.InputGroup([
-                            dbc.InputGroupText("Image format"),
+                            dbc.InputGroupText('Image format'),
                             dbc.Select(
-                                id=id("save_format"),
+                                id=id('save_format'),
                                 style={
-                                    "textAlign": "center",
-                                    "horizontalAlign": "center",
-                                    "display": "inline"
+                                    'textAlign': 'center',
+                                    'horizontalAlign': 'center',
+                                    'display': 'inline'
                                 },
                                 options=[
                                     {
-                                        "label": "svg",
-                                        "value": "svg",
+                                        'label': 'svg',
+                                        'value': 'svg',
                                     },
                                     {
-                                        "label": "png",
-                                        "value": "png",
+                                        'label': 'png',
+                                        'value': 'png',
                                     },
                                     {
-                                        "label": "jpeg",
-                                        "value": "jpeg",
+                                        'label': 'jpeg',
+                                        'value': 'jpeg',
                                     }
                                 ],
-                                value="svg"
+                                value='svg'
                             )
                         ])
                     ]
@@ -341,87 +341,87 @@ viewer_options = [html.Div(
         dbc.Row(
             dbc.Col(
                 html.H5(
-                    style={"textAlign": "center"},
-                    children="Viewer",
-                    className="mb-3"
+                    style={'textAlign': 'center'},
+                    children='Viewer',
+                    className='mb-3'
                 )
             ),
-            className="mb-3"
+            className='mb-3'
         ),
         dbc.Row([
             dbc.Col(
                 [
                     dbc.Button(
-                        "Download image",
-                        color="primary",
-                        className="me-1",
-                        id=id("download_button")
+                        'Download image',
+                        color='primary',
+                        className='me-1',
+                        id=id('download_button')
                     ),
                     html.Div(id=id('hidden-div'), style={'display': 'none'})
                 ],
-                className="mb-3",
-                style={"textAlign": "center"}
+                className='mb-3',
+                style={'textAlign': 'center'}
             )
-        ], className="align-items-center"),
+        ], className='align-items-center'),
         dbc.Row([
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "X"
+                            'X'
                         ),
                         dbc.Input(
-                            id=id("view_x"),
+                            id=id('view_x'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "Y"
+                            'Y'
                         ),
                         dbc.Input(
-                            id=id("view_y"),
+                            id=id('view_y'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "Z"
+                            'Z'
                         ),
                         dbc.Input(
-                            id=id("view_z"),
+                            id=id('view_z'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "Zoom"
+                            'Zoom'
                         ),
                         dbc.Input(
-                            id=id("view_zoom"),
-                            value="",
-                            type="number"
+                            id=id('view_zoom'),
+                            value='',
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             )
         ]),
@@ -430,67 +430,67 @@ viewer_options = [html.Div(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qX"
+                            'qX'
                         ),
                         dbc.Input(
-                            id=id("view_qx"),
+                            id=id('view_qx'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qY"
+                            'qY'
                         ),
                         dbc.Input(
-                            id=id("view_qy"),
+                            id=id('view_qy'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qZ"
+                            'qZ'
                         ),
                         dbc.Input(
-                            id=id("view_qz"),
+                            id=id('view_qz'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qW"
+                            'qW'
                         ),
                         dbc.Input(
-                            id=id("view_qw"),
+                            id=id('view_qw'),
                             value=1,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             )
         ])
     ],
-    id=id("orb_3d_viewer_options"),
+    id=id('orb_3d_viewer_options'),
     style={
-        "display": "none"
+        'display': 'none'
     }
 )
 ]
@@ -499,8 +499,8 @@ orb_customise_2d = [
     dbc.Row(
         dbc.Col(
             html.H4(
-                style={"textAlign": "center"},
-                children="Plot Options"
+                style={'textAlign': 'center'},
+                children='Plot Options'
             )
         )
     ),
@@ -509,43 +509,43 @@ orb_customise_2d = [
             dbc.Col(
                 dbc.InputGroup(
                     [
-                        dbc.InputGroupText("Lower x limit"),
+                        dbc.InputGroupText('Lower x limit'),
                         dbc.Input(
-                            id=id("lower_x_in"),
+                            id=id('lower_x_in'),
                             placeholder=0,
-                            type="number",
+                            type='number',
                             min=-10,
                             max=100,
                             value=0,
                             style={
-                                "textAlign": "center",
-                                "verticalAlign": "middle",
-                                "horizontalAlign": "middle"
+                                'textAlign': 'center',
+                                'verticalAlign': 'middle',
+                                'horizontalAlign': 'middle'
                             }
                         )
                     ],
-                    class_name="mb-3",
+                    class_name='mb-3',
                 ),
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
-                        dbc.InputGroupText("Upper x limit"),
+                        dbc.InputGroupText('Upper x limit'),
                         dbc.Input(
-                            id=id("upper_x_in"),
+                            id=id('upper_x_in'),
                             placeholder=40,
-                            type="number",
+                            type='number',
                             min=0,
                             max=100,
                             value=40,
                             style={
-                                "textAlign": "center",
-                                "verticalAlign": "middle",
-                                "horizontalAlign": "middle"
+                                'textAlign': 'center',
+                                'verticalAlign': 'middle',
+                                'horizontalAlign': 'middle'
                             }
                         )
                     ],
-                    class_name="mb-3",
+                    class_name='mb-3',
                 ),
             )
         ]
@@ -554,43 +554,49 @@ orb_customise_2d = [
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Gridlines"),
-                    dbc.InputGroupText(
-                        dbc.Checkbox(value=False, id=id("gridlines"))
+                    dbc.InputGroupText('Distance unit'),
+                    dbc.Select(
+                        id=id('distance_unit'),
+                        options=[
+                            {'value': 'a0', 'label': 'Bohr Radii'},
+                            {'value': 'Å', 'label': 'Angstrom'}
+                        ],
+                        value='a0',
+                        style={'textAlign': 'center'}
                     )
                 ],
-                class_name="mb-3",
-                style={"textAlign": "center"}
+                class_name='mb-3',
+                style={'textAlign': 'center'}
             ),
-            style={"textAlign": "center"}
+            style={'textAlign': 'center'}
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Colour Palette"),
+                    dbc.InputGroupText('Colour Palette'),
                     dbc.Select(
-                        id=id("colours_2d"),
+                        id=id('colours_2d'),
                         options=[
                             {
-                                "label": "Standard",
-                                "value": "normal"
+                                'label': 'Standard',
+                                'value': 'normal'
                             },
                             {
-                                "label": "Tol",
-                                "value": "tol"
+                                'label': 'Tol',
+                                'value': 'tol'
                             },
                             {
-                                "label": "Wong",
-                                "value": "wong"
+                                'label': 'Wong',
+                                'value': 'wong'
                             }
                         ],
-                        value="normal",
+                        value='normal',
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle",
-                            "alignItems": "auto",
-                            "display": "inline"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle',
+                            'alignItems': 'auto',
+                            'display': 'inline'
                         }
                     )
                 ]
@@ -601,46 +607,46 @@ orb_customise_2d = [
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Linewidth"),
+                    dbc.InputGroupText('Linewidth'),
                     dbc.Input(
-                        id=id("linewidth"),
+                        id=id('linewidth'),
                         placeholder=5,
-                        type="number",
+                        type='number',
                         min=1,
                         max=10,
                         value=5,
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         }
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             ),
-            class_name="mb-3",
+            class_name='mb-3',
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Text size"),
+                    dbc.InputGroupText('Text size'),
                     dbc.Input(
-                        id=id("text_size"),
+                        id=id('text_size'),
                         placeholder=19,
-                        type="number",
+                        type='number',
                         min=15,
                         max=25,
                         value=19,
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         }
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             ),
-            class_name="mb-3",
+            class_name='mb-3',
         ),
     ])
 ]
@@ -650,9 +656,9 @@ orb_customise_3d = [
         dbc.Col([
             html.H4(
                 style={
-                    "textAlign": "center",
+                    'textAlign': 'center',
                 },
-                children="Plot Options"
+                children='Plot Options'
             )
         ])
     ]),
@@ -661,25 +667,25 @@ orb_customise_3d = [
             dbc.Col([
                 dbc.InputGroup(
                     [
-                        dbc.InputGroupText("Colours"),
+                        dbc.InputGroupText('Colours'),
                         dbc.Input(
-                            id=id("colours_3d_a"),
-                            type="color",
-                            value="#491688",
+                            id=id('colours_3d_a'),
+                            type='color',
+                            value='#491688',
                             style={
-                                "height": "40px"
+                                'height': '40px'
                             }
                         ),
                         dbc.Input(
-                            id=id("colours_3d_b"),
-                            type="color",
-                            value="#ffeb0a",
+                            id=id('colours_3d_b'),
+                            type='color',
+                            value='#ffeb0a',
                             style={
-                                "height": "40px"
+                                'height': '40px'
                             }
                         )
                     ],
-                    class_name="mb-2"
+                    class_name='mb-2'
                 ),
             ])
         ]),
@@ -687,39 +693,39 @@ orb_customise_3d = [
         dbc.Col([
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Cutaway"),
+                    dbc.InputGroupText('Cutaway'),
                     dbc.Select(
-                        id=id("cutaway_in"),
+                        id=id('cutaway_in'),
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         },
                         options=[
                             {
-                                "label": "None",
-                                "value": 1.
+                                'label': 'None',
+                                'value': 1.
                             },
                             {
-                                "label": "1/2",
-                                "value": 0.5
+                                'label': '1/2',
+                                'value': 0.5
                             }
                         ],
                         value=1.
                     )
                 ],
-                class_name="mb-2"
+                class_name='mb-2'
             )
         ]),
         dbc.Col([
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Wireframe"),
+                    dbc.InputGroupText('Wireframe'),
                     dbc.InputGroupText(
-                        dbc.Checkbox(value=False, id=id("wireframe"))
+                        dbc.Checkbox(value=False, id=id('wireframe'))
                     )
                 ],
-                class_name="mb-2"
+                class_name='mb-2'
             )
         ])
     ])
@@ -727,16 +733,16 @@ orb_customise_3d = [
 
 orb_customise = [
     html.Div(
-        id=id("orb_customise_2d"),
+        id=id('orb_customise_2d'),
         children=orb_customise_2d,
         style={},
-        className="pt-5",
+        className='pt-5',
     ),
     html.Div(
-        id=id("orb_customise_3d"),
+        id=id('orb_customise_3d'),
         children=orb_customise_3d,
-        style={"display": "none"},
-        className="pt-5",
+        style={'display': 'none'},
+        className='pt-5',
     )]
 
 
@@ -753,23 +759,23 @@ layout = html.Div(
                         dbc.Row([
                             dbc.Col(
                                 children=[main_plot],
-                                className="col-6"
+                                className='col-6'
                             ),
                             dbc.Col(
                                 children=orb_options,
-                                className="col-6"
+                                className='col-6'
                             )
                         ])
                     ],
                     style={
-                        "marginTop": "10px",
-                        "width": "95vw",
-                        "marginLeft": "2.5vw",
-                        "marginRight": "2.5vw"
+                        'marginTop': '10px',
+                        'width': '95vw',
+                        'marginLeft': '2.5vw',
+                        'marginRight': '2.5vw'
                     }
                 ),
             ],
-            className="main_wrapper"
+            className='main_wrapper'
             ),
         utils.footer()
     ]
@@ -778,44 +784,44 @@ layout = html.Div(
 
 # Callback for download 2d data button
 @callback(
-    Output(id("download_data_trigger"), "data"),
+    Output(id('download_data_trigger'), 'data'),
     [
-        Input(id("download_data"), "n_clicks"),
-        Input(id("download_store"), "data")
+        Input(id('download_data'), 'n_clicks'),
+        Input(id('download_store'), 'data')
     ],
     prevent_initial_call=True,
 )
 def func(n_clicks, data_str):
-    if callback_context.triggered_id == id("download_store"):
+    if callback_context.triggered_id == id('download_store'):
         return
     else:
-        return dict(content=data_str, filename="waveplot_orbital_data.dat")
+        return dict(content=data_str, filename='waveplot_orbital_data.dat')
 
 
 outputs = [
-    Output(id("2d_visual_wrapper"), "style"),
-    Output(id("3d_visual_wrapper"), "style"),
-    Output(id("orb_customise_2d"), "style"),
-    Output(id("orb_customise_3d"), "style"),
-    Output(id("orb_name_2d_container"), "style"),
-    Output(id("orb_name_3d_container"), "style"),
-    Output(id("orb_3d_viewer_options"), "style"),
-    Output(id("download_link_box"), "style"),
-    Output(id("save_container"), "style")
+    Output(id('2d_visual_wrapper'), 'style'),
+    Output(id('3d_visual_wrapper'), 'style'),
+    Output(id('orb_customise_2d'), 'style'),
+    Output(id('orb_customise_3d'), 'style'),
+    Output(id('orb_name_2d_container'), 'style'),
+    Output(id('orb_name_3d_container'), 'style'),
+    Output(id('orb_3d_viewer_options'), 'style'),
+    Output(id('download_link_box'), 'style'),
+    Output(id('save_container'), 'style')
 ]
 
 
-@callback(outputs, Input(id("function_type"), "value"))
+@callback(outputs, Input(id('function_type'), 'value'))
 def update_options(wf_type):
-    """
+    '''
     Callback to update layout of page depending on which type
     of orbital function is requested
-    """
+    '''
 
     on = {}
-    off = {"display": "none"}
+    off = {'display': 'none'}
 
-    if "3" in wf_type:
+    if '3' in wf_type:
         displays = [off, on, off, on, off, on, on, off, off]
     else:
         displays = [on, off, on, off, on, off, off, on, on]
@@ -824,31 +830,31 @@ def update_options(wf_type):
 
 
 outputs = [
-    Output(id("2d_plot"), "figure"),
-    Output(id("2d_plot"), "config"),
-    Output(id("download_store"), "data")
+    Output(id('2d_plot'), 'figure'),
+    Output(id('2d_plot'), 'config'),
+    Output(id('download_store'), 'data')
 ]
 
 inputs = [
-    Input(id("orb_name_2d"), "value"),
-    Input(id("function_type"), "value"),
-    Input(id("linewidth"), "value"),
-    Input(id("text_size"), "value"),
-    Input(id("gridlines"), "value"),
-    Input(id("upper_x_in"), "value"),
-    Input(id("lower_x_in"), "value"),
-    Input(id("save_format"), "value"),
-    Input(id("save_height_in"), "value"),
-    Input(id("save_width_in"), "value"),
-    Input(id("colours_2d"), "value"),
+    Input(id('orb_name_2d'), 'value'),
+    Input(id('function_type'), 'value'),
+    Input(id('linewidth'), 'value'),
+    Input(id('text_size'), 'value'),
+    Input(id('distance_unit'), 'value'),
+    Input(id('upper_x_in'), 'value'),
+    Input(id('lower_x_in'), 'value'),
+    Input(id('save_format'), 'value'),
+    Input(id('save_height_in'), 'value'),
+    Input(id('save_width_in'), 'value'),
+    Input(id('colours_2d'), 'value'),
 ]
 
 
 @callback(outputs, inputs)
-def update_2d_plot(orbital_names, wf_type, linewidth, text_size,
-                   gridlines, x_up, x_low, save_format, save_height,
+def update_2d_plot(orbital_names, wf_type, linewidth, text_size, distance_unit,
+                   x_up, x_low, save_format, save_height,
                    save_width, colours_2d):
-    """
+    '''
     Updates the 2d plot, given the current state of the UI
     All inputs correspond (in the same order) to the list
     of Inputs given above
@@ -863,8 +869,6 @@ def update_2d_plot(orbital_names, wf_type, linewidth, text_size,
         linewidth for 2d plot
     text_size : float
         Axis label text sizes
-    gridlines : list
-        yes or no (str) to gridlines on either axis
     x_up : float
         upper x limit for 2d plot
     x_low : float
@@ -887,10 +891,10 @@ def update_2d_plot(orbital_names, wf_type, linewidth, text_size,
     str
         output file containing all data as string with correct encoding
         for download
-    """
+    '''
 
     # Stop update if 3d wavefunction requested
-    if "3" in wf_type:
+    if '3' in wf_type:
         raise PreventUpdate
 
     # Calculate RWF data
@@ -901,15 +905,21 @@ def update_2d_plot(orbital_names, wf_type, linewidth, text_size,
         wf_type,
         linewidth,
         colours_2d,
-        gridlines,
-        text_size
+        False,
+        text_size,
+        distance_unit
     )
 
-    output_str = make_output_file(wf_type, full_data, orbital_names)
+    output_str = make_output_file(
+        wf_type,
+        full_data,
+        orbital_names,
+        distance_unit
+    )
 
     # Set modebar icons
     if len(orbital_names) == 0:
-        modebar = {"displayModeBar": False}
+        modebar = {'displayModeBar': False}
     else:
         modebar = set_2d_modebar(
             save_format,
@@ -922,19 +932,19 @@ def update_2d_plot(orbital_names, wf_type, linewidth, text_size,
 
 
 outputs = [
-    Output(id("orbital_store"), "data"),
-    Output(id("isoval_store"), "data")
+    Output(id('orbital_store'), 'data'),
+    Output(id('isoval_store'), 'data')
 ]
 
 inputs = [
-    Input(id("orb_name_3d"), "value"),
-    Input(id("cutaway_in"), "value")
+    Input(id('orb_name_3d'), 'value'),
+    Input(id('cutaway_in'), 'value')
 ]
 
 
 @callback(outputs, inputs)
 def update_3d_store(orbital_name, cutaway):
-    """
+    '''
     Updates the 3d orbital data store, which contains cube file for javascript
     orbital visualisation, and the isovalue store which contains the
     isovalue used in the j isosurface
@@ -949,11 +959,11 @@ def update_3d_store(orbital_name, cutaway):
     Returns
     -------
 
-    """
+    '''
 
     cutaway = float(cutaway)
 
-    if cutaway is None and orbital_name == [""]:
+    if cutaway is None and orbital_name == ['']:
         raise PreventUpdate
 
     if not len(orbital_name):
@@ -969,131 +979,64 @@ def update_3d_store(orbital_name, cutaway):
 
 # Clientside callback for javascript molecule viewer
 clientside_callback(
-    """
+    '''
     function (dummy) {
 
-        let canvas = document.getElementById("viewer_canvas");
+        let canvas = document.getElementById('viewer_canvas');
         if (canvas == null){
             return;
         }
         var duri = canvas.toDataURL('image/png', 1)
-        downloadURI(duri, "orbital.png");
+        downloadURI(duri, 'orbital.png');
 
         return ;
         }
-    """, # noqa
-    Output(id('hidden-div'), "children"),
+    ''', # noqa
+    Output(id('hidden-div'), 'children'),
     [
-        Input(id("download_button"), "n_clicks"),
+        Input(id('download_button'), 'n_clicks'),
     ]
 )
 
 
-# Clientside callback for javascript molecule viewer used to show 3d orbitals
+# Viewer callback
 clientside_callback(
-    """
-    function (orbital, orb_iso, colour_a, colour_b, wire_toggle, orb_name_3d, x, y, z, zoom, qx, qy, qz, qw) {
-
-        let element = document.getElementById("orb_mol_div");
-
-        while(element.firstChild){
-            element.removeChild(element.firstChild);
-        }
-
-        let config = { backgroundOpacity: 0.};
-        let viewer = $3Dmol.createViewer(element, config);
-
-        viewer.getCanvas()["style"]="width: 100vw;"
-        viewer.getCanvas()["id"]="viewer_canvas"
-
-        var m = viewer.addModel();
-
-        var voldata = new $3Dmol.VolumeData(orbital, "cube");
-        viewer.addIsosurface(
-            voldata,
-            {
-                isoval: orb_iso,
-                color: colour_a,
-                wireframe: wire_toggle,
-                smoothness: 6
-            }
-        );
-        viewer.addIsosurface(
-            voldata,
-            {
-                isoval: -orb_iso,
-                color: colour_b,
-                wireframe: wire_toggle,
-                smoothness: 6
-            }
-        );
-
-        viewer.render();
-        viewer.center();
-
-        if (orb_iso !== 0) {
-            if (document.getElementById("orb_view_zoom").value == ""){
-                viewer.zoomTo();
-                zoom_level = viewer.getView()[3]
-            }
-            else {
-                zoom_level = parseFloat(document.getElementById("orb_view_zoom").value)
-            }
-
-            console.log(parseFloat(document.getElementById("orb_view_x").value))
-            viewer.setView([
-                parseFloat(document.getElementById("orb_view_x").value),
-                parseFloat(document.getElementById("orb_view_y").value),
-                parseFloat(document.getElementById("orb_view_z").value),
-                zoom_level,
-                parseFloat(document.getElementById("orb_view_qx").value),
-                parseFloat(document.getElementById("orb_view_qy").value),
-                parseFloat(document.getElementById("orb_view_qz").value),
-                parseFloat(document.getElementById("orb_view_qw").value)
-            ])
-            viewer.getCanvas().addEventListener("wheel", (event) => { updateViewText("orb", viewer) }, false)
-            viewer.getCanvas().addEventListener("mouseup", (event) => { updateViewText("orb", viewer) }, false)   
-            viewer.getCanvas().addEventListener("touchend", (event) => { updateViewText("orb", viewer) }, false)   
-            return zoom_level;
-        }
-        else {
-            return ["", undefined];
-        }
-
-        }
-    """,  # noqa
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='orbital_function'
+    ),
     [
-        Output(id("view_zoom"), "value"),
+        Output(id('view_zoom'), 'value'),
     ],
     [
-        Input(id("orbital_store"), "data"),
-        Input(id("isoval_store"), "data"),
-        Input(id("colours_3d_a"), "value"),
-        Input(id("colours_3d_b"), "value"),
-        Input(id("wireframe"), "value"),
-        Input(id("orb_name_3d"), "value"),
-        Input(id("view_x"), "value"),
-        Input(id("view_y"), "value"),
-        Input(id("view_z"), "value"),
-        Input(id("view_zoom"), "value"),
-        Input(id("view_qx"), "value"),
-        Input(id("view_qy"), "value"),
-        Input(id("view_qz"), "value"),
-        Input(id("view_qw"), "value")
+        Input(id('orbital_store'), 'data'),
+        Input(id('isoval_store'), 'data'),
+        Input(id('colours_3d_a'), 'value'),
+        Input(id('colours_3d_b'), 'value'),
+        Input(id('wireframe'), 'value'),
+        Input(id('orb_name_3d'), 'value'),
+        Input(id('view_x'), 'value'),
+        Input(id('view_y'), 'value'),
+        Input(id('view_z'), 'value'),
+        Input(id('view_zoom'), 'value'),
+        Input(id('view_qx'), 'value'),
+        Input(id('view_qy'), 'value'),
+        Input(id('view_qz'), 'value'),
+        Input(id('view_qw'), 'value')
     ]
 )
 
 
-def make_output_file(wf_type, full_data, orbital_names):
-    """
+def make_output_file(wf_type, full_data, orbital_names, x_unit):
+    '''
     Create output file as string
-    """
-    data_header = "{}".format(wf_type)
-    data_header += " Data generated using waveplot.com, an app by"
-    data_header += " Jon Kragskow \n x (a0),  "
+    '''
+    data_header = '{}'.format(wf_type)
+    data_header += ' Data generated using waveplot.com, an app by'
+    data_header += f' Jon Kragskow \n x ({x_unit}),  '
 
     for orb in orbital_names:
-        data_header += "{}, ".format(orb)
+        data_header += '{}, '.format(orb)
     data_str = io.StringIO()
     np.savetxt(data_str, np.transpose(full_data), header=data_header)
     output_str = data_str.getvalue()
@@ -1102,8 +1045,8 @@ def make_output_file(wf_type, full_data, orbital_names):
 
 
 def gen_2d_orbital_data(orbital_names, x_up, x_low, wf_type, linewidth,
-                        colours_2d, gridlines, text_size):
-    """
+                        colours_2d, gridlines, text_size, distance_unit):
+    '''
     Creates list of plotly go.Scatter objects for plot, and array of all
     wavefunction data for 2D orbital plots of RWF and RDF
 
@@ -1121,7 +1064,8 @@ def gen_2d_orbital_data(orbital_names, x_up, x_low, wf_type, linewidth,
         Linewidth to use for all plots
     colours_2d : str {'tol', 'wong', 'normal'}
         Primary colour palette to use for plots as defined in `utils.py`
-
+    distance_unit: str {'Å', 'a0'}
+        Unit to use for distance
     Returns
     -------
     list
@@ -1130,7 +1074,7 @@ def gen_2d_orbital_data(orbital_names, x_up, x_low, wf_type, linewidth,
         input `orbital_names` list of strings
     list
         Plotly go.Scatter objects, one per `orbital`
-    """
+    '''
     # Nothing to plot - exit
     if len(orbital_names) == 0 or orbital_names is None:
         raise PreventUpdate
@@ -1150,7 +1094,8 @@ def gen_2d_orbital_data(orbital_names, x_up, x_low, wf_type, linewidth,
         text_size,
         gridlines,
         x_up,
-        x_low
+        x_low,
+        distance_unit
     )
 
     # Create data
@@ -1160,20 +1105,21 @@ def gen_2d_orbital_data(orbital_names, x_up, x_low, wf_type, linewidth,
         x_low,
         wf_type,
         linewidth,
-        colours_2d
+        colours_2d,
+        distance_unit
     )
 
     output = {
-        "data": data,
-        "layout": layout
+        'data': data,
+        'layout': layout
     }
 
-    return full_data, output
+    return np.array(full_data), output
 
 
 def create_2d_traces(orbital_names, x_up, x_low, wf_type, linewidth,
-                     colours_2d):
-    """
+                     colours_2d, distance_unit):
+    '''
     Creates list of plotly go.Scatter objects for plot, and array of all
     wavefunction data for 2D orbital plots of RWF and RDF
 
@@ -1185,7 +1131,7 @@ def create_2d_traces(orbital_names, x_up, x_low, wf_type, linewidth,
         Maximum distance to calculate RDF/RWF at in units of bohr radius
     x_low : float
         Minimum distance to calculate RDF/RWF at in units of bohr radius
-    wf_type : str {"RDF", "RWF"}
+    wf_type : str {'RDF', 'RWF'}
         Type of wavefunction to plot
     linewidth : float
         Linewidth to use for all plots
@@ -1200,13 +1146,13 @@ def create_2d_traces(orbital_names, x_up, x_low, wf_type, linewidth,
         input `orbital_names` list of strings
     list
         Plotly go.Scatter objects, one per `orbital`
-    """
+    '''
 
     # Create colour list in correct order
     # i.e. selected colour is first
-    if colours_2d == "tol":
+    if colours_2d == 'tol':
         cols = utils.tol_cols + utils.wong_cols + utils.def_cols
-    elif colours_2d == "wong":
+    elif colours_2d == 'wong':
         cols = utils.wong_cols + utils.def_cols + utils.tol_cols
     else:
         cols = utils.def_cols + utils.tol_cols + utils.wong_cols
@@ -1219,10 +1165,10 @@ def create_2d_traces(orbital_names, x_up, x_low, wf_type, linewidth,
 
     # Dictionary of orbital functions
     orb_funcs = {
-        "s": orbs.s_2d,
-        "p": orbs.p_2d,
-        "d": orbs.d_2d,
-        "f": orbs.f_2d,
+        's': orbs.s_2d,
+        'p': orbs.p_2d,
+        'd': orbs.d_2d,
+        'f': orbs.f_2d,
     }
 
     # Create trace for each RWF or RDF
@@ -1244,8 +1190,8 @@ def create_2d_traces(orbital_names, x_up, x_low, wf_type, linewidth,
                 y=func_val,
                 line=dict(width=linewidth),
                 name=orbital,
-                hoverinfo="none",
-                marker={"color": cols[it]}
+                hoverinfo='none',
+                marker={'color': cols[it]}
             )
         )
 
@@ -1253,7 +1199,7 @@ def create_2d_traces(orbital_names, x_up, x_low, wf_type, linewidth,
 
 
 def gen_3d_orb_cube(orbital_name, cutaway):
-    """
+    '''
     Generates cube file containing orbital data
 
     Parameters
@@ -1267,20 +1213,20 @@ def gen_3d_orb_cube(orbital_name, cutaway):
     -------
     str
         cube file for selected orbital as string
-    """
+    '''
 
     n = int(orbital_name[0])
     name = orbital_name[1:]
 
     # Get orbital n value and name
     orb_func_dict = {
-        "s": orbs.s_3d,
-        "p": orbs.p_3d,
-        "dxy": orbs.dxy_3d,
-        "dz2": orbs.dz_3d,
-        "fxyz": orbs.fxyz_3d,
-        "fyz2": orbs.fyz2_3d,
-        "fz3": orbs.fz_3d
+        's': orbs.s_3d,
+        'p': orbs.p_3d,
+        'dxy': orbs.dxy_3d,
+        'dz2': orbs.dz_3d,
+        'fxyz': orbs.fxyz_3d,
+        'fyz2': orbs.fyz2_3d,
+        'fz3': orbs.fz_3d
     }
 
     n_points, wav, _, lower, isoval, step = orb_func_dict[name](
@@ -1290,15 +1236,15 @@ def gen_3d_orb_cube(orbital_name, cutaway):
     step = np.abs(step)
 
     # Create Gaussian Cube file as string for current orbital
-    cube = ""
+    cube = ''
 
-    cube += "Comment line\n"
-    cube += "Comment line\n"
-    cube += "1     {:.6f} {:.6f} {:.6f}\n".format(lower, lower, lower)
-    cube += "{:d}   {:.6f}    0.000000    0.000000\n".format(n_points, step)
-    cube += "{:d}   0.000000    {:.6f}    0.000000\n".format(n_points, step)
-    cube += "{:d}   0.000000    0.000000    {:.6f}\n".format(n_points, step)
-    cube += " 1   0.000000    0.000000   0.000000  0.000000\n"
+    cube += 'Comment line\n'
+    cube += 'Comment line\n'
+    cube += '1     {:.6f} {:.6f} {:.6f}\n'.format(lower, lower, lower)
+    cube += '{:d}   {:.6f}    0.000000    0.000000\n'.format(n_points, step)
+    cube += '{:d}   0.000000    {:.6f}    0.000000\n'.format(n_points, step)
+    cube += '{:d}   0.000000    0.000000    {:.6f}\n'.format(n_points, step)
+    cube += ' 1   0.000000    0.000000   0.000000  0.000000\n'
 
     a = 0
 
@@ -1306,18 +1252,18 @@ def gen_3d_orb_cube(orbital_name, cutaway):
         for yit in range(n_points):
             for zit in range(n_points):
                 a += 1
-                cube += "{:.5e} ".format(wav[xit, yit, zit])
+                cube += '{:.5e} '.format(wav[xit, yit, zit])
                 if a == 6:
-                    cube += "\n"
+                    cube += '\n'
                     a = 0
-            cube += "\n"
+            cube += '\n'
             a = 0
 
     return cube, isoval
 
 
-def set_2d_layout(wf_type, text_size, gridlines, x_up, x_low):
-    """
+def set_2d_layout(wf_type, text_size, gridlines, x_up, x_low, distance_unit):
+    '''
     creates go.Layout object for 2d plots
 
     Parameters
@@ -1331,117 +1277,142 @@ def set_2d_layout(wf_type, text_size, gridlines, x_up, x_low):
     -------
     go.Layout
         plotly graph objects Layout object for current plot
-    """
+    '''
 
     y_labels = {
         'RDF': '4πr<sup>2</sup>R(r)<sup>2</sup>',
-        "RWF": "R(r)"
+        'RWF': 'R(r)'
+    }
+
+    to_html = {
+        'a0': '(a<sub>0</sub>)',
+        'Å': '(Å)'
+    }
+
+    conv = {
+        'a0': 1.,
+        'Å': 0.52918
     }
 
     layout = go.Layout(
-                xaxis={
-                    "autorange": True,
-                    "showgrid": gridlines,
-                    "zeroline": False,
-                    "showline": True,
-                    "range": [x_low, x_up],
-                    "title": {
-                        "text": 'r (a<sub>0</sub>)',
-                        "font": {"size": text_size, "color": "black"}
-                    },
-                    "ticks": "outside",
-                    "tickfont": {"size": text_size, "color": "black"},
-                    "showticklabels": True
-                },
-                yaxis={
-                    "autorange": True,
-                    "showgrid": gridlines,
-                    "zeroline": False,
-                    "fixedrange": True,
-                    "title": {
-                        "text": y_labels[wf_type],
-                        "font": {
-                            "size": text_size,
-                            "color": "black"
-                        }
-                    },
-                    "title_standoff": 20,
-                    "showline": True,
-                    "ticks": "outside",
-                    "tickfont": {"size": text_size, "color": "black"},
-                    "showticklabels": True
-                },
-                legend={
-                    "x": 0.8,
-                    "y": 1,
-                    "font": {
-                        "size": text_size - 3
-                    }
-                },
-                margin=dict(l=90, r=30, t=30, b=60),
+        xaxis={
+            'autorange': True,
+            'showgrid': gridlines,
+            'zeroline': False,
+            'showline': True,
+            'range': [x_low * conv[distance_unit], x_up * conv[distance_unit]],
+            'title': {
+                'text': f'r {to_html[distance_unit]}',
+                'font': {
+                    'family': 'Arial',
+                    'size': text_size,
+                    'color': 'black'
+                }
+            },
+            'ticks': 'outside',
+            'tickfont': {
+                'family': 'Arial',
+                'size': text_size,
+                'color': 'black'
+            },
+            'showticklabels': True
+        },
+        yaxis={
+            'autorange': True,
+            'showgrid': gridlines,
+            'zeroline': False,
+            'fixedrange': True,
+            'title': {
+                'text': y_labels[wf_type],
+                'font': {
+                    'family': 'Arial',
+                    'size': text_size,
+                    'color': 'black'
+                }
+            },
+            'title_standoff': 20,
+            'showline': True,
+            'ticks': 'outside',
+            'tickfont': {
+                'family': 'Arial',
+                'size': text_size,
+                'color': 'black'
+            },
+            'showticklabels': True
+        },
+        legend={
+            'x': 0.8,
+            'y': 1,
+            'font': {
+                'family': 'Arial',
+                'size': text_size - 3
+            }
+        },
+        margin=dict(l=90, r=30, t=30, b=60),
     )
 
     return layout
 
 
 def set_2d_modebar(save_format, save_height, save_width, wf_type):
-    """
+    '''
     Sets options of plotly's modebar for 2d plot. Removes all icons other than
     save image button.
 
     Parameters
     ----------
-    save_format : str {"png", "svg", "jpeg"}
+    save_format : str {'png', 'svg', 'jpeg'}
         Format of saved image
     save_height : int
         Height of saved image in pixels (px)
     save_widht : int
         Width of saved image in pixels (px)
-    wf_type : str {"RDF", "RWF"}
+    wf_type : str {'RDF', 'RWF'}
         Type of wavefunction to plot
 
     Returns
     -------
     dict
         Options for plotly modebar
-    """
+    '''
 
     file_names = {
-        "RDF": "radial_distribution_function",
-        "RWF": "radial_wavefunction"
+        'RDF': 'radial_distribution_function',
+        'RWF': 'radial_wavefunction'
     }
 
     options = {
-        "toImageButtonOptions": {
-            "format": save_format,
-            "filename": file_names[wf_type],
-            "height": save_height,
-            "width": save_width,
+        'toImageButtonOptions': {
+            'format': save_format,
+            'filename': file_names[wf_type],
+            'height': save_height,
+            'width': save_width,
+            'scale': 4
         },
-        "modeBarButtonsToRemove": [
-            "sendDataToCloud",
-            "autoScale2d",
-            "resetScale2d",
-            "hoverClosestCartesian",
-            "toggleSpikelines",
-            "zoom2d",
-            "zoom3d",
-            "pan3d",
-            "pan2d",
-            "select2d",
-            "zoomIn2d",
-            "zoomOut2d",
-            "hovermode",
-            "resetCameraLastSave3d",
-            "hoverClosest3d",
-            "hoverCompareCartesian",
-            "resetViewMapbox",
-            "orbitRotation",
-            "tableRotation",
-            "resetCameraDefault3d"
+        'modeBarButtonsToRemove': [
+            'sendDataToCloud',
+            'autoScale2d',
+            'resetScale2d',
+            'hoverClosestCartesian',
+            'toggleSpikelines',
+            'zoom2d',
+            'zoom3d',
+            'pan3d',
+            'pan2d',
+            'select2d',
+            'zoomIn2d',
+            'zoomOut2d',
+            'hovermode',
+            'resetCameraLastSave3d',
+            'hoverClosest3d',
+            'hoverCompareCartesian',
+            'resetViewMapbox',
+            'orbitRotation',
+            'tableRotation',
+            'resetCameraDefault3d'
         ],
-        "displaylogo": False,
-        "displayModeBar": True,
+        'displaylogo': False,
+        'displayModeBar': True,
     }
 
     return options

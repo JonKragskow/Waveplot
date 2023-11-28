@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 import numpy as np
 from functools import lru_cache
 
@@ -39,7 +39,7 @@ def hermite(n, x):
 
 
 def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
-    """
+    '''
     Calculate energy of harmonic oscillator as both classical and quantum
     entity
 
@@ -62,7 +62,7 @@ def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
         Displacements used for classical oscillator in metres
     float:
         Zero point displacement in metres
-    """
+    '''
 
     # Convert mass to kg
     m *= 1.6605E-27  # kg (g mol^-1)
@@ -87,8 +87,8 @@ def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
 
 
 def calculate_mu(w, k):
-    """
-    Calculates "reduced mass" from angular frequency and force constant
+    '''
+    Calculates 'reduced mass' from angular frequency and force constant
 
     Parameters
     ----------
@@ -101,7 +101,7 @@ def calculate_mu(w, k):
     -------
     float:
         Reduced mass mu (g mol^-1)
-    """
+    '''
 
     mu = k / w**2
     mu /= 1.6605E-27
@@ -110,7 +110,7 @@ def calculate_mu(w, k):
 
 
 def calculate_k(w, mu):
-    """
+    '''
     Calculates force constant from angular frequency and reduced mass
 
     Parameters
@@ -124,7 +124,7 @@ def calculate_k(w, mu):
     -------
     float:
         Force constant k (N m^-1)
-    """
+    '''
 
     mu *= 1.6605E-27
     k = mu * w**2
@@ -133,7 +133,7 @@ def calculate_k(w, mu):
 
 
 def harmonic_wf(n, x):
-    """
+    '''
     Calculates normalised harmonic wavefunction for nth state over x
 
     Parameters
@@ -147,7 +147,7 @@ def harmonic_wf(n, x):
     -------
     np.ndarray:
         Harmonic wavefunction of nth levels evaluated at each point in x
-    """
+    '''
 
     h = hermite(n, x)
 

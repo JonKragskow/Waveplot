@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 import numpy as np
 import numpy.linalg as la
 import py3nj
@@ -116,7 +116,7 @@ class Vector():
 
 
 @functools.lru_cache(maxsize=32)
-def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=""):
+def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=''):
 
     x_min, x_max = -0.4, 0.4
     y_min, y_max = -0.4, 0.4
@@ -151,15 +151,15 @@ def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=""):
     y_step *= scale
     z_step *= scale
 
-    c = ""
+    c = ''
 
-    c += "Use isoval of 0.55 for visualisation\n"
-    c += "{}\n".format(comment)
-    c += "1     {:.6f} {:.6f} {:.6f}\n".format(x_min, y_min, z_min)
-    c += "{:d}   {:.6f}    0.000000    0.000000\n".format(n_x, x_step)
-    c += "{:d}   0.000000    {:.6f}    0.000000\n".format(n_y, y_step)
-    c += "{:d}   0.000000    0.000000    {:.6f}\n".format(n_z, z_step)
-    c += " 8   0.000000    0.000000   0.000000  -0.165000\n"
+    c += 'Use isoval of 0.55 for visualisation\n'
+    c += '{}\n'.format(comment)
+    c += '1     {:.6f} {:.6f} {:.6f}\n'.format(x_min, y_min, z_min)
+    c += '{:d}   {:.6f}    0.000000    0.000000\n'.format(n_x, x_step)
+    c += '{:d}   0.000000    {:.6f}    0.000000\n'.format(n_y, y_step)
+    c += '{:d}   0.000000    0.000000    {:.6f}\n'.format(n_z, z_step)
+    c += ' 8   0.000000    0.000000   0.000000  -0.165000\n'
 
     a = 0
 
@@ -167,11 +167,11 @@ def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=""):
         for yit, yval in enumerate(y):
             for zit, zval in enumerate(z):
                 a += 1
-                c += "{:.5e} ".format(iso[xit, yit, zit])
+                c += '{:.5e} '.format(iso[xit, yit, zit])
                 if a == 6:
-                    c += "\n"
+                    c += '\n'
                     a = 0
-            c += "\n"
+            c += '\n'
             a = 0
 
     return c
@@ -252,7 +252,7 @@ def _compute_heavy_a_val(J, mJ, n, k):
 
 def compute_CF_coeffs(J):
 
-    cfps = np.loadtxt("cfps.dat")
+    cfps = np.loadtxt('cfps.dat')
     k_max = 6
 
     _, _, jz, jp, jm, _ = iqme.calc_ang_mom_ops(J)

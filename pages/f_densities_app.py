@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 
 from dash import html, dcc, no_update, register_page, \
     callback, clientside_callback, State, Input, Output, ctx
@@ -27,14 +27,14 @@ import xyz_py as xyzp
 from .core import sievers
 from .core import utils as ut
 
-ID_PREFIX = "aniso"
+ID_PREFIX = 'aniso'
 
 id = ut.dash_id(ID_PREFIX)
 
 PAGE_NAME = '4f Densities'
 PAGE_PATH = '/f-densities'
 PAGE_IMAGE = 'assets/4f_densities.png'
-PAGE_DESCRIPTION = "Interactive lanthanide free-ion densities"
+PAGE_DESCRIPTION = 'Interactive lanthanide free-ion densities'
 
 register_page(
     __name__,
@@ -47,20 +47,20 @@ register_page(
 )
 
 # Load default xyz file
-DEFAULT_XYZ = "assets/nature.xyz"
+DEFAULT_XYZ = 'assets/nature.xyz'
 
-"""
+'''
 Webpage layout
-"""
+'''
 surface_options = [
     html.Div(
         children=[
             dbc.Row(
                 dbc.Col(
                     html.H4(
-                        style={"textAlign": "center"},
-                        children="Parameters",
-                        className="mb-3"
+                        style={'textAlign': 'center'},
+                        children='Parameters',
+                        className='mb-3'
                     )
                 )
             ),
@@ -69,107 +69,107 @@ surface_options = [
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "# f Electrons"
+                                '# f Electrons'
                             ),
                             dbc.Input(
                                 id=id('n_value'),
-                                placeholder="9",
-                                type="number",
+                                placeholder='9',
+                                type='number',
                                 value=9,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 },
                                 min=1,
                                 max=13
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "J"
+                                'J'
                             ),
                             dbc.Input(
                                 id=id('J_value'),
-                                placeholder="7.5",
-                                type="number",
+                                placeholder='7.5',
+                                type='number',
                                 value=7.5,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 },
                                 min=0.5
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "mJ"
+                                'mJ'
                             ),
                             dbc.Input(
                                 id=id('mJ_value'),
-                                placeholder="7.5",
-                                type="number",
+                                placeholder='7.5',
+                                type='number',
                                 value=7.5,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ])
             ]),
             dbc.Row(
-                id=id("L_S_wrapper"),
+                id=id('L_S_wrapper'),
                 children=[
                     dbc.Col([
                         dbc.InputGroup(
                             children=[
                                 dbc.InputGroupText(
-                                    "L"
+                                    'L'
                                 ),
                                 dbc.Input(
                                     id=id('L_value'),
-                                    placeholder="5",
-                                    type="number",
+                                    placeholder='5',
+                                    type='number',
                                     value=5,
                                     style={
-                                        "textAlign": "center"
+                                        'textAlign': 'center'
                                     }
                                 )
                             ],
-                            class_name="mb-3",
+                            class_name='mb-3',
                         ),
                     ]),
                     dbc.Col([
                         dbc.InputGroup(
                             children=[
                                 dbc.InputGroupText(
-                                    "S"
+                                    'S'
                                 ),
                                 dbc.Input(
                                     id=id('S_value'),
-                                    placeholder="2.5",
-                                    type="number",
+                                    placeholder='2.5',
+                                    type='number',
                                     value=2.5,
                                     style={
-                                        "textAlign": "center"
+                                        'textAlign': 'center'
                                     },
                                     min=0.5
                                 )
                             ],
-                            class_name="mb-3",
+                            class_name='mb-3',
                         ),
                     ])
                 ],
-                style={"display": "none"}
+                style={'display': 'none'}
             )
         ]
     )
@@ -181,9 +181,9 @@ spheroid_options = [
             dbc.Row(
                 dbc.Col(
                     html.H5(
-                        style={"textAlign": "center"},
-                        children="Surface",
-                        className="mb-3"
+                        style={'textAlign': 'center'},
+                        children='Surface',
+                        className='mb-3'
                     )
                 )
             ),
@@ -194,38 +194,38 @@ spheroid_options = [
                             dbc.InputGroup(
                                 [
                                     dbc.InputGroupText(
-                                        "Surface"
+                                        'Surface'
                                     ),
                                     dbc.InputGroupText(
                                         dbc.Checkbox(
                                             value=True,
-                                            id=id("spheroid_toggle")
+                                            id=id('spheroid_toggle')
                                         )
                                     )
                                 ],
-                                class_name="mb-3"
+                                class_name='mb-3'
                             )
                         ],
-                        class_name="col-6-checkbox"
+                        class_name='col-6-checkbox'
                     ),
                     dbc.Col(
                         children=[
                             dbc.InputGroup(
                                 [
                                     dbc.InputGroupText(
-                                        "Wireframe"
+                                        'Wireframe'
                                     ),
                                     dbc.InputGroupText(
                                         dbc.Checkbox(
                                             value=False,
-                                            id=id("wireframe_toggle")
+                                            id=id('wireframe_toggle')
                                         )
                                     )
                                 ],
-                                class_name="mb-3"
+                                class_name='mb-3'
                             )
                         ],
-                        class_name="col-6-checkbox"
+                        class_name='col-6-checkbox'
                     ),
                 ]
             ),
@@ -236,82 +236,82 @@ spheroid_options = [
                             dbc.InputGroup(
                                 [
                                     dbc.InputGroupText(
-                                        "Z axis"
+                                        'Z axis'
                                     ),
                                     dbc.Select(
                                         options=[
                                             {
-                                                "label": "Bond",
-                                                "value": "bond"
+                                                'label': 'Bond',
+                                                'value': 'bond'
                                             },
                                             {
-                                                "label": "Vector",
-                                                "value": "vector"
+                                                'label': 'Vector',
+                                                'value': 'vector'
                                             }
                                         ],
-                                        value="bond",
-                                        id=id("align_type"),
-                                        style={"textAlign": "center"}
+                                        value='bond',
+                                        id=id('align_type'),
+                                        style={'textAlign': 'center'}
                                     )
                                 ],
-                                class_name="mb-3"
+                                class_name='mb-3'
                             )
                         ],
-                        class_name="col-6"
+                        class_name='col-6'
                     ),
                     dbc.Col(
-                        id=id("bond_select_wrapper"),
+                        id=id('bond_select_wrapper'),
                         children=dbc.InputGroup(
                             [
                                 dbc.Select(
                                     options={'Dy-C': [0, 1]},
-                                    value="0,3",
-                                    id=id("bond_select"),
+                                    value='0,3',
+                                    id=id('bond_select'),
                                     style={
-                                        "textAlign": "center"
+                                        'textAlign': 'center'
                                     }
                                 )
                             ],
-                            className="mb-3"
+                            className='mb-3'
                         ),
                     ),
                     dbc.Col(
-                        id=id("vector_select_wrapper"),
+                        id=id('vector_select_wrapper'),
                         children=[
                             dbc.InputGroup(
                                 [
                                     dbc.Input(
                                         id=id('vector_x_select'),
-                                        placeholder="x",
-                                        type="number",
+                                        placeholder='x',
+                                        type='number',
                                         value=0.0,
                                         style={
-                                            "textAlign": "center"
+                                            'textAlign': 'center'
                                         }
                                     ),
                                     dbc.Input(
                                         id=id('vector_y_select'),
-                                        placeholder="y",
-                                        type="number",
+                                        placeholder='y',
+                                        type='number',
                                         value=0.0,
                                         style={
-                                            "textAlign": "center"
+                                            'textAlign': 'center'
                                         }
                                     ),
                                     dbc.Input(
                                         id=id('vector_z_select'),
-                                        placeholder="z",
-                                        type="number",
+                                        placeholder='z',
+                                        type='number',
                                         value=1.0,
                                         style={
-                                            "textAlign": "center"
+                                            'textAlign': 'center'
                                         }
                                     )
                                 ],
-                                className="mb-3"
+                                className='mb-3'
                             )
                         ],
-                        style={"display": "none"}
+                        style={'display': 'none'}
                     )
                 ]
             ),
@@ -320,36 +320,36 @@ spheroid_options = [
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Colour"
+                                'Colour'
                             ),
                             dbc.Input(
-                                id=id("spheroid_colour"),
-                                type="color",
-                                value="#6D1773",
+                                id=id('spheroid_colour'),
+                                type='color',
+                                value='#6D1773',
                                 style={
-                                    "height": "40px"
+                                    'height': '40px'
                                 }
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Scale"
+                                'Scale'
                             ),
                             dbc.Input(
-                                id=id("spheroid_scale"),
-                                type="number",
+                                id=id('spheroid_scale'),
+                                type='number',
                                 value=10,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ])
             ])
@@ -363,9 +363,9 @@ axis_options = [
             dbc.Row(
                 dbc.Col(
                     html.H5(
-                        style={"textAlign": "center"},
-                        children="Axis",
-                        className="mb-3"
+                        style={'textAlign': 'center'},
+                        children='Axis',
+                        className='mb-3'
                     )
                 )
             ),
@@ -374,34 +374,34 @@ axis_options = [
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Axis"
+                                'Axis'
                             ),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
                                     value=False,
-                                    id=id("axis_toggle")
+                                    id=id('axis_toggle')
                                 )
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Colour"
+                                'Colour'
                             ),
                             dbc.Input(
-                                id=id("axis_colour"),
-                                type="color",
-                                value="#E13022",
+                                id=id('axis_colour'),
+                                type='color',
+                                value='#E13022',
                                 style={
-                                    "height": "40px"
+                                    'height': '40px'
                                 }
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
             ]),
@@ -410,43 +410,43 @@ axis_options = [
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Width"
+                                'Width'
                             ),
                             dbc.Input(
-                                id=id("axis_width"),
-                                type="number",
+                                id=id('axis_width'),
+                                type='number',
                                 value=0.25,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 },
                                 min=0.
                             ),
                             dbc.InputGroupText(
-                                "\u212B"
+                                '\u212B'
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Length"
+                                'Length'
                             ),
                             dbc.Input(
-                                id=id("axis_length"),
-                                type="number",
+                                id=id('axis_length'),
+                                type='number',
                                 value=10,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             ),
                             dbc.InputGroupText(
-                                "\u212B"
+                                '\u212B'
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ])
             ])
@@ -459,9 +459,9 @@ viewer_options = [html.Div(
         dbc.Row(
             dbc.Col(
                 html.H5(
-                    style={"textAlign": "center"},
-                    children="Viewer",
-                    className="mb-3"
+                    style={'textAlign': 'center'},
+                    children='Viewer',
+                    className='mb-3'
                 )
             )
         ),
@@ -470,60 +470,60 @@ viewer_options = [html.Div(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "X"
+                            'X'
                         ),
                         dbc.Input(
-                            id=id("view_x"),
+                            id=id('view_x'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "Y"
+                            'Y'
                         ),
                         dbc.Input(
-                            id=id("view_y"),
+                            id=id('view_y'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "Z"
+                            'Z'
                         ),
                         dbc.Input(
-                            id=id("view_z"),
+                            id=id('view_z'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "Zoom"
+                            'Zoom'
                         ),
                         dbc.Input(
-                            id=id("view_zoom"),
-                            value="",
-                            type="number"
+                            id=id('view_zoom'),
+                            value='',
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             )
         ]),
@@ -532,60 +532,60 @@ viewer_options = [html.Div(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qX"
+                            'qX'
                         ),
                         dbc.Input(
-                            id=id("view_qx"),
+                            id=id('view_qx'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qY"
+                            'qY'
                         ),
                         dbc.Input(
-                            id=id("view_qy"),
+                            id=id('view_qy'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qZ"
+                            'qZ'
                         ),
                         dbc.Input(
-                            id=id("view_qz"),
+                            id=id('view_qz'),
                             value=0,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             ),
             dbc.Col(
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(
-                            "qW"
+                            'qW'
                         ),
                         dbc.Input(
-                            id=id("view_qw"),
+                            id=id('view_qw'),
                             value=1,
-                            type="number"
+                            type='number'
                         )
                     ],
-                    className="mb-3"
+                    className='mb-3'
                 )
             )
         ]),
@@ -593,18 +593,18 @@ viewer_options = [html.Div(
             dbc.Col(
                 [
                     dbc.Button(
-                        "Download image",
-                        color="primary",
-                        className="me-1",
-                        id=id("download_image_btn")
+                        'Download image',
+                        color='primary',
+                        className='me-1',
+                        id=id('download_image_btn')
                     ),
                     html.Div(id=id('hidden-div1'), style={'display': 'none'})
                 ],
-                className="mb-3",
-                style={"textAlign": "center"}
+                className='mb-3',
+                style={'textAlign': 'center'}
             ),
             html.Div(id=id('hidden-div3'), style={'display': 'none'})
-        ], className="align-items-center"),
+        ], className='align-items-center'),
     ]
 )]
 
@@ -614,9 +614,9 @@ molecule_options = [
             dbc.Row(
                 dbc.Col([
                     html.H5(
-                        style={"textAlign": "center"},
-                        children="Molecule",
-                        className="mb-3"
+                        style={'textAlign': 'center'},
+                        children='Molecule',
+                        className='mb-3'
                     )
                 ])
             ),
@@ -626,9 +626,9 @@ molecule_options = [
                         dcc.Upload(
                             children=[
                                 dbc.Button(
-                                    "Select .xyz file",
-                                    color="primary",
-                                    className="me-1",
+                                    'Select .xyz file',
+                                    color='primary',
+                                    className='me-1',
                                     style={
                                         'width': '100%'
                                     }
@@ -639,11 +639,11 @@ molecule_options = [
                                 'height': '100%',
                                 'textAlign': 'center',
                             },
-                            id=id("xyz_file"),
+                            id=id('xyz_file'),
                             contents=DEFAULT_XYZ,
                         )
                     ],
-                    style={"textAlign": "center"}
+                    style={'textAlign': 'center'}
                 ),
                 dbc.Col([
                     dbc.Button(
@@ -736,35 +736,35 @@ molecule_options = [
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                id=id("centre_text"),
-                                children="Centre"
+                                id=id('centre_text'),
+                                children='Centre'
                             ),
                             dbc.Tooltip(
-                                children="Centre of spheroid",
-                                target=id("centre_text"),
+                                children='Centre of spheroid',
+                                target=id('centre_text'),
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             ),
                             dbc.Select(
                                 options=[
                                     {
-                                        "label": "Dy1",
-                                        "value": 0
+                                        'label': 'Dy1',
+                                        'value': 0
                                     }
                                 ],
                                 value=0,
                                 id=id('centre_select'),
                                 style={
-                                    "textAlign": "center",
-                                    "verticalAlign": "middle",
-                                    "horizontalAlign": "middle",
-                                    "alignItems": "auto",
-                                    "display": "inline"
+                                    'textAlign': 'center',
+                                    'verticalAlign': 'middle',
+                                    'horizontalAlign': 'middle',
+                                    'alignItems': 'auto',
+                                    'display': 'inline'
                                 }
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
             ]),
@@ -773,59 +773,59 @@ molecule_options = [
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Molecule"
+                                'Molecule'
                             ),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
                                     value=True,
-                                    id=id("molecule_toggle")
+                                    id=id('molecule_toggle')
                                 )
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Labels"
+                                'Labels'
                             ),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
                                     value=False,
-                                    id=id("labels_toggle")
+                                    id=id('labels_toggle')
                                 )
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
                 dbc.Col([
                     dbc.InputGroup(
                         [
                             dbc.InputGroupText(
-                                "Style"
+                                'Style'
                             ),
                             dbc.Select(
                                 options=[
                                     {
-                                        "label": "Space-fill",
-                                        "value": "sphere"
+                                        'label': 'Space-fill',
+                                        'value': 'sphere'
                                     },
                                     {
-                                        "label": "Stick",
-                                        "value": "stick"
+                                        'label': 'Stick',
+                                        'value': 'stick'
                                     }
                                 ],
-                                value="stick",
-                                id=id("molecule_style"),
+                                value='stick',
+                                id=id('molecule_style'),
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             )
                         ],
-                        class_name="mb-3",
+                        class_name='mb-3',
                     ),
                 ]),
             ])
@@ -848,55 +848,55 @@ layout = html.Div(
                                 dcc.Loading(
                                     children=[
                                         html.Div(
-                                            id="density_mol_div",
-                                            className="molecule_div"
+                                            id='density_mol_div',
+                                            className='molecule_div'
                                         ),
-                                        dcc.Store(id=id("atom_store")),
-                                        dcc.Store(id=id("vert_store")),
-                                        dcc.Store(id=id("tri_store")),
-                                        dcc.Store(id=id("norm_store")),
-                                        dcc.Store(id=id("axis_store")),
-                                        dcc.Store(id=id("style_store")),
-                                        dcc.Store(id=id("js_label_store")),
+                                        dcc.Store(id=id('atom_store')),
+                                        dcc.Store(id=id('vert_store')),
+                                        dcc.Store(id=id('tri_store')),
+                                        dcc.Store(id=id('norm_store')),
+                                        dcc.Store(id=id('axis_store')),
+                                        dcc.Store(id=id('style_store')),
+                                        dcc.Store(id=id('js_label_store')),
                                         dcc.Store(id=id('coord_store')),
                                         dcc.Store(id=id('label_store')),
                                         dcc.Store(id=id('adj_store')),
                                     ]
                                 ),
                             ],
-                            className="col-6-viewer"
+                            className='col-6-viewer'
                         ),
                         html.Div(
                             options,
-                            className="col-6-options"
+                            className='col-6-options'
                         )
                     ],
                     style={
-                        "marginTop": "10px",
-                        "width": "95vw",
-                        "marginLeft": "2.5vw",
-                        "marginRight": "2.5vw"
+                        'marginTop': '10px',
+                        'width': '95vw',
+                        'marginLeft': '2.5vw',
+                        'marginRight': '2.5vw'
                     }
                 )
             ],
-            className="main_wrapper"
+            className='main_wrapper'
         ),
         ut.footer()
     ]
 )
 
 outputs = [
-    Output(id("L_S_wrapper"), "style"),
+    Output(id('L_S_wrapper'), 'style'),
 ]
-inputs = [Input(id("n_value"), "value")]
+inputs = [Input(id('n_value'), 'value')]
 
 
 @callback(outputs, inputs)
 def toggle_l_s(n):
-    """
+    '''
     Toggles appearance of L and S entry fields based on number of
     electrons. L and S are only needed when n < 7
-    """
+    '''
 
     if n == 7:
         raise PreventUpdate
@@ -1031,28 +1031,28 @@ def update_adjacency(labels, coords, n_clicks, adjacency, atom_1, atom_2):
 
 
 outputs = [
-    Output(id("atom_store"), "data"),
-    Output(id("js_label_store"), "data"),
-    Output(id("axis_store"), "data"),
-    Output(id("vector_select_wrapper"), "style"),
-    Output(id("bond_select_wrapper"), "style"),
+    Output(id('atom_store'), 'data'),
+    Output(id('js_label_store'), 'data'),
+    Output(id('axis_store'), 'data'),
+    Output(id('vector_select_wrapper'), 'style'),
+    Output(id('bond_select_wrapper'), 'style'),
 ]
 
 inputs = [
-    Input(id("coord_store"), "data"),
-    Input(id("label_store"), "data"),
-    Input(id("adj_store"), "data"),
-    Input(id("axis_colour"), "value"),
-    Input(id("axis_width"), "value"),
-    Input(id("axis_length"), "value"),
-    Input(id("bond_select"), "value"),
+    Input(id('coord_store'), 'data'),
+    Input(id('label_store'), 'data'),
+    Input(id('adj_store'), 'data'),
+    Input(id('axis_colour'), 'value'),
+    Input(id('axis_width'), 'value'),
+    Input(id('axis_length'), 'value'),
+    Input(id('bond_select'), 'value'),
     [
-        Input(id("vector_x_select"), "value"),
-        Input(id("vector_y_select"), "value"),
-        Input(id("vector_z_select"), "value")
+        Input(id('vector_x_select'), 'value'),
+        Input(id('vector_y_select'), 'value'),
+        Input(id('vector_z_select'), 'value')
     ],
-    Input(id("centre_select"), "value"),
-    Input(id("align_type"), "value")
+    Input(id('centre_select'), 'value'),
+    Input(id('align_type'), 'value')
 ]
 
 
@@ -1074,19 +1074,19 @@ def update_app(coords, labels, adjacency, axis_colour,
     coords = np.asarray(coords)
 
     # Choose z-alignment vector from either bonds or raw vector input
-    if align_type == "bond":
+    if align_type == 'bond':
         if len(bond_select):
-            bond_select = [int(ab) for ab in bond_select.split(",")]
+            bond_select = [int(ab) for ab in bond_select.split(',')]
             z_vec = coords[bond_select[1]] - coords[bond_select[0]]
         else:
             z_vec = [0., 0., 1.]
         bond_toggle = {}
-        vector_toggle = {"display": "none"}
-    elif align_type == "vector":
+        vector_toggle = {'display': 'none'}
+    elif align_type == 'vector':
         if None in vector_select:
             vector_select = [0., 0., 1.]
         z_vec = np.array([float(x) for x in vector_select])
-        bond_toggle = {"display": "none"}
+        bond_toggle = {'display': 'none'}
         vector_toggle = {}
 
     # Rotate molecular z axis onto specified z axis
@@ -1107,7 +1107,7 @@ def update_app(coords, labels, adjacency, axis_colour,
     )
 
     # Add Numbered atom labels
-    labels_js = ut.make_js_label(coords, labels, viewer_var="viewer")
+    labels_js = ut.make_js_label(coords, labels, viewer_var='viewer')
 
     # Create axis cylinder
     axis = ut.make_js_cylinder(
@@ -1122,34 +1122,34 @@ def update_app(coords, labels, adjacency, axis_colour,
 
 
 outputs = [
-    Output(id("vert_store"), "data"),
-    Output(id("tri_store"), "data"),
-    Output(id("norm_store"), "data"),
-    Output(id("J_value"), "invalid"),
-    Output(id("mJ_value"), "invalid"),
-    Output(id("L_value"), "invalid"),
-    Output(id("S_value"), "invalid"),
-    Output(id("n_value"), "invalid")
+    Output(id('vert_store'), 'data'),
+    Output(id('tri_store'), 'data'),
+    Output(id('norm_store'), 'data'),
+    Output(id('J_value'), 'invalid'),
+    Output(id('mJ_value'), 'invalid'),
+    Output(id('L_value'), 'invalid'),
+    Output(id('S_value'), 'invalid'),
+    Output(id('n_value'), 'invalid')
 ]
 
 inputs = [
-    Input(id("J_value"), "value"),
-    Input(id("mJ_value"), "value"),
-    Input(id("L_value"), "value"),
-    Input(id("S_value"), "value"),
-    Input(id("n_value"), "value"),
-    Input(id("spheroid_scale"), "value")
+    Input(id('J_value'), 'value'),
+    Input(id('mJ_value'), 'value'),
+    Input(id('L_value'), 'value'),
+    Input(id('S_value'), 'value'),
+    Input(id('n_value'), 'value'),
+    Input(id('spheroid_scale'), 'value')
 ]
 
 
 @callback(outputs, inputs)
 def update_spheroid(J, mJ, L, S, n, scale):
     invalidity = {
-        "J": False,
-        "mJ": False,
-        "L": False,
-        "S": False,
-        "n": False
+        'J': False,
+        'mJ': False,
+        'L': False,
+        'S': False,
+        'n': False
     }
 
     vert = no_update
@@ -1170,25 +1170,25 @@ def update_spheroid(J, mJ, L, S, n, scale):
         if np.ceil(mJ) != mJ:
             invalidity['J'] = True
 
-    for name, qn in zip(["J", "mJ", "L", "S"], [2 * J, 2 * mJ, L, 2 * S]):
+    for name, qn in zip(['J', 'mJ', 'L', 'S'], [2 * J, 2 * mJ, L, 2 * S]):
         if np.ceil(qn) != qn:
             invalidity[name] = True
 
     if n < 7:
         if L <= 0:
-            invalidity["L"] = True
+            invalidity['L'] = True
         elif S <= 0:
-            invalidity["S"] = True
+            invalidity['S'] = True
 
     if J <= 0:
-        invalidity["J"] = True
+        invalidity['J'] = True
 
     if mJ > J or mJ <= 0:
-        invalidity["mJ"] = True
+        invalidity['mJ'] = True
 
     # Check number of f-electrons
     if n < 1 or n > 13 or n == 7:
-        invalidity["n"] = True
+        invalidity['n'] = True
 
     if not any(invalidity.values()):
 
@@ -1204,34 +1204,34 @@ def update_spheroid(J, mJ, L, S, n, scale):
 
 # Clientside callback for image download
 clientside_callback(
-    """
+    '''
     function (dummy) {
 
-        var canvas = document.getElementById("viewer_canvas");
+        var canvas = document.getElementById('viewer_canvas');
         if (canvas == null){
             return;
         }
         var duri = canvas.toDataURL('image/png', 1)
-        downloadURI(duri, "density.png");
+        downloadURI(duri, 'density.png');
 
         return ;
         }
-    """, # noqa
-    Output(id('hidden-div1'), "children"),
+    ''', # noqa
+    Output(id('hidden-div1'), 'children'),
     [
-        Input(id("download_image_btn"), "n_clicks"),
+        Input(id('download_image_btn'), 'n_clicks'),
     ]
 )
 
 
 # Clientside callback for molecule viewer
 clientside_callback(
-    """
+    '''
     function (atoms_spec, mol_style_js, vert, tri, norm, labels_js, axis, \
         molecule_toggle, spheroid_toggle, wireframe_toggle, labels_toggle, \
             axis_toggle, spheroid_colour, x, y, z, zoom, qx, qy, qz, qw) {
 
-        let element = document.getElementById("density_mol_div");
+        let element = document.getElementById('density_mol_div');
 
         while(element.firstChild){
             element.removeChild(element.firstChild);
@@ -1240,8 +1240,8 @@ clientside_callback(
         let config = { backgroundOpacity: 0.};
         let viewer = $3Dmol.createViewer(element, config);
 
-        viewer.getCanvas()["style"]="width: 100vw;"
-        viewer.getCanvas()["id"]="viewer_canvas"
+        viewer.getCanvas()['style']='width: 100vw;'
+        viewer.getCanvas()['id']='viewer_canvas'
 
         var atoms = eval(atoms_spec)
         var m = viewer.addModel();
@@ -1289,55 +1289,55 @@ clientside_callback(
         
         viewer.render();
 
-        if (document.getElementById("aniso_view_zoom").value == ""){
+        if (document.getElementById('aniso_view_zoom').value == ''){
             viewer.zoomTo();
             zoom_level = viewer.getView()[3]
         }
         else {
-            zoom_level = parseFloat(document.getElementById("aniso_view_zoom").value)
+            zoom_level = parseFloat(document.getElementById('aniso_view_zoom').value)
         }
 
         viewer.setView([
-            parseFloat(document.getElementById("aniso_view_x").value),
-            parseFloat(document.getElementById("aniso_view_y").value),
-            parseFloat(document.getElementById("aniso_view_z").value),
+            parseFloat(document.getElementById('aniso_view_x').value),
+            parseFloat(document.getElementById('aniso_view_y').value),
+            parseFloat(document.getElementById('aniso_view_z').value),
             zoom_level,
-            parseFloat(document.getElementById("aniso_view_qx").value),
-            parseFloat(document.getElementById("aniso_view_qy").value),
-            parseFloat(document.getElementById("aniso_view_qz").value),
-            parseFloat(document.getElementById("aniso_view_qw").value)
+            parseFloat(document.getElementById('aniso_view_qx').value),
+            parseFloat(document.getElementById('aniso_view_qy').value),
+            parseFloat(document.getElementById('aniso_view_qz').value),
+            parseFloat(document.getElementById('aniso_view_qw').value)
         ])
 
         // Mouse movement 
-        viewer.getCanvas().addEventListener("wheel", (event) => { updateViewText("aniso", viewer) }, false)
-        viewer.getCanvas().addEventListener("mouseup", (event) => { updateViewText("aniso", viewer) }, false)
-        viewer.getCanvas().addEventListener("touchend", (event) => { updateViewText("aniso", viewer) }, false)
+        viewer.getCanvas().addEventListener('wheel', (event) => { updateViewText('aniso', viewer) }, false)
+        viewer.getCanvas().addEventListener('mouseup', (event) => { updateViewText('aniso', viewer) }, false)
+        viewer.getCanvas().addEventListener('touchend', (event) => { updateViewText('aniso', viewer) }, false)
 
         return zoom_level
         }
-    """, # noqa
-    Output(id("view_zoom"), "value"),
+    ''', # noqa
+    Output(id('view_zoom'), 'value'),
     [
-        Input(id("atom_store"), "data"),
-        Input(id("style_store"), "data"),
-        Input(id("vert_store"), "data"),
-        Input(id("tri_store"), "data"),
-        Input(id("norm_store"), "data"),
-        Input(id("js_label_store"), "data"),
-        Input(id("axis_store"), "data"),
-        Input(id("molecule_toggle"), "value"),
-        Input(id("spheroid_toggle"), "value"),
-        Input(id("wireframe_toggle"), "value"),
-        Input(id("labels_toggle"), "value"),
-        Input(id("axis_toggle"), "value"),
-        Input(id("spheroid_colour"), "value"),
-        Input(id("view_x"), "value"),
-        Input(id("view_y"), "value"),
-        Input(id("view_z"), "value"),
-        Input(id("view_zoom"), "value"),
-        Input(id("view_qx"), "value"),
-        Input(id("view_qy"), "value"),
-        Input(id("view_qz"), "value"),
-        Input(id("view_qw"), "value")
+        Input(id('atom_store'), 'data'),
+        Input(id('style_store'), 'data'),
+        Input(id('vert_store'), 'data'),
+        Input(id('tri_store'), 'data'),
+        Input(id('norm_store'), 'data'),
+        Input(id('js_label_store'), 'data'),
+        Input(id('axis_store'), 'data'),
+        Input(id('molecule_toggle'), 'value'),
+        Input(id('spheroid_toggle'), 'value'),
+        Input(id('wireframe_toggle'), 'value'),
+        Input(id('labels_toggle'), 'value'),
+        Input(id('axis_toggle'), 'value'),
+        Input(id('spheroid_colour'), 'value'),
+        Input(id('view_x'), 'value'),
+        Input(id('view_y'), 'value'),
+        Input(id('view_z'), 'value'),
+        Input(id('view_zoom'), 'value'),
+        Input(id('view_qx'), 'value'),
+        Input(id('view_qy'), 'value'),
+        Input(id('view_qz'), 'value'),
+        Input(id('view_qw'), 'value')
     ]
 )

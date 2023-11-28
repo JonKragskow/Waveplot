@@ -303,7 +303,7 @@ def p_3d(n, cutaway=1.):
     elif n == 5:
         ival = 0.0005
     elif n == 6:
-        ival = 0.0005
+        ival = 0.0010
 
     n_points = np.shape(x)[0]
 

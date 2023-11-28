@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 
 from dash import dcc, html, callback_context, register_page, callback, \
     clientside_callback
@@ -32,7 +32,7 @@ from .core import utils
 PAGE_NAME = 'Vibrations'
 PAGE_PATH = '/vibrations'
 PAGE_IMAGE = 'assets/Vibrations.png'
-PAGE_DESCRIPTION = "Interactive harmonic oscillator wavefunctions and energy levels" # noqa
+PAGE_DESCRIPTION = 'Interactive harmonic oscillator wavefunctions and energy levels' # noqa
 
 register_page(
     __name__,
@@ -43,11 +43,11 @@ register_page(
     image=PAGE_IMAGE,
     description=PAGE_DESCRIPTION
 )
-id = utils.dash_id("vib")
+id = utils.dash_id('vib')
 
 
 def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
-    """
+    '''
     Creates output file for harmonic potential energies, state energies,
     and wavefunctions
 
@@ -66,7 +66,7 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
     -------
     str
         string containing output file
-    """
+    '''
 
     oc = io.StringIO()
 
@@ -77,34 +77,34 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
 
     oc.write(header)
 
-    oc.write("\nState energies (cm-1)\n")
+    oc.write('\nState energies (cm-1)\n')
     for se in state_e:
-        oc.write("{:.6f}\n".format(se))
+        oc.write('{:.6f}\n'.format(se))
 
     oc.write(
-        "\nDisplacement (A), Harmonic potential (cm-1)\n"
+        '\nDisplacement (A), Harmonic potential (cm-1)\n'
     )
     for di, se in zip(displacement * 10E10, harmonic_e):
-        oc.write("{:.6f} {:.6f}\n".format(di, se))
+        oc.write('{:.6f} {:.6f}\n'.format(di, se))
 
     oc.write(
-        "\nDisplacement (A), Harmonic Wavefunction for n=0, n=1, ...\n"
+        '\nDisplacement (A), Harmonic Wavefunction for n=0, n=1, ...\n'
     )
 
     # transpose so rows are displacement
     harmonic_wf = harmonic_wf.T
 
     for di, row in zip(displacement * 10E10, harmonic_wf):
-        oc.write("{:.8f} ".format(di))
+        oc.write('{:.8f} '.format(di))
         for state_wf in row:
-            oc.write("{:.8f} ".format(state_wf))
-        oc.write("\n")
+            oc.write('{:.8f} '.format(state_wf))
+        oc.write('\n')
 
     return oc.getvalue()
 
 
 main_plot = dcc.Graph(
-    id=id("main_plot"),
+    id=id('main_plot'),
     className='plot_area'
 )
 
@@ -113,16 +113,16 @@ vib_options = [
         dbc.Col([
             html.H4(
                 style={
-                    "textAlign": "center",
+                    'textAlign': 'center',
                 },
-                children="Parameters",
-                id=id("parameters_header")
+                children='Parameters',
+                id=id('parameters_header')
             ),
             dbc.Tooltip(
-                children="Toggle buttons specify the two fixed parameters",
-                target=id("parameters_header"),
+                children='Toggle buttons specify the two fixed parameters',
+                target=id('parameters_header'),
                 style={
-                    "textAlign": "center",
+                    'textAlign': 'center',
                 },
             )
         ])
@@ -133,26 +133,26 @@ vib_options = [
                 children=[
                     dbc.InputGroup(
                         [
-                            dbc.InputGroupText(u"\u03BD"),
+                            dbc.InputGroupText(u'\u03BD'),
                             dbc.Input(
-                                id=id("lin_wn"),
+                                id=id('lin_wn'),
                                 placeholder=2888,
-                                type="number",
+                                type='number',
                                 min=0.0001,
                                 value=2888,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             ),
-                            dbc.InputGroupText(r"cm⁻¹"),
+                            dbc.InputGroupText(r'cm⁻¹'),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
                                     value=True,
-                                    id=id("lin_wn_fix")
+                                    id=id('lin_wn_fix')
                                 )
                             )
                         ],
-                        class_name="mb-3"
+                        class_name='mb-3'
                     )
                 ]
             ),
@@ -161,26 +161,26 @@ vib_options = [
                     dbc.Row([
                         dbc.InputGroup(
                             [
-                                dbc.InputGroupText("ω"),
+                                dbc.InputGroupText('ω'),
                                 dbc.Input(
-                                    id=id("ang_wn"),
+                                    id=id('ang_wn'),
                                     placeholder=2888,
-                                    type="number",
+                                    type='number',
                                     min=0.0001,
                                     value=2888,
                                     style={
-                                        "textAlign": "center"
+                                        'textAlign': 'center'
                                     }
                                 ),
-                                dbc.InputGroupText(r"cm⁻¹"),
+                                dbc.InputGroupText(r'cm⁻¹'),
                                 dbc.InputGroupText(
                                     dbc.Checkbox(
                                         value=False,
-                                        id=id("ang_wn_fix")
+                                        id=id('ang_wn_fix')
                                     )
                                 )
                             ],
-                            class_name="mb-3"
+                            class_name='mb-3'
                         )
                     ]),
                 ]
@@ -193,26 +193,26 @@ vib_options = [
                 children=[
                     dbc.InputGroup(
                         [
-                            dbc.InputGroupText("k"),
+                            dbc.InputGroupText('k'),
                             dbc.Input(
-                                id=id("fc"),
+                                id=id('fc'),
                                 placeholder=480,
                                 value=480,
-                                type="number",
+                                type='number',
                                 min=0,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             ),
-                            dbc.InputGroupText(r"N m⁻¹"),
+                            dbc.InputGroupText(r'N m⁻¹'),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
                                     value=True,
-                                    id=id("fc_fix")
+                                    id=id('fc_fix')
                                 )
                             )
                         ],
-                        class_name="mb-3"
+                        class_name='mb-3'
                     )
                 ]
             ),
@@ -220,26 +220,26 @@ vib_options = [
                 children=[
                     dbc.InputGroup(
                         [
-                            dbc.InputGroupText("μ"),
+                            dbc.InputGroupText('μ'),
                             dbc.Input(
-                                id=id("mu"),
+                                id=id('mu'),
                                 placeholder=1,
                                 value=1,
-                                type="number",
+                                type='number',
                                 min=0.00000001,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             ),
-                            dbc.InputGroupText(r"g mol⁻¹"),
+                            dbc.InputGroupText(r'g mol⁻¹'),
                             dbc.InputGroupText(
                                 dbc.Checkbox(
                                     value=False,
-                                    id=id("mu_fix")
+                                    id=id('mu_fix')
                                 )
                             )
                         ],
-                        class_name="mb-3"
+                        class_name='mb-3'
                     )
                 ]
             )
@@ -251,8 +251,8 @@ plot_options = [
     dbc.Row(
         dbc.Col(
             html.H4(
-                style={"textAlign": "center"},
-                children="Plot Options"
+                style={'textAlign': 'center'},
+                children='Plot Options'
             )
         )
     ),
@@ -262,20 +262,20 @@ plot_options = [
                 children=[
                     dbc.InputGroup(
                         [
-                            dbc.InputGroupText("Max. n"),
+                            dbc.InputGroupText('Max. n'),
                             dbc.Input(
-                                id=id("max_n"),
+                                id=id('max_n'),
                                 placeholder=5,
                                 value=5,
-                                type="number",
+                                type='number',
                                 min=0,
                                 max=25,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             )
                         ],
-                        class_name="mb-3"
+                        class_name='mb-3'
                     )
                 ]
             ),
@@ -283,19 +283,19 @@ plot_options = [
                 children=[
                     dbc.InputGroup(
                         [
-                            dbc.InputGroupText("WF scale"),
+                            dbc.InputGroupText('WF scale'),
                             dbc.Input(
-                                id=id("wf_scale"),
+                                id=id('wf_scale'),
                                 placeholder=1800,
-                                type="number",
+                                type='number',
                                 min=0.000000001,
                                 value=1800,
                                 style={
-                                    "textAlign": "center"
+                                    'textAlign': 'center'
                                 }
                             )
                         ],
-                        class_name="mb-3"
+                        class_name='mb-3'
                     )
                 ]
             )
@@ -305,108 +305,108 @@ plot_options = [
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("WF colour"),
+                    dbc.InputGroupText('WF colour'),
                     dbc.Select(
-                        id=id("wf_colour"),
+                        id=id('wf_colour'),
                         options=[
                             {
-                                "label": "Default",
-                                "value": "normal"
+                                'label': 'Default',
+                                'value': 'normal'
                             },
                             {
-                                "label": "Tol",
-                                "value": "tol"
+                                'label': 'Tol',
+                                'value': 'tol'
                             },
                             {
-                                "label": "Wong",
-                                "value": "wong"
+                                'label': 'Wong',
+                                'value': 'wong'
                             }
                         ],
-                        value="normal",
+                        value='normal',
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle",
-                            "alignItems": "auto",
-                            "display": "inline"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle',
+                            'alignItems': 'auto',
+                            'display': 'inline'
                         }
                     )
                 ],
-                class_name="mb-2"
+                class_name='mb-2'
             )
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("PE colour"),
+                    dbc.InputGroupText('PE colour'),
                     dbc.Select(
-                        id=id("pe_colour"),
+                        id=id('pe_colour'),
                         options=[
                             {
-                                "label": "Black",
-                                "value": "black"
+                                'label': 'Black',
+                                'value': 'black'
                             },
                             {
-                                "label": "Blue",
-                                "value": "blue"
+                                'label': 'Blue',
+                                'value': 'blue'
                             },
                             {
-                                "label": "Green",
-                                "value": "green"
+                                'label': 'Green',
+                                'value': 'green'
                             },
                             {
-                                "label": "Red",
-                                "value": "red"
+                                'label': 'Red',
+                                'value': 'red'
                             }
                         ],
-                        value="black",
+                        value='black',
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle",
-                            "alignItems": "auto",
-                            "display": "inline"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle',
+                            'alignItems': 'auto',
+                            'display': 'inline'
                         }
                     )
                 ],
-                class_name="mb-2"
+                class_name='mb-2'
             )
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("State colour"),
+                    dbc.InputGroupText('State colour'),
                     dbc.Select(
-                        id=id("state_colour"),
+                        id=id('state_colour'),
                         options=[
                             {
-                                "label": "Black",
-                                "value": "black"
+                                'label': 'Black',
+                                'value': 'black'
                             },
                             {
-                                "label": "Blue",
-                                "value": "blue"
+                                'label': 'Blue',
+                                'value': 'blue'
                             },
                             {
-                                "label": "Green",
-                                "value": "green"
+                                'label': 'Green',
+                                'value': 'green'
                             },
                             {
-                                "label": "Red",
-                                "value": "red"
+                                'label': 'Red',
+                                'value': 'red'
                             }
                         ],
-                        value="black",
+                        value='black',
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle",
-                            "alignItems": "auto",
-                            "display": "inline"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle',
+                            'alignItems': 'auto',
+                            'display': 'inline'
                         }
                     )
                 ],
-                class_name="mb-2"
+                class_name='mb-2'
             )
         )
     ]),
@@ -414,64 +414,64 @@ plot_options = [
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("WF linewidth"),
+                    dbc.InputGroupText('WF linewidth'),
                     dbc.Input(
-                        id=id("wf_linewidth"),
+                        id=id('wf_linewidth'),
                         placeholder=3,
-                        type="number",
+                        type='number',
                         min=1,
                         max=10,
                         value=3,
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         }
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             )
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("PE linewidth"),
+                    dbc.InputGroupText('PE linewidth'),
                     dbc.Input(
-                        id=id("pe_linewidth"),
+                        id=id('pe_linewidth'),
                         placeholder=2,
-                        type="number",
+                        type='number',
                         min=1,
                         max=10,
                         value=2,
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         }
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             )
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("State linewidth"),
+                    dbc.InputGroupText('State linewidth'),
                     dbc.Input(
-                        id=id("state_linewidth"),
+                        id=id('state_linewidth'),
                         placeholder=2,
-                        type="number",
+                        type='number',
                         min=1,
                         max=10,
                         value=2,
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         }
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             )
         )
     ]),
@@ -479,43 +479,43 @@ plot_options = [
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Toggle WF"),
+                    dbc.InputGroupText('Toggle WF'),
                     dbc.InputGroupText(
                         dbc.Checkbox(
                             value=True,
-                            id=id("toggle_wf")
+                            id=id('toggle_wf')
                         )
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             )
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Toggle PE"),
+                    dbc.InputGroupText('Toggle PE'),
                     dbc.InputGroupText(
                         dbc.Checkbox(
                             value=True,
-                            id=id("toggle_pe")
+                            id=id('toggle_pe')
                         )
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             )
         ),
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Toggle states"),
+                    dbc.InputGroupText('Toggle states'),
                     dbc.InputGroupText(
                         dbc.Checkbox(
                             value=True,
-                            id=id("toggle_states")
+                            id=id('toggle_states')
                         )
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             )
         ),
     ]),
@@ -523,24 +523,24 @@ plot_options = [
         dbc.Col(
             dbc.InputGroup(
                 [
-                    dbc.InputGroupText("Text size"),
+                    dbc.InputGroupText('Text size'),
                     dbc.Input(
-                        id=id("text_size"),
+                        id=id('text_size'),
                         placeholder=18,
-                        type="number",
+                        type='number',
                         min=10,
                         max=25,
                         value=15,
                         style={
-                            "textAlign": "center",
-                            "verticalAlign": "middle",
-                            "horizontalAlign": "middle"
+                            'textAlign': 'center',
+                            'verticalAlign': 'middle',
+                            'horizontalAlign': 'middle'
                         }
                     )
                 ],
-                class_name="mb-3",
+                class_name='mb-3',
             ),
-            class_name="mb-3",
+            class_name='mb-3',
         )
     ])
 ]
@@ -550,9 +550,9 @@ save_options = [
         dbc.Col([
             html.H4(
                 style={
-                    "textAlign": "center",
+                    'textAlign': 'center',
                 },
-                children=""
+                children=''
             )
         ])
     ]),
@@ -562,39 +562,39 @@ save_options = [
                 html.Div(
                     children=[
                         dbc.Button(
-                            "Download Data",
-                            id=id("download_data"),
+                            'Download Data',
+                            id=id('download_data'),
                             style={
                                 'boxShadow': 'none',
                                 'textalign': 'top'
                             }
                         ),
-                        dcc.Download(id=id("download_data_trigger")),
-                        dcc.Store(id=id("data_store"), data="")
+                        dcc.Download(id=id('download_data_trigger')),
+                        dcc.Store(id=id('data_store'), data='')
                     ]
                 ),
-                style={"textAlign": "center"}
+                style={'textAlign': 'center'}
             ),
             dbc.Col(
                 html.Div(
                     children=[
                         dbc.Button(
-                            "Download Plot",
-                            id=id("download_plot"),
+                            'Download Plot',
+                            id=id('download_plot'),
                             style={
                                 'boxShadow': 'none',
                                 'textalign': 'top'
                             }
                         ),
                         html.Div(
-                            id=id("hidden-div"), style={"display": "none"}
+                            id=id('hidden-div'), style={'display': 'none'}
                         )
                     ]
                 ),
-                style={"textAlign": "center"}
+                style={'textAlign': 'center'}
             )
         ],
-        class_name="mb-3"
+        class_name='mb-3'
     )
 ]
 
@@ -608,23 +608,23 @@ layout = html.Div(
                         dbc.Row([
                             dbc.Col(
                                 children=main_plot,
-                                className="col-6"
+                                className='col-6'
                             ),
                             dbc.Col(
                                 children=vib_options + plot_options +save_options, # noqa
-                                className="col-6"
+                                className='col-6'
                             )
                         ])
                     ],
                     style={
-                        "marginTop": "10px",
-                        "width": "95vw",
-                        "marginLeft": "2.5vw",
-                        "marginRight": "2.5vw"
+                        'marginTop': '10px',
+                        'width': '95vw',
+                        'marginLeft': '2.5vw',
+                        'marginRight': '2.5vw'
                     }
                 ),
             ],
-            className="main_wrapper"
+            className='main_wrapper'
         ),
         utils.footer()
     ]
@@ -632,11 +632,11 @@ layout = html.Div(
 
 # Image download callback
 clientside_callback(
-    """
+    '''
     function (dummy) {
 
         // Get svg for plot and axis labels
-        let plot = document.getElementById("vib_main_plot");
+        let plot = document.getElementById('vib_main_plot');
         if (plot == null || plot == undefined){
             return;
         }
@@ -648,7 +648,7 @@ clientside_callback(
 
         // merge svg together
         // createElementNS for svg
-        var svgNS = "http://www.w3.org/2000/svg";  
+        var svgNS = 'http://www.w3.org/2000/svg';  
         var mergedSvg = document.createElementNS(svgNS, 'svg');
         mergedSvg.setAttribute('id', 'merged');
         // keep the viewBox of the chart
@@ -666,11 +666,11 @@ clientside_callback(
         mergedSvg.setAttribute('style', plotData.getAttribute('style'));
         mergedSvg.setAttribute('xmlns', plotData.getAttribute('xmlns'));
 
-        var svgBlob = new Blob([mergedSvg.outerHTML], {type:"image/svg+xml;charset=utf-8"});
+        var svgBlob = new Blob([mergedSvg.outerHTML], {type:'image/svg+xml;charset=utf-8'});
         var svgUrl = URL.createObjectURL(svgBlob);
-        var downloadLink = document.createElement("a");
+        var downloadLink = document.createElement('a');
         downloadLink.href = svgUrl;
-        downloadLink.download = "vibrations.svg";
+        downloadLink.download = 'vibrations.svg';
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
@@ -685,75 +685,75 @@ clientside_callback(
 
         return ;
         }
-    """, # noqa
-    Output(id("hidden-div"), "children"),
+    ''', # noqa
+    Output(id('hidden-div'), 'children'),
     [
-        Input(id("download_plot"), "n_clicks")
+        Input(id('download_plot'), 'n_clicks')
     ],
     prevent_initial_call=True
 )
 
 
 @callback(
-    Output(id("download_data_trigger"), "data"),
+    Output(id('download_data_trigger'), 'data'),
     [
-        Input(id("download_data"), "n_clicks"),
-        Input(id("data_store"), "data")
+        Input(id('download_data'), 'n_clicks'),
+        Input(id('data_store'), 'data')
     ],
     prevent_initial_call=True,
 )
 def func(n_clicks, data_str):
-    if callback_context.triggered_id == id("data_store"):
+    if callback_context.triggered_id == id('data_store'):
         return
     else:
-        return dict(content=data_str, filename="waveplot_vibrational_data.dat")
+        return dict(content=data_str, filename='waveplot_vibrational_data.dat')
 
 
 @callback(
     [
-        Output(id("main_plot"), "figure"),
-        Output(id("main_plot"), "config"),
-        Output(id("data_store"), "data"),
-        Output(id("lin_wn"), "value"),
-        Output(id("ang_wn"), "value"),
-        Output(id("fc"), "value"),
-        Output(id("mu"), "value"),
-        Output(id("lin_wn"), "disabled"),
-        Output(id("ang_wn"), "disabled"),
-        Output(id("fc"), "disabled"),
-        Output(id("mu"), "disabled"),
+        Output(id('main_plot'), 'figure'),
+        Output(id('main_plot'), 'config'),
+        Output(id('data_store'), 'data'),
+        Output(id('lin_wn'), 'value'),
+        Output(id('ang_wn'), 'value'),
+        Output(id('fc'), 'value'),
+        Output(id('mu'), 'value'),
+        Output(id('lin_wn'), 'disabled'),
+        Output(id('ang_wn'), 'disabled'),
+        Output(id('fc'), 'disabled'),
+        Output(id('mu'), 'disabled'),
     ],
     [
-        Input(id("lin_wn"), "value"),
-        Input(id("ang_wn"), "value"),
-        Input(id("fc"), "value"),
-        Input(id("mu"), "value"),
-        Input(id("max_n"), "value"),
-        Input(id("lin_wn_fix"), "value"),
-        Input(id("ang_wn_fix"), "value"),
-        Input(id("fc_fix"), "value"),
-        Input(id("mu_fix"), "value"),
-        Input(id("wf_scale"), "value"),
-        Input(id("text_size"), "value"),
-        Input(id("wf_linewidth"), "value"),
-        Input(id("pe_linewidth"), "value"),
-        Input(id("state_linewidth"), "value"),
-        Input(id("wf_colour"), "value"),
-        Input(id("pe_colour"), "value"),
-        Input(id("state_colour"), "value"),
-        Input(id("toggle_wf"), "value"),
-        Input(id("toggle_pe"), "value"),
-        Input(id("toggle_states"), "value")
+        Input(id('lin_wn'), 'value'),
+        Input(id('ang_wn'), 'value'),
+        Input(id('fc'), 'value'),
+        Input(id('mu'), 'value'),
+        Input(id('max_n'), 'value'),
+        Input(id('lin_wn_fix'), 'value'),
+        Input(id('ang_wn_fix'), 'value'),
+        Input(id('fc_fix'), 'value'),
+        Input(id('mu_fix'), 'value'),
+        Input(id('wf_scale'), 'value'),
+        Input(id('text_size'), 'value'),
+        Input(id('wf_linewidth'), 'value'),
+        Input(id('pe_linewidth'), 'value'),
+        Input(id('state_linewidth'), 'value'),
+        Input(id('wf_colour'), 'value'),
+        Input(id('pe_colour'), 'value'),
+        Input(id('state_colour'), 'value'),
+        Input(id('toggle_wf'), 'value'),
+        Input(id('toggle_pe'), 'value'),
+        Input(id('toggle_states'), 'value')
     ]
 )
 def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
                mu_fix, wf_scale, text_size, wf_linewidth, curve_linewidth,
                state_linewidth, wf_colour, curve_colour, state_colour,
                toggle_wf, toggle_pe, toggle_states):
-    """
+    '''
     Updates the app, given the current state of the UI
     All inputs correspond (in the same order) to those in the decorator
-    """
+    '''
 
     light = 2.998E10
 
@@ -763,7 +763,7 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     fc_disable = True
     mu_disable = True
 
-    # Make "fixed" values editable
+    # Make 'fixed' values editable
     if lin_wn_fix:
         lin_wn_disable = False
     if ang_wn_fix:
@@ -776,36 +776,36 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     # Modebar config
 
     modebar_options = {
-        "modeBarButtonsToRemove": [
-            "toImage",
-            "sendDataToCloud",
-            "autoScale2d",
-            "resetScale2d",
-            "hoverClosestCartesian",
-            "toggleSpikelines",
-            "zoom2d",
-            "zoom3d",
-            "pan3d",
-            "pan2d",
-            "select2d",
-            "zoomIn2d",
-            "zoomOut2d",
-            "hovermode",
-            "resetCameraLastSave3d",
-            "hoverClosest3d",
-            "hoverCompareCartesian",
-            "resetViewMapbox",
-            "orbitRotation",
-            "tableRotation",
-            "resetCameraDefault3d"
+        'modeBarButtonsToRemove': [
+            'toImage',
+            'sendDataToCloud',
+            'autoScale2d',
+            'resetScale2d',
+            'hoverClosestCartesian',
+            'toggleSpikelines',
+            'zoom2d',
+            'zoom3d',
+            'pan3d',
+            'pan2d',
+            'select2d',
+            'zoomIn2d',
+            'zoomOut2d',
+            'hovermode',
+            'resetCameraLastSave3d',
+            'hoverClosest3d',
+            'hoverCompareCartesian',
+            'resetViewMapbox',
+            'orbitRotation',
+            'tableRotation',
+            'resetCameraDefault3d'
         ],
-        "displaylogo": False,
-        "displayModeBar": True,
+        'displaylogo': False,
+        'displayModeBar': True,
     }
 
     if sum([ang_wn_fix, lin_wn_fix, fc_fix, mu_fix]) != 2 or ang_wn_fix and lin_wn_fix: # noqa
 
-        out_contents = "data:text/csv;charset=utf-8," + urllib.parse.quote(
+        out_contents = 'data:text/csv;charset=utf-8,' + urllib.parse.quote(
             ''
         )
         fig = make_subplots()
@@ -864,7 +864,7 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     state_e /= 1.98630E-23
     harmonic_e /= 1.98630E-23
 
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig = make_subplots(specs=[[{'secondary_y': True}]])
 
     if toggle_pe:
         # Plot harmonic energy curve
@@ -872,10 +872,10 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
             go.Scatter(
                 x=displacement * 10E10,
                 y=harmonic_e,
-                hoverinfo="skip",
+                hoverinfo='skip',
                 line={
-                    "width": curve_linewidth,
-                    "color": curve_colour
+                    'width': curve_linewidth,
+                    'color': curve_colour
                 }
             ),
             secondary_y=False
@@ -889,11 +889,11 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
                     x=displacement * 10E10,
                     y=[state] * displacement.size,
                     line={
-                        "width": state_linewidth,
-                        "color": state_colour
+                        'width': state_linewidth,
+                        'color': state_colour
                     },
-                    name="n = {}".format(it),
-                    hovertemplate="%{x} " + u"\u212B" + " <br>%{y} cm⁻¹<br>"
+                    name='n = {}'.format(it),
+                    hovertemplate='%{x} ' + u'\u212B' + ' <br>%{y} cm⁻¹<br>'
                 ),
                 secondary_y=False
             )
@@ -901,11 +901,11 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     if wf_scale is None:
         wf_scale = 1
 
-    if wf_colour == "tol":
+    if wf_colour == 'tol':
         wf_colour = utils.tol_cols[1:] + utils.wong_cols + utils.def_cols
-    elif wf_colour == "wong":
+    elif wf_colour == 'wong':
         wf_colour = utils.wong_cols + utils.def_cols + utils.tol_cols[1:]
-    elif wf_colour == "normal":
+    elif wf_colour == 'normal':
         wf_colour = utils.def_cols + utils.tol_cols[1:] + utils.wong_cols
 
     wf = np.zeros([max_n + 1, displacement.size])
@@ -918,10 +918,10 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
                 go.Scatter(
                     x=displacement * 10E10,
                     y=wf[n] * (n + 1) * wf_scale + n * (lin_wn) + state_e[0],
-                    hoverinfo="skip",
+                    hoverinfo='skip',
                     line={
-                        "width": wf_linewidth,
-                        "color": wf_colour[n]
+                        'width': wf_linewidth,
+                        'color': wf_colour[n]
                     }
                 ),
                 secondary_y=False
@@ -929,13 +929,21 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
 
     fig.update_xaxes(
         autorange=True,
-        hoverformat=".3f",
-        ticks="outside",
+        hoverformat='.3f',
+        ticks='outside',
         title={
-            "text": "Displacement (" + u"\u212B" + ")",
-            "font": {"size": text_size, "color": "black"}
+            'text': 'Displacement (' + u'\u212B' + ')',
+            'font': {
+                'family': 'Arial',
+                'size': text_size,
+                'color': 'black'
+            }
         },
-        tickfont={"size": text_size, "color": "black"},
+        tickfont={
+            'family': 'Arial',
+            'size': text_size,
+            'color': 'black'
+        },
         showticklabels=True,
         showline=True,
         linewidth=1,
@@ -944,16 +952,24 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
 
     fig.update_yaxes(
         autorange=True,
-        hoverformat=".1f",
+        hoverformat='.1f',
         title={
-            "text": "Energy (cm⁻¹)",
-            "font": {"size": text_size, "color": "black"},
-            "standoff": 2
+            'text': 'Energy (cm⁻¹)',
+            'font': {
+                'family': 'Arial',
+                'size': text_size,
+                'color': 'black'
+            },
+            'standoff': 2
         },
-        tickfont={"size": text_size, "color": "black"},
-        ticks="outside",
+        tickfont={
+            'family': 'Arial',
+            'size': text_size,
+            'color': 'black'
+        },
+        ticks='outside',
         showticklabels=True,
-        tickformat="f",
+        tickformat='f',
         secondary_y=False,
         showline=True,
         linewidth=1,
@@ -963,7 +979,7 @@ def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
     fig.update_layout(
         margin=dict(l=30, r=30, t=30, b=60),
         showlegend=False,
-        plot_bgcolor="rgb(255, 255,255)"
+        plot_bgcolor='rgb(255, 255,255)'
     )
 
     # Create output file
