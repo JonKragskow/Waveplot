@@ -32,10 +32,10 @@ from .core import common
 ID_PREFIX = 'orb2_'
 dash_id = common.dash_id(ID_PREFIX)
 
-PAGE_NAME = '2d Orbitals'
-PAGE_PATH = '/orbitals2d'
-PAGE_IMAGE = 'assets/Orbitals2.png'
-PAGE_DESCRIPTION = 'Interactive atomic orbitals'
+PAGE_NAME = 'Radial Functions'
+PAGE_PATH = '/radial'
+PAGE_IMAGE = 'assets/radial.png'
+PAGE_DESCRIPTION = 'Interactive Radial Functions'
 
 register_page(
     __name__,
