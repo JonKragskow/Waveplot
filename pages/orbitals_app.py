@@ -947,7 +947,7 @@ def update_3d_store(orbital_name, cutaway):
     '''
     Updates the 3d orbital data store, which contains cube file for javascript
     orbital visualisation, and the isovalue store which contains the
-    isovalue used in the j isosurface
+    isovalue used in the isosurface
 
     Parameters
     ----------

@@ -16,6 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import numpy as np
+from . import common
+from dash import dcc, html, Input, Output, State, callback
+import dash_bootstrap_components as dbc
 
 
 def radial_s(n, rho):
@@ -739,3 +742,433 @@ def f_2d(n, r, wf_type):
         return r**2. * radial_f(n, 2.*r/n)**2
     if "RWF" in wf_type:
         return radial_f(n, 2.*r/n)
+
+
+class Orb2dPlot(common.Div):
+    def __init__(self, prefix, **kwargs):
+        # Initialise base class attributes
+        super().__init__(prefix=prefix, **kwargs)
+
+        self.plot = dcc.Graph(
+            id=self.prefix('2d_plot'),
+            className='plot_area',
+            mathjax=True
+        )
+
+        self.make_div_contents()
+
+    def make_div_contents(self):
+        '''
+        Assembles div children in rows and columns
+        '''
+
+        contents = [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.plot,
+                    )
+                ]
+            )
+        ]
+
+        self.div.children = contents
+        return
+
+
+class OptionsDiv(common.Div):
+    def __init__(self, prefix, **kwargs):
+        # Initialise base class attributes
+        super().__init__(prefix=prefix, **kwargs)
+
+        self.orb_select = dcc.Dropdown(
+            id=self.prefix('orb_select'),
+            style={
+                'textAlign': 'left'
+            },
+            options=[
+                {'label': '1s', 'value': '1s'},
+                {'label': '2s', 'value': '2s'},
+                {'label': '3s', 'value': '3s'},
+                {'label': '4s', 'value': '4s'},
+                {'label': '5s', 'value': '5s'},
+                {'label': '6s', 'value': '6s'},
+                {'label': '7s', 'value': '7s'},
+                {'label': '2p', 'value': '2p'},
+                {'label': '3p', 'value': '3p'},
+                {'label': '4p', 'value': '4p'},
+                {'label': '5p', 'value': '5p'},
+                {'label': '6p', 'value': '6p'},
+                {'label': '7p', 'value': '7p'},
+                {'label': '3d', 'value': '3d'},
+                {'label': '4d', 'value': '4d'},
+                {'label': '5d', 'value': '5d'},
+                {'label': '6d', 'value': '6d'},
+                {'label': '7d', 'value': '7d'},
+                {'label': '4f', 'value': '4f'},
+                {'label': '5f', 'value': '5f'},
+                {'label': '6f', 'value': '6f'},
+                {'label': '7f', 'value': '7f'},
+            ],
+            value=['1s', '2p', '3d', '4f'],
+            multi=True,
+            placeholder='Orbital...'
+        )
+
+        self.func_select = dbc.Select(
+            id=self.prefix('function_type'),
+            style={
+                'textAlign': 'center',
+                'display': 'block'
+            },
+            options=[
+                {
+                    'label': 'Radial Distribution Function',
+                    'value': 'rdf'
+                },
+                {
+                    'label': 'Radial Wave Function',
+                    'value': 'rwf'
+                }
+            ],
+            value='rdf',
+        )
+
+        self.lower_x_input = dbc.Input(
+            id=self.prefix('lower_x_in'),
+            placeholder=0,
+            type='number',
+            min=-10,
+            max=100,
+            value=0,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.lower_x_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Lower x limit'),
+                self.lower_x_input
+            ]
+        )
+
+        self.upper_x_input = dbc.Input(
+            id=self.prefix('upper_x_in'),
+            placeholder=0,
+            type='number',
+            min=0,
+            max=100,
+            value=40,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.upper_x_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Lower x limit'),
+                self.upper_x_input
+            ]
+        )
+
+        self.distance_select = dbc.Select(
+            id=self.prefix('distance_unit'),
+            options=[
+                {'value': 'a0', 'label': 'Bohr Radii'},
+                {'value': 'Å', 'label': 'Angstrom'}
+            ],
+            value='a0',
+            style={'textAlign': 'center'}
+        )
+
+        self.distance_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Distance unit'),
+                self.distance_select
+            ]
+        )
+
+        self.colour_select = dbc.Select(
+            id=self.prefix('colours_2d'),
+            options=[
+                {
+                    'label': 'Standard',
+                    'value': 'normal'
+                },
+                {
+                    'label': 'Tol',
+                    'value': 'tol'
+                },
+                {
+                    'label': 'Wong',
+                    'value': 'wong'
+                }
+            ],
+            value='normal',
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle',
+                'alignItems': 'auto',
+                'display': 'inline'
+            }
+        )
+
+        self.colour_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Colour Palette'),
+                self.colour_select
+            ]
+        )
+
+        self.output_height_input = dbc.Input(
+            id=self.prefix('save_height_in'),
+            placeholder=500,
+            type='number',
+            value=500,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.output_height_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Output height'),
+                self.output_height_input,
+                dbc.InputGroupText('px'),
+            ]
+        )
+
+        self.output_width_input = dbc.Input(
+            id=self.prefix('save_width_in'),
+            placeholder=500,
+            type='number',
+            value=500,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.output_width_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Output width'),
+                self.output_width_input,
+                dbc.InputGroupText('px'),
+            ]
+        )
+
+        self.download_button = dbc.Button(
+            'Download Data',
+            id=self.prefix('download_data'),
+            style={
+                'boxShadow': 'none',
+                'textalign': 'top'
+            }
+        )
+        self.download_trigger = dcc.Download(
+            id=self.prefix('download_data_trigger')
+        )
+
+        self.image_format_select = dbc.Select(
+            id=self.prefix('save_format'),
+            style={
+                'textAlign': 'center',
+                'horizontalAlign': 'center',
+                'display': 'inline'
+            },
+            options=[
+                {
+                    'label': 'svg',
+                    'value': 'svg',
+                },
+                {
+                    'label': 'png',
+                    'value': 'png',
+                },
+                {
+                    'label': 'jpeg',
+                    'value': 'jpeg',
+                }
+            ],
+            value='svg'
+        )
+
+        self.image_format_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Image format'),
+                self.image_format_select
+            ]
+        )
+
+        self.make_div_contents()
+        return
+
+    def make_input_group(self, elements):
+
+        group = dbc.InputGroup(
+            elements,
+            class_name='mb-3',
+        )
+        return group
+
+    def make_div_contents(self):
+        '''
+        Assembles div children in rows and columns
+        '''
+
+        contents = [
+            dbc.Row([
+                dbc.Col(
+                    html.H4(
+                        style={
+                            'textAlign': 'center',
+                            },
+                        children='Orbital'
+                    )
+                ),
+                dbc.Col(
+                    html.H4(
+                        style={
+                            'textAlign': 'center',
+                            },
+                        children='Function'
+                    )
+                )
+            ]),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.orb_select,
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.func_select,
+                        class_name='mb-3'
+                    )
+                ]
+            ),
+            html.H4(
+                style={'textAlign': 'center'},
+                children='Plot Options'
+            ),
+            dbc.Row(
+                children=[
+                    dbc.Col(
+                        self.lower_x_ig,
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.upper_x_ig,
+                        class_name='mb-3'
+                    )
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.distance_ig,
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.colour_ig,
+                        class_name='mb-3'
+                    )
+                ]
+            ),
+            dbc.Row([
+                dbc.Col([
+                    html.H4(
+                        style={
+                            'textAlign': 'center',
+                        },
+                        children='Save Options',
+                        id=self.prefix('save_options_header')
+                    ),
+                    dbc.Tooltip(
+                        children='Use the camera button in the top right of \
+                                the plot to save an image',
+                        target=self.prefix('save_options_header'),
+                        style={
+                            'textAlign': 'center',
+                        },
+                    )
+                ])
+            ]),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.output_height_ig,
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.output_width_ig,
+                        class_name='mb-3'
+                    )
+                ]
+            ),
+            dbc.Row([
+                dbc.Col(
+                    [
+                        self.download_button,
+                        self.download_trigger
+                    ],
+                    class_name='mb-3'
+                ),
+                dbc.Col(
+                    self.image_format_ig,
+                    class_name='mb-3'
+                )
+            ])
+        ]
+
+        self.div.children = contents
+        return
+
+
+def assemble_2d_callbacks(plot_div: Orb2dPlot,
+                          options_div: OptionsDiv) -> None:
+    '''
+    Creates callbacks between experimental and fitted AC plots and elements in
+    AC options tab
+
+    Parameters
+    ----------
+    plot_div: Orb2dPlot
+        Experimental plot tab object
+    options_div: OptionsDiv
+        Options div object
+
+    Returns
+    -------
+    None
+    '''
+
+    # Callback for download 2d data button
+    states = [
+        State(options_div.func_select, 'value'),
+        State(options_div.orb_select, 'value'),
+        State(options_div.lower_x_input, 'value'),
+        State(options_div.upper_x_input, 'value'),
+        State(options_div.distance_select, 'value')
+    ]
+    callback(
+        Output(options_div.download_trigger, 'data'),
+        Input(options_div.download_button, 'n_clicks'),
+        states
+    )(download_data)
+
+
+def download_data(_nc: int, func, orbs, low_x, up_x, unit):
+
+    print(func, orbs, low_x, up_x, unit)
+
+    return
