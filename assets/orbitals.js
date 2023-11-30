@@ -1,6 +1,7 @@
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
-        orbital_function: function(orbital, orb_iso, colour_a, colour_b, wire_toggle, orb_name_3d, x, y, z, zoom, qx, qy, qz, qw) {
+        orbital_function: function(orbital, orb_iso, colour_a, colour_b, wire_toggle,
+            orb_name_3d, x, y, z, zoom, qx, qy, qz, qw) {
 
     let element = document.getElementById('orb_mol_div');
 
@@ -65,7 +66,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
         return zoom_level;
     }
     else {
-        return ['', undefined];
+        return '';
     }
 
     }}})

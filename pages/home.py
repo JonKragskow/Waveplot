@@ -35,18 +35,21 @@ register_page(
 )
 
 paths = [
+    '/radial',
     '/orbitals',
     '/vibrations',
     '/f-densities',
 ]
 
 names = [
+    'Radial Functions',
     'Atomic Orbitals',
     'Harmonic Oscillators',
     '4f Densities',
 ]
 
 images = [
+    'assets/radial.png',
     'assets/Orbitals.png',
     'assets/Vibrations.png',
     'assets/4f_densities.png',

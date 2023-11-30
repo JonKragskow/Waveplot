@@ -16,20 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from dash import html, dcc, callback_context, register_page, callback, \
-    clientside_callback, ClientsideFunction
-import dash_bootstrap_components as dbc
-from dash.exceptions import PreventUpdate
-from dash.dependencies import Input, Output
-import plotly.graph_objs as go
-import numpy as np
-import io
-
-from .core import orbitals as oc
+from dash import register_page
+from .core import radial as rc
 from .core import utils
 from .core import common
 
-ID_PREFIX = 'orb2_'
+ID_PREFIX = 'rad'
 dash_id = common.dash_id(ID_PREFIX)
 
 PAGE_NAME = 'Radial Functions'
@@ -49,14 +41,12 @@ register_page(
 
 prefix = utils.dash_id('orb3')
 
-plot_div = oc.Orb2dPlot(ID_PREFIX)
+plot_div = rc.PlotDiv(ID_PREFIX)
 
 # Make AC options tab and all callbacks
-options_2d = oc.OptionsDiv(ID_PREFIX)
+options = rc.OptionsDiv(ID_PREFIX)
 # Connect callbacks for plots and options
-oc.assemble_2d_callbacks(
-    plot_div, options_2d
-)
+rc.assemble_callbacks(plot_div, options)
 
 # Layout of webpage
-layout = common.make_layout(plot_div.div, options_2d.div)
+layout = common.make_layout(plot_div.div, options.div)

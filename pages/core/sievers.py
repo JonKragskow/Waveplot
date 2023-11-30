@@ -17,9 +17,8 @@
 '''
 import numpy as np
 import numpy.linalg as la
-import py3nj
+import microqm.angular as ang
 import functools
-import inorgqm.multi_electron as iqme
 from scipy.spatial import Delaunay
 
 from . import utils as ut
@@ -177,32 +176,6 @@ def compute_isosurface(a_2, a_4, a_6, n_x, n_y, n_z, scale=1, comment=''):
     return c
 
 
-@functools.lru_cache(maxsize=32)
-def wigner3(a, b, c, d, e, f):
-
-    a = int(2 * a)
-    b = int(2 * b)
-    c = int(2 * c)
-    d = int(2 * d)
-    e = int(2 * e)
-    f = int(2 * f)
-
-    return py3nj.wigner3j(a, b, c, d, e, f)
-
-
-@functools.lru_cache(maxsize=32)
-def wigner6(a, b, c, d, e, f):
-
-    a = int(2 * a)
-    b = int(2 * b)
-    c = int(2 * c)
-    d = int(2 * d)
-    e = int(2 * e)
-    f = int(2 * f)
-
-    return py3nj.wigner6j(a, b, c, d, e, f)
-
-
 def compute_a_vals(n, J, mJ, L, S):
 
     k_max = min(6, int(2 * J + 1))
@@ -226,12 +199,12 @@ def _compute_light_a_val(n, J, mJ, L, S, k):
     a_k = np.sqrt(4 * np.pi / (2 * k + 1))
     a_k *= (-1)**(2 * J - mJ + L + S)
     a_k *= 7. / (np.sqrt(4 * np.pi)) * (2 * J + 1) * np.sqrt(2 * k + 1)
-    a_k *= wigner3(J, k, J, -mJ, 0, mJ) / wigner3(L, k, L, -L, 0, L)
-    a_k *= wigner6(L, J, S, J, L, k)
-    a_k *= wigner3(k, 3, 3, 0, 0, 0)
+    a_k *= ang.wigner3(J, k, J, -mJ, 0, mJ) / ang.wigner3(L, k, L, -L, 0, L)
+    a_k *= ang.wigner6(L, J, S, J, L, k)
+    a_k *= ang.wigner3(k, 3, 3, 0, 0, 0)
     summa = 0
     for it in range(1, n + 1):
-        summa += (-1)**it * wigner3(k, 3, 3, 0, (4 - it), (it - 4))
+        summa += (-1)**it * ang.wigner3(k, 3, 3, 0, (4 - it), (it - 4))
     a_k *= summa
 
     return a_k
@@ -241,11 +214,11 @@ def _compute_heavy_a_val(J, mJ, n, k):
     a_k = np.sqrt(4 * np.pi / (2 * k + 1))
     a_k *= (-1)**(J - mJ)
     a_k *= 7 / (np.sqrt(4 * np.pi))
-    a_k *= wigner3(J, k, J, -mJ, 0, mJ) / wigner3(J, k, J, -J, 0, J)
-    a_k *= np.sqrt(2 * k + 1) * wigner3(k, 3, 3, 0, 0, 0)
+    a_k *= ang.wigner3(J, k, J, -mJ, 0, mJ) / ang.wigner3(J, k, J, -J, 0, J)
+    a_k *= np.sqrt(2 * k + 1) * ang.wigner3(k, 3, 3, 0, 0, 0)
     summa = 0
     for it in range(1, n - 6):
-        summa += (-1)**it * wigner3(k, 3, 3, 0, (4 - it), (it - 4))
+        summa += (-1)**it * ang.wigner3(k, 3, 3, 0, (4 - it), (it - 4))
     a_k *= summa
     return a_k
 
@@ -255,11 +228,11 @@ def compute_CF_coeffs(J):
     cfps = np.loadtxt('cfps.dat')
     k_max = 6
 
-    _, _, jz, jp, jm, _ = iqme.calc_ang_mom_ops(J)
+    _, _, jz, jp, jm, _ = ang.calc_ang_mom_ops(J)
 
-    stev_ops = iqme.calc_stev_ops(k_max, jp, jm, jz)[1::2]
+    stev_ops = ang.calc_stev_ops(k_max, jp, jm, jz)[1::2]
 
-    hcf, vals, vecs = iqme.calc_HCF(J, cfps, stev_ops, kmax=k_max)
+    hcf, vals, vecs = ang.calc_HCF(J, cfps, stev_ops, kmax=k_max)
 
     k_vals = [2, 4, 6]
     for kit in range(k_max / 2):

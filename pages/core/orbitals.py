@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,171 +14,45 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 import numpy as np
-from . import common
-from dash import dcc, html, Input, Output, State, callback
+from dash import dcc, html, Input, Output, callback, no_update, \
+    clientside_callback, ClientsideFunction, Patch, ctx
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
+
+from . import common
+from . import radial as rc
 
 
-def radial_s(n, rho):
-    """
-    Calculates radial Wavefunction of s orbital
-    for the specified principal quantum number
-
-    Parameters
-    ----------
-    n : int
-        principal quantum number
-    rho : np.ndarray
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
-
-    Returns
-    -------
-    np.ndarray
-        radial wavefunction as a function of rho
-    """
-
-    if n == 1:
-        rad = 2.*np.exp(-rho/2.)
-    if n == 2:
-        rad = 1./(2.*np.sqrt(2.))*(2.-rho)*np.exp(-rho/2.)
-    if n == 3:
-        rad = 1./(9.*np.sqrt(3.))*(6.-6.*rho+rho**2.)*np.exp(-rho/2.)
-    if n == 4:
-        rad = (1./96.)*(24.-36.*rho+12.*rho**2.-rho**3.)*np.exp(-rho/2.)
-    if n == 5:
-        rad = (1./(300.*np.sqrt(5.)))*(120.-240.*rho+120.*rho**2.-20.*rho**3.+rho**4.)*np.exp(-rho/2.) # noqa
-    if n == 6:
-        rad = (1./(2160.*np.sqrt(6.)))*(720.-1800.*rho+1200.*rho**2.-300.*rho**3.+30.*rho**4.-rho**5.)*np.exp(-rho/2.) # noqa
-    if n == 7:
-        rad = (1./(17640.*np.sqrt(7)))*(5040. - 15120.*rho + 12600.*rho**2. - 4200.*rho**3. + 630.*rho**4. -42* rho**5. + rho**6)*np.exp(-rho/2.) # noqa
-
-    return rad
-
-
-def radial_p(n, rho):
-    """
-    Calculates radial Wavefunction of p orbital
-    for the specified principal quantum number
-
-    Parameters
-    ----------
-    n : int
-        principal quantum number
-    rho : np.ndarray
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
-
-    Returns
-    -------
-    np.ndarray
-        radial wavefunction as a function of rho
-    """
-
-    if n == 2:
-        rad = 1./(2.*np.sqrt(6.))*rho*np.exp(-rho/2.)
-    elif n == 3:
-        rad = 1./(9.*np.sqrt(6.))*rho*(4.-rho)*np.exp(-rho/2.)
-    elif n == 4:
-        rad = 1./(32.*np.sqrt(15.))*rho*(20.-10.*rho+rho**2.)*np.exp(-rho/2.)
-    elif n == 5:
-        rad = 1./(150.*np.sqrt(30.))*rho*(120.-90.*rho+18.*rho**2.-rho**3.)*np.exp(-rho/2.) # noqa
-    elif n == 6:
-        rad = 1./(432.*np.sqrt(210.))*rho*(840.-840.*rho+252.*rho**2.-28.*rho**3.+rho**4.)*np.exp(-rho/2.) # noqa
-    elif n == 7:
-        rad = 1./(11760.*np.sqrt(21.))*rho*(6720. - 8400.*rho+3360.*rho**2.-560.*rho**3.+40*rho**4. - rho**5)*np.exp(-rho/2.) # noqa
-    return rad
-
-
-def radial_d(n, rho):
-    """
-    Calculates radial Wavefunction of d orbital
-    for the specified principal quantum number
-
-    Parameters
-    ----------
-    n : int
-        principal quantum number
-    rho : np.ndarray
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
-
-    Returns
-    -------
-    np.ndarray
-        radial wavefunction as a function of rho
-    """
-
-    if n == 3:
-        rad = 1./(9.*np.sqrt(30.))*rho**2.*np.exp(-rho/2.)
-    elif n == 4:
-        rad = 1./(96.*np.sqrt(5.))*(6.-rho)*rho**2.*np.exp(-rho/2.)
-    elif n == 5:
-        rad = 1./(150.*np.sqrt(70.))*(42.-14.*rho+rho**2)*rho**2.*np.exp(-rho/2.) # noqa
-    elif n == 6:
-        rad = 1./(864.*np.sqrt(105.))*(336.-168.*rho+24.*rho**2.-rho**3.)*rho**2.*np.exp(-rho/2.) # noqa
-    elif n == 7:
-        rad = 1./(7056.*np.sqrt(105.))*(3024. - 2016.*rho + 432.*rho**2. -36* rho**3. + rho**4)*rho**2.*np.exp(-rho/2.) # noqa
-
-    return rad
-
-
-def radial_f(n, rho):
-    """
-    Calculates radial wavefunction of f orbital
-    for the specified principal quantum number
-
-    Parameters
-    ----------
-    n : int
-        principal quantum number
-    rho : np.ndarray
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
-
-    Returns
-    -------
-    np.ndarray
-        radial wavefunction as a function of rho
-    """
-
-    if n == 4:
-        rad = 1./(96.*np.sqrt(35.))*rho**3.*np.exp(-rho/2.)
-    elif n == 5:
-        rad = 1./(300.*np.sqrt(70.))*(8.-rho)*rho**3.*np.exp(-rho/2.)
-    elif n == 6:
-        rad = 1./(2592.*np.sqrt(35.))*(rho**2.-18.*rho+72.)*rho**3.*np.exp(-rho/2.) # noqa
-    elif n == 7:
-        rad = 1./(17640.*np.sqrt(42.))*(-rho**3 + 30*rho**2. - 270.*rho + 720.)*rho**3.*np.exp(-rho/2.) # noqa
-
-    return rad
-
-
-def s_3d(n, cutaway=1.):
-    """
+def s_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates s orbital wavefunction on a grid
 
     Parameters
     ----------
-        n : int
-            prinipal quantum number of orbital
-        cutaway : int
-            number used to split orbital in half
+    n: int
+        prinipal quantum number of orbital
+    cutaway: int
+        number used to split orbital in half
+
     Returns
     -------
-        x : np.mgrid
-            x values
-        y : np.mgrid
-            y values
-        z : np.mgrid
-            z values
-        wav : np.mgrid
-            wavefunction values at x, y, z
-        upper : float
-            max value of axes
-        lower : float
-            min value of axes
-        ival : float
-            isoval for orbital plotting
-    """
+    x: np.mgrid
+        x values
+    y: np.mgrid
+        y values
+    z: np.mgrid
+        z values
+    wav: np.mgrid
+        wavefunction values at x, y, z
+    upper: float
+        max value of axes
+    lower: float
+        min value of axes
+    ival: float
+        isoval for orbital plotting
+    '''
 
     if n == 1:
         upper = 10.
@@ -205,15 +79,15 @@ def s_3d(n, cutaway=1.):
         step = 2*upper/70.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_s(n, 2*r/n)
+    rad = rc.radial_s(n, 2*r/n)
 
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
@@ -223,36 +97,37 @@ def s_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, 0.0005, step
+    return n_points, wav, x, y, z, 0.0005, step
 
 
-def p_3d(n, cutaway=1.):
-    """
+def p_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates p orbital wavefunction on a grid
 
     Parameters
     ----------
-    n : int
+    n: int
         prinipal quantum number of orbital
-    cutaway : int
+    cutaway: int
         number used to split orbital in half
+
     Returns
     -------
-    x : np.mgrid
+    x: np.mgrid
         x values
-    y : np.mgrid
+    y: np.mgrid
         y values
-    z : np.mgrid
+    z: np.mgrid
         z values
-    wav : np.mgrid
+    wav: np.mgrid
         wavefunction values at x, y, z
-    upper : float
+    upper: float
         max value of axes
-    lower : float
+    lower: float
         min value of axes
-    ival : float
+    ival: float
         isoval for orbital plotting
-    """
+    '''
 
     if n == 1:
         upper = 10.
@@ -279,15 +154,15 @@ def p_3d(n, cutaway=1.):
         step = 2*upper/70.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_p(n, 2*r/n)
+    rad = rc.radial_p(n, 2*r/n)
 
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
@@ -310,36 +185,37 @@ def p_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, ival, step
+    return n_points, wav, x, y, z, ival, step
 
 
-def dz_3d(n, cutaway=1.):
-    """
+def dz_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates dz2 orbital wavefunction on a grid
 
     Parameters
     ----------
-    n : int
+    n: int
         prinipal quantum number of orbital
-    cutaway : int
+    cutaway: int
         number used to split orbital in half
+
     Returns
     -------
-    x : np.mgrid
+    x: np.mgrid
         x values
-    y : np.mgrid
+    y: np.mgrid
         y values
-    z : np.mgrid
+    z: np.mgrid
         z values
-    wav : np.mgrid
+    wav: np.mgrid
         wavefunction values at x, y, z
-    upper : float
+    upper: float
         max value of axes
-    lower : float
+    lower: float
         min value of axes
-    ival : float
+    ival: float
         isoval for orbital plotting
-    """
+    '''
 
     if n == 3:
         upper = 50.
@@ -358,15 +234,15 @@ def dz_3d(n, cutaway=1.):
         step = 2*upper/90.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_d(n, 2*r/n)
+    rad = rc.radial_d(n, 2*r/n)
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 2*z**2-x**2-y**2
@@ -375,36 +251,37 @@ def dz_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, 0.08, step
+    return n_points, wav, x, y, z, 0.08, step
 
 
-def dxy_3d(n, cutaway=1.):
-    """
+def dxy_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates dxy orbital wavefunction on a grid
 
     Parameters
     ----------
-    n : int
+    n: int
         prinipal quantum number of orbital
-    cutaway : int
+    cutaway: int
         number used to split orbital in half
+
     Returns
     -------
-    x : np.mgrid
+    x: np.mgrid
         x values
-    y : np.mgrid
+    y: np.mgrid
         y values
-    z : np.mgrid
+    z: np.mgrid
         z values
-    wav : np.mgrid
+    wav: np.mgrid
         wavefunction values at x, y, z
-    upper : float
+    upper: float
         max value of axes
-    lower : float
+    lower: float
         min value of axes
-    ival : float
+    ival: float
         isoval for orbital plotting
-    """
+    '''
 
     if n == 3:
         upper = 45.
@@ -423,15 +300,15 @@ def dxy_3d(n, cutaway=1.):
         step = 2*upper/90.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_d(n, 2*r/n)
+    rad = rc.radial_d(n, 2*r/n)
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = x*y
@@ -449,59 +326,60 @@ def dxy_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, ival, step
+    return n_points, wav, x, y, z, ival, step
 
 
-def fz_3d(n, cutaway=1.):
-    """
+def fz_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates fz3 orbital wavefunction on a grid
 
     Parameters
     ----------
-    n : int
+    n: int
         prinipal quantum number of orbital
-    cutaway : int
+    cutaway: int
         number used to split orbital in half
+
     Returns
     -------
-    x : np.mgrid
+    x: np.mgrid
         x values
-    y : np.mgrid
+    y: np.mgrid
         y values
-    z : np.mgrid
+    z: np.mgrid
         z values
-    wav : np.mgrid
+    wav: np.mgrid
         wavefunction values at x, y, z
-    upper : float
+    upper: float
         max value of axes
-    lower : float
+    lower: float
         min value of axes
-    ival : float
+    ival: float
         isoval for orbital plotting
-    """
+    '''
 
     if n == 4:
-        upper = 70.
-        step = 2*upper/60.
+        upper = 100.
+        step = 2*upper/70.
         lower = - upper
     elif n == 5:
         upper = 100.
-        step = 2*upper/75.
+        step = 2*upper/70.
         lower = - upper
     elif n == 6:
         upper = 130.
         step = 2*upper/85.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_f(n, 2*r/n)
+    rad = rc.radial_f(n, 2*r/n)
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 0.25 * np.sqrt(7/np.pi) * z*(2*z**2-3*x**2-3*y**2)/(r**3)
@@ -510,36 +388,37 @@ def fz_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, 0.000005, step
+    return n_points, wav, x, y, z, 0.000005, step
 
 
-def fxyz_3d(n, cutaway=1.):
-    """
+def fxyz_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates fxyz orbital wavefunction on a grid
 
     Parameters
     ----------
-    n : int
+    n: int
         prinipal quantum number of orbital
-    cutaway : int
+    cutaway: int
         number used to split orbital in half
+
     Returns
     -------
-    x : np.mgrid
+    x: np.mgrid
         x values
-    y : np.mgrid
+    y: np.mgrid
         y values
-    z : np.mgrid
+    z: np.mgrid
         z values
-    wav : np.mgrid
+    wav: np.mgrid
         wavefunction values at x, y, z
-    upper : float
+    upper: float
         max value of axes
-    lower : float
+    lower: float
         min value of axes
-    ival : float
+    ival: float
         isoval for orbital plotting
-    """
+    '''
 
     if n == 4:
         upper = 60.
@@ -554,15 +433,15 @@ def fxyz_3d(n, cutaway=1.):
         step = 2*upper/80.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_f(n, 2*r/n)
+    rad = rc.radial_f(n, 2*r/n)
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 0.5 * np.sqrt(105/np.pi) * x*y*z/(r**3)
@@ -578,36 +457,37 @@ def fxyz_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, ival, step
+    return n_points, wav, x, y, z, ival, step
 
 
-def fyz2_3d(n, cutaway=1.):
-    """
+def fyz2_3d(n: int, cutaway: float = 1.):
+    '''
     Calculates fyz2 orbital wavefunction on a grid
 
     Parameters
     ----------
-    n : int
+    n: int
         prinipal quantum number of orbital
-    cutaway : int
+    cutaway: int
         number used to split orbital in half
+
     Returns
     -------
-    x : np.mgrid
+    x: np.mgrid
         x values
-    y : np.mgrid
+    y: np.mgrid
         y values
-    z : np.mgrid
+    z: np.mgrid
         z values
-    wav : np.mgrid
+    wav: np.mgrid
         wavefunction values at x, y, z
-    upper : float
+    upper: float
         max value of axes
-    lower : float
+    lower: float
         min value of axes
-    ival : float
+    ival: float
         isoval for orbital plotting
-    """
+    '''
 
     if n == 4:
         upper = 65.
@@ -622,15 +502,15 @@ def fyz2_3d(n, cutaway=1.):
         step = 2*upper/100.
         lower = - upper
 
-    x, y, z = np.meshgrid(
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step),
-        np.arange(lower, upper + step, step)
-    )
+    x, y, z = np.mgrid[
+        lower:upper:step,
+        lower:upper:step,
+        lower:upper:step
+    ]
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = radial_f(n, 2*r/n)
+    rad = rc.radial_f(n, 2*r/n)
     rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 0.25 * np.sqrt(35/(2*np.pi)) * (3*x**2-y**2)*y/r**3
@@ -639,120 +519,56 @@ def fyz2_3d(n, cutaway=1.):
 
     n_points = np.shape(x)[0]
 
-    return n_points, wav, upper, lower, 0.000005, step
+    return n_points, wav, x, y, z, 0.000005, step
 
 
-def s_2d(n, r, wf_type):
-    """
-    Calculates s orbital radial wavefunction or radial distribution function
-
-    Parameters
-    ----------
-    n : int
-        prinipal quantum number of orbital
-    r : np.ndarray
-        values of distance r
-    wf_type : string {'RDF', 'RWF'}
-        type of wavefunction to calculate
-    Returns
-    -------
-    np.ndarray
-        y values corresponding to radial wavefunction or radial
-        distribution function
-    """
-
-    if "RDF" in wf_type:
-        return r**2. * radial_s(n, 2.*r/n)**2
-    if "RWF" in wf_type:
-        return radial_s(n, 2.*r/n)
-
-
-def p_2d(n, r, wf_type):
-    """
-    Calculates p orbital radial wavefunction or radial distribution function
-
-    Parameters
-    ----------
-    n : int
-        prinipal quantum number of orbital
-    r : np.ndarray
-        values of distance r
-    wf_type : string {'RDF', 'RWF'}
-        type of wavefunction to calculate
-    Returns
-    -------
-    np.ndarray
-        y values corresponding to radial wavefunction or radial
-        distribution function
-    """
-
-    if "RDF" in wf_type:
-        return r**2. * radial_p(n, 2.*r/n)**2
-    elif "RWF" in wf_type:
-        return radial_p(n, 2.*r/n)
-
-
-def d_2d(n, r, wf_type):
-    """
-    Calculates d orbital radial wavefunction or radial distribution function
-
-    Parameters
-    ----------
-    n : int
-        prinipal quantum number of orbital
-    r : np.ndarray
-        values of distance r
-    wf_type : string {'RDF', 'RWF'}
-        type of wavefunction to calculate
-
-    Returns
-    -------
-    np.ndarray
-        y values corresponding to radial wavefunction or radial
-        distribution function
-    """
-
-    if "RDF" in wf_type:
-        return r**2. * radial_d(n, 2.*r/n)**2
-    if "RWF" in wf_type:
-        return radial_d(n, 2.*r/n)
-
-
-def f_2d(n, r, wf_type):
-    """
-    Calculates f orbital radial wavefunction or radial distribution function
-
-    Parameters
-    ----------
-    n : int
-        prinipal quantum number of orbital
-    r : np.ndarray
-        values of distance r
-    wf_type : string {'RDF', 'RWF'}
-        type of wavefunction to calculate
-
-    Returns
-    -------
-    np.ndarray
-        y values corresponding to radial wavefunction or radial
-        distribution function
-    """
-
-    if "RDF" in wf_type:
-        return r**2. * radial_f(n, 2.*r/n)**2
-    if "RWF" in wf_type:
-        return radial_f(n, 2.*r/n)
-
-
-class Orb2dPlot(common.Div):
+class PlotDiv(common.Div):
     def __init__(self, prefix, **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
+        self.viewer = html.Div(
+            id=self.prefix('mol_div'),
+            className='molecule_div'
+        )
+
         self.plot = dcc.Graph(
-            id=self.prefix('2d_plot'),
+            id=self.prefix('plotly_iso'),
             className='plot_area',
-            mathjax=True
+            mathjax=True,
+            figure={
+                'data': [],
+                'layout': {
+                    'scene': {
+                        'xaxis': {
+                            'showgrid': False,
+                            'zeroline': False,
+                            'showline': False,
+                        },
+                        'yaxis': {
+                            'showgrid': False,
+                            'zeroline': False,
+                            'showline': False,
+                        },
+                        'zaxis': {
+                            'showgrid': False,
+                            'zeroline': False,
+                            'showline': False,
+                        },
+                        'aspectratio': dict(x=1., y=1, z=1.)
+                    }
+                }
+            },
+            config=rc.BASIC_CONFIG
+        )
+
+        self.orb_store = dcc.Store(
+            id=self.prefix('orbital_store'),
+            data=''
+        )
+        self.isoval_store = dcc.Store(
+            id=self.prefix('isoval_store'),
+            data=0
         )
 
         self.make_div_contents()
@@ -765,9 +581,12 @@ class Orb2dPlot(common.Div):
         contents = [
             dbc.Row(
                 [
-                    dbc.Col(
-                        self.plot,
-                    )
+                    dbc.Col([
+                        # self.viewer,
+                        self.plot
+                    ]),
+                    self.orb_store,
+                    self.isoval_store
                 ]
             )
         ]
@@ -781,10 +600,11 @@ class OptionsDiv(common.Div):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
-        self.orb_select = dcc.Dropdown(
-            id=self.prefix('orb_select'),
+        self.orb_select = dbc.Select(
+            id=self.prefix('orb_name_3d'),
             style={
-                'textAlign': 'left'
+                'textAlign': 'center',
+                'width': '50%'
             },
             options=[
                 {'label': '1s', 'value': '1s'},
@@ -793,219 +613,242 @@ class OptionsDiv(common.Div):
                 {'label': '4s', 'value': '4s'},
                 {'label': '5s', 'value': '5s'},
                 {'label': '6s', 'value': '6s'},
-                {'label': '7s', 'value': '7s'},
                 {'label': '2p', 'value': '2p'},
                 {'label': '3p', 'value': '3p'},
                 {'label': '4p', 'value': '4p'},
                 {'label': '5p', 'value': '5p'},
                 {'label': '6p', 'value': '6p'},
-                {'label': '7p', 'value': '7p'},
-                {'label': '3d', 'value': '3d'},
-                {'label': '4d', 'value': '4d'},
-                {'label': '5d', 'value': '5d'},
-                {'label': '6d', 'value': '6d'},
-                {'label': '7d', 'value': '7d'},
-                {'label': '4f', 'value': '4f'},
-                {'label': '5f', 'value': '5f'},
-                {'label': '6f', 'value': '6f'},
-                {'label': '7f', 'value': '7f'},
+                {'label': '3dz²', 'value': '3dz2'},
+                {'label': '4dz²', 'value': '4dz2'},
+                {'label': '5dz²', 'value': '5dz2'},
+                {'label': '6dz²', 'value': '6dz2'},
+                {'label': '3dxy', 'value': '3dxy'},
+                {'label': '4dxy', 'value': '4dxy'},
+                {'label': '5dxy', 'value': '5dxy'},
+                {'label': '6dxy', 'value': '6dxy'},
+                {'label': '4fz³', 'value': '4fz3'},
+                {'label': '5fz³', 'value': '5fz3'},
+                {'label': '6fz³', 'value': '6fz3'},
+                {'label': '4fxyz', 'value': '4fxyz'},
+                {'label': '5fxyz', 'value': '5fxyz'},
+                {'label': '6fxyz', 'value': '6fxyz'},
+                {'label': '4fyz²', 'value': '4fyz2'},
+                {'label': '5fyz²', 'value': '5fyz2'},
+                {'label': '6fyz²', 'value': '6fyz2'},
             ],
-            value=['1s', '2p', '3d', '4f'],
-            multi=True,
-            placeholder='Orbital...'
-        )
-
-        self.func_select = dbc.Select(
-            id=self.prefix('function_type'),
-            style={
-                'textAlign': 'center',
-                'display': 'block'
-            },
-            options=[
-                {
-                    'label': 'Radial Distribution Function',
-                    'value': 'rdf'
-                },
-                {
-                    'label': 'Radial Wave Function',
-                    'value': 'rwf'
-                }
-            ],
-            value='rdf',
-        )
-
-        self.lower_x_input = dbc.Input(
-            id=self.prefix('lower_x_in'),
-            placeholder=0,
-            type='number',
-            min=-10,
-            max=100,
-            value=0,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.lower_x_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Lower x limit'),
-                self.lower_x_input
-            ]
-        )
-
-        self.upper_x_input = dbc.Input(
-            id=self.prefix('upper_x_in'),
-            placeholder=0,
-            type='number',
-            min=0,
-            max=100,
-            value=40,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.upper_x_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Lower x limit'),
-                self.upper_x_input
-            ]
-        )
-
-        self.distance_select = dbc.Select(
-            id=self.prefix('distance_unit'),
-            options=[
-                {'value': 'a0', 'label': 'Bohr Radii'},
-                {'value': 'Å', 'label': 'Angstrom'}
-            ],
-            value='a0',
-            style={'textAlign': 'center'}
-        )
-
-        self.distance_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Distance unit'),
-                self.distance_select
-            ]
-        )
-
-        self.colour_select = dbc.Select(
-            id=self.prefix('colours_2d'),
-            options=[
-                {
-                    'label': 'Standard',
-                    'value': 'normal'
-                },
-                {
-                    'label': 'Tol',
-                    'value': 'tol'
-                },
-                {
-                    'label': 'Wong',
-                    'value': 'wong'
-                }
-            ],
-            value='normal',
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle',
-                'alignItems': 'auto',
-                'display': 'inline'
-            }
-        )
-
-        self.colour_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Colour Palette'),
-                self.colour_select
-            ]
-        )
-
-        self.output_height_input = dbc.Input(
-            id=self.prefix('save_height_in'),
-            placeholder=500,
-            type='number',
-            value=500,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.output_height_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Output height'),
-                self.output_height_input,
-                dbc.InputGroupText('px'),
-            ]
-        )
-
-        self.output_width_input = dbc.Input(
-            id=self.prefix('save_width_in'),
-            placeholder=500,
-            type='number',
-            value=500,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.output_width_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Output width'),
-                self.output_width_input,
-                dbc.InputGroupText('px'),
-            ]
+            value='',
+            placeholder='Select an orbital'
         )
 
         self.download_button = dbc.Button(
-            'Download Data',
-            id=self.prefix('download_data'),
+            'Download Image',
+            id=self.prefix('download_image'),
             style={
                 'boxShadow': 'none',
                 'textalign': 'top'
-            }
-        )
-        self.download_trigger = dcc.Download(
-            id=self.prefix('download_data_trigger')
+            },
+            className='me-1',
         )
 
-        self.image_format_select = dbc.Select(
-            id=self.prefix('save_format'),
+        self.download_hidden_div = html.Div(
+            id=self.prefix('download-hdiv'),
+            style={'display': 'none'}
+        )
+
+        self.x_input = dbc.Input(
+            id=self.prefix('view_x'),
+            value=0,
+            type='number'
+        )
+        self.x_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'X'
+                ),
+                self.x_input
+            ]
+        )
+
+        self.y_input = dbc.Input(
+            id=self.prefix('view_y'),
+            value=0,
+            type='number'
+        )
+        self.y_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'Y'
+                ),
+                self.y_input
+            ]
+        )
+
+        self.z_input = dbc.Input(
+            id=self.prefix('view_z'),
+            value=0,
+            type='number'
+        )
+        self.z_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'Z'
+                ),
+                self.z_input
+            ]
+        )
+
+        self.zoom_input = dbc.Input(
+            id=self.prefix('view_zoom'),
+            value='',
+            type='number'
+        )
+        self.zoom_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'Zoom'
+                ),
+                self.zoom_input
+            ]
+        )
+
+        self.qx_input = dbc.Input(
+            id=self.prefix('view_qx'),
+            value=0,
+            type='number'
+        )
+        self.qx_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'qX'
+                ),
+                self.qx_input
+            ]
+        )
+
+        self.qy_input = dbc.Input(
+            id=self.prefix('view_qy'),
+            value=0,
+            type='number'
+        )
+        self.qy_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'qY'
+                ),
+                self.qy_input
+            ]
+        )
+
+        self.qz_input = dbc.Input(
+            id=self.prefix('view_qz'),
+            value=0,
+            type='number'
+        )
+        self.qz_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'qZ'
+                ),
+                self.qz_input
+            ]
+        )
+
+        self.qw_input = dbc.Input(
+            id=self.prefix('view_qw'),
+            value=1,
+            type='number'
+        )
+        self.qw_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(
+                    'qW'
+                ),
+                self.qw_input
+            ]
+        )
+
+        self.cutaway_select = dbc.Select(
+            id=self.prefix('cutaway_in'),
             style={
                 'textAlign': 'center',
-                'horizontalAlign': 'center',
-                'display': 'inline'
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
             },
             options=[
                 {
-                    'label': 'svg',
-                    'value': 'svg',
+                    'label': 'None',
+                    'value': 1.
                 },
                 {
-                    'label': 'png',
-                    'value': 'png',
-                },
-                {
-                    'label': 'jpeg',
-                    'value': 'jpeg',
+                    'label': '1/2',
+                    'value': 0.5
                 }
             ],
-            value='svg'
+            value=1.
+        )
+        self.cutaway_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Cutaway'),
+                self.cutaway_select
+            ]
         )
 
-        self.image_format_ig = self.make_input_group(
+        self.isoval_input = dbc.Input(
+            id=self.prefix('isoval'),
+            type='number',
+            value='0.1',
+            style={
+                'height': '40px'
+            },
+            step=0.001,
+            max=1.,
+            min=0.00000000001
+        )
+
+        self.isoval_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Image format'),
-                self.image_format_select
+                dbc.InputGroupText('Isovalue'),
+                self.isoval_input
+            ]
+        )
+
+        self.colour_input_a = dbc.Input(
+            id=self.prefix('colour_a'),
+            type='color',
+            value='#491688',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.colour_input_b = dbc.Input(
+            id=self.prefix('colour_b'),
+            type='color',
+            value='#ffeb0a',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.colours_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Colours'),
+                self.colour_input_a,
+                self.colour_input_b
+            ]
+        )
+
+        self.wireframe_check = dbc.Checkbox(
+            value=False,
+            id=self.prefix('wireframe')
+        )
+
+        self.wireframe_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Wireframe'),
+                dbc.InputGroupText(
+                    self.wireframe_check
+                )
             ]
         )
 
@@ -1016,7 +859,7 @@ class OptionsDiv(common.Div):
 
         group = dbc.InputGroup(
             elements,
-            class_name='mb-3',
+            className='mb-3',
         )
         return group
 
@@ -1034,98 +877,101 @@ class OptionsDiv(common.Div):
                             },
                         children='Orbital'
                     )
-                ),
-                dbc.Col(
-                    html.H4(
-                        style={
-                            'textAlign': 'center',
-                            },
-                        children='Function'
-                    )
                 )
             ]),
             dbc.Row(
                 [
                     dbc.Col(
                         self.orb_select,
-                        class_name='mb-3'
-                    ),
-                    dbc.Col(
-                        self.func_select,
-                        class_name='mb-3'
+                        className='mb-3'
                     )
-                ]
+                ],
+                className='align-items-center'
             ),
             html.H4(
                 style={'textAlign': 'center'},
                 children='Plot Options'
             ),
             dbc.Row(
-                children=[
-                    dbc.Col(
-                        self.lower_x_ig,
-                        class_name='mb-3'
-                    ),
-                    dbc.Col(
-                        self.upper_x_ig,
-                        class_name='mb-3'
+                dbc.Col(
+                    html.H5(
+                        style={'textAlign': 'center'},
+                        children='Viewer',
+                        className='mb-3'
                     )
-                ]
+                ),
+                className='mb-3'
             ),
-            dbc.Row(
-                [
-                    dbc.Col(
-                        self.distance_ig,
-                        class_name='mb-3'
-                    ),
-                    dbc.Col(
-                        self.colour_ig,
-                        class_name='mb-3'
-                    )
-                ]
+            dbc.Row([
+                dbc.Col(
+                    [
+                        self.download_button,
+                        self.download_hidden_div
+                    ],
+                    className='mb-3',
+                    style={'textAlign': 'center'}
+                )
+                ],
+                className='align-items-center'
             ),
+            dbc.Row([
+                dbc.Col(
+                    self.x_ig
+                ),
+                dbc.Col(
+                    self.y_ig
+                ),
+                dbc.Col(
+                    self.z_ig
+                ),
+                dbc.Col(
+                    self.zoom_ig
+                ),
+
+            ]),
+            dbc.Row([
+                dbc.Col(
+                    self.qx_ig
+                ),
+                dbc.Col(
+                    self.qy_ig
+                ),
+                dbc.Col(
+                    self.qz_ig
+                ),
+                dbc.Col(
+                    self.qw_ig
+                ),
+            ]),
             dbc.Row([
                 dbc.Col([
                     html.H4(
                         style={
                             'textAlign': 'center',
                         },
-                        children='Save Options',
-                        id=self.prefix('save_options_header')
-                    ),
-                    dbc.Tooltip(
-                        children='Use the camera button in the top right of \
-                                the plot to save an image',
-                        target=self.prefix('save_options_header'),
-                        style={
-                            'textAlign': 'center',
-                        },
+                        children='Plot Options'
                     )
                 ])
             ]),
             dbc.Row(
-                [
+                children=[
                     dbc.Col(
-                        self.output_height_ig,
-                        class_name='mb-3'
-                    ),
-                    dbc.Col(
-                        self.output_width_ig,
-                        class_name='mb-3'
+                        self.colours_ig,
+                        className='mb-3'
                     )
                 ]
             ),
             dbc.Row([
+                dbc.Col([
+                    self.cutaway_ig
+                ]),
                 dbc.Col(
-                    [
-                        self.download_button,
-                        self.download_trigger
-                    ],
-                    class_name='mb-3'
+                    self.wireframe_ig,
+                    className='mb-3'
                 ),
                 dbc.Col(
-                    self.image_format_ig,
-                    class_name='mb-3'
+                    self.isoval_ig,
+                    className='mb-3'
                 )
             ])
         ]
@@ -1134,41 +980,138 @@ class OptionsDiv(common.Div):
         return
 
 
-def assemble_2d_callbacks(plot_div: Orb2dPlot,
-                          options_div: OptionsDiv) -> None:
-    '''
-    Creates callbacks between experimental and fitted AC plots and elements in
-    AC options tab
+def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
 
-    Parameters
-    ----------
-    plot_div: Orb2dPlot
-        Experimental plot tab object
-    options_div: OptionsDiv
-        Options div object
-
-    Returns
-    -------
-    None
-    '''
-
-    # Callback for download 2d data button
-    states = [
-        State(options_div.func_select, 'value'),
-        State(options_div.orb_select, 'value'),
-        State(options_div.lower_x_input, 'value'),
-        State(options_div.upper_x_input, 'value'),
-        State(options_div.distance_select, 'value')
-    ]
     callback(
-        Output(options_div.download_trigger, 'data'),
-        Input(options_div.download_button, 'n_clicks'),
-        states
-    )(download_data)
+        [
+            Output(plot_div.plot, 'figure')
+        ],
+        [
+            Input(options_div.orb_select, 'value'),
+            Input(options_div.cutaway_select, 'value'),
+            Input(options_div.isoval_input, 'value'),
+            Input(options_div.colour_input_a, 'value'),
+            Input(options_div.colour_input_b, 'value')
+        ],
+        prevent_initial_callback=True
+    )(make_plotly_iso)
 
+    # # Clientside callback for javascript molecule viewer
+    # clientside_callback(
+    #     '''
+    #     function (dummy) {
 
-def download_data(_nc: int, func, orbs, low_x, up_x, unit):
+    #         let canvas = document.getElementById('viewer_canvas');
+    #         if (canvas == null){
+    #             return;
+    #         }
+    #         var duri = canvas.toDataURL('image/png', 1)
+    #         downloadURI(duri, 'orbital.png');
 
-    print(func, orbs, low_x, up_x, unit)
+    #         return ;
+    #         }
+    #     ''', # noqa
+    #     Output(options_div.download_hidden_div, 'children'),
+    #     [
+    #         Input(options_div.download_button, 'n_clicks'),
+    #     ],
+    #     prevent_initial_call=True
+    # )
+
+    # # Viewer callback
+    # clientside_callback(
+    #     ClientsideFunction(
+    #         namespace='clientside',
+    #         function_name='orbital_function'
+    #     ),
+    #     [
+    #         Output(options_div.zoom_input, 'value'),
+    #     ],
+    #     [
+    #         Input(plot_div.orb_store, 'data'),
+    #         Input(plot_div.isoval_store, 'data'),
+    #         Input(options_div.colour_input_a, 'value'),
+    #         Input(options_div.colour_input_b, 'value'),
+    #         Input(options_div.wireframe_check, 'value'),
+    #         Input(options_div.orb_select, 'value'),
+    #         Input(options_div.x_input, 'value'),
+    #         Input(options_div.y_input, 'value'),
+    #         Input(options_div.z_input, 'value'),
+    #         Input(options_div.zoom_input, 'value'),
+    #         Input(options_div.qx_input, 'value'),
+    #         Input(options_div.qy_input, 'value'),
+    #         Input(options_div.qz_input, 'value'),
+    #         Input(options_div.qw_input, 'value')
+    #     ],
+    #     prevent_initial_call=True
+    # )
 
     return
+
+
+def make_plotly_iso(orbital_name, cutaway, isoval, colour_1, colour_2):
+
+    fig = Patch()
+    if None in [orbital_name, cutaway, isoval, colour_1, colour_2]:
+        return no_update
+
+    if isinstance(ctx.triggered_id, str) and 'iso' in ctx.triggered_id:
+        fig['data'][0]['isomin'] = -isoval
+        fig['data'][0]['isomax'] = isoval
+        return [fig]
+
+    colour_1 = colour_1.lstrip('#')
+    colour_2 = colour_2.lstrip('#')
+
+    colour_1 = tuple(int(colour_1[i:i+2], 16) for i in (0, 2, 4))
+    colour_2 = tuple(int(colour_2[i:i+2], 16) for i in (0, 2, 4))
+
+    if not orbital_name:
+        return no_update
+
+    n = int(orbital_name[0])
+    name = orbital_name[1:]
+
+    # Get orbital n value and name
+    orb_func_dict = {
+        's': s_3d,
+        'p': p_3d,
+        'dxy': dxy_3d,
+        'dz2': dz_3d,
+        'fxyz': fxyz_3d,
+        'fyz2': fyz2_3d,
+        'fz3': fz_3d
+    }
+
+    n_points, wav, x, y, z, _, step = orb_func_dict[name](
+        n
+    )
+
+    traces = go.Isosurface(
+        x=x.flatten(),
+        y=y.flatten(),
+        z=z.flatten(),
+        value=wav.flatten(),
+        isomin=-float(isoval),
+        isomax=float(isoval),
+        caps=dict(
+            x_show=False, y_show=False, z_show=False
+        ),
+        surface_count=2,
+        colorscale=[
+            [0, 'rgb({:d},{:d},{:d})'.format(*colour_1)],
+            [1, 'rgb({:d},{:d},{:d})'.format(*colour_2)]
+        ],
+        showlegend=False
+    )
+
+    fig['data'] = [traces]
+
+    if float(cutaway) == 0.5:
+        fig['layout']['scene']['xaxis']['range'] = [np.min(x), 0]
+        fig['layout']['scene']['aspectratio'] = {'x': 0.5, 'y': 1., 'z': 1.}
+    else:
+        fig['layout']['scene']['xaxis']['range'] = 'auto'
+        fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 1., 'z': 1.}
+
+    return [fig]
