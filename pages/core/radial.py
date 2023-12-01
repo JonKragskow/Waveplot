@@ -91,13 +91,18 @@ BASIC_CONFIG = {
         'filename': 'plot',
         'height': 500,
         'width': 600,
-        'scale': 6
+        'scale': 8
     },
     'modeBarButtonsToRemove': [
         'sendDataToCloud',
         'select2d',
         'lasso',
-        'autoScale2d'
+        'zoom3d',
+        'pan3d',
+        'autoScale2d',
+        'tableRotation',
+        'orbitRotation',
+        'resetCameraLastSave3d'
     ],
     'displaylogo': False
 }

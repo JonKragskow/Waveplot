@@ -17,15 +17,16 @@
 '''
 import numpy as np
 from dash import dcc, html, Input, Output, callback, no_update, \
-    clientside_callback, ClientsideFunction, Patch, ctx
+    Patch
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-
+from skimage import measure
+import pandas as pd
 from . import common
 from . import radial as rc
 
 
-def s_3d(n: int, cutaway: float = 1.):
+def s_3d(n: int):
     '''
     Calculates s orbital wavefunction on a grid
 
@@ -33,21 +34,12 @@ def s_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
+    x: np.meshgrid
+    y: np.meshgrid
+    z: np.meshgrid
     lower: float
         min value of axes
     ival: float
@@ -55,52 +47,49 @@ def s_3d(n: int, cutaway: float = 1.):
     '''
 
     if n == 1:
-        upper = 10.
-        step = 2*upper/50.
-        lower = - upper
+        zbound = 5.
+        step = 0.1
     elif n == 2:
-        upper = 17.
-        step = 2*upper/50.
-        lower = - upper
+        zbound = 30.
+        step = 1.
     elif n == 3:
-        upper = 30.
-        step = 2*upper/50.
-        lower = - upper
+        zbound = 40.
+        step = 2.
     elif n == 4:
-        upper = 45.
-        step = 2*upper/50.
-        lower = - upper
+        zbound = 40.
+        step = 2.
     elif n == 5:
-        upper = 58.
-        step = 2*upper/60.
-        lower = - upper
+        zbound = 60.
+        step = 2.
     elif n == 6:
-        upper = 75.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 80.
+        step = 2.
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_s(n, 2*r/n)
 
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
-
     ang = 0.5/np.sqrt(np.pi)
 
     wav = ang*rad
 
-    n_points = np.shape(x)[0]
+    spacing = [
+        np.diff(np.arange(-zbound, zbound, step))[0],
+        np.diff(np.arange(-zbound, zbound, step))[0],
+        np.diff(np.arange(-zbound, zbound, step))[0],
+    ]
 
-    return n_points, wav, x, y, z, 0.0005, step
+    return wav, spacing
 
 
-def p_3d(n: int, cutaway: float = 1.):
+def p_3d(n: int):
     '''
     Calculates p orbital wavefunction on a grid
 
@@ -108,87 +97,57 @@ def p_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
-    lower: float
-        min value of axes
-    ival: float
-        isoval for orbital plotting
+    x: ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
-    if n == 1:
-        upper = 10.
-        step = 2*upper/50.
-        lower = - upper
-    elif n == 2:
-        upper = 17.
-        step = 2*upper/50.
-        lower = - upper
+    if n == 2:
+        zbound = 20
+        step = 0.5
     elif n == 3:
-        upper = 30.
-        step = 2*upper/50.
-        lower = - upper
+        zbound = 30
+        step = 0.5
     elif n == 4:
-        upper = 45.
-        step = 2*upper/50.
-        lower = - upper
+        zbound = 60
+        step = 1.
     elif n == 5:
-        upper = 60.
-        step = 2*upper/60.
-        lower = - upper
+        zbound = 60
+        step = 1.
     elif n == 6:
-        upper = 80.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 80
+        step = 1.
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        copy=True
+    )
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_p(n, 2*r/n)
+    # radial wavefunction
+    rad = rc.radial_p(n, 2 * r / n)
 
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
+    # angular wavefunction
+    ang = np.sqrt(3. / (4. * np.pi)) * x / r
+    wav = ang * rad
 
-    ang = np.sqrt(3./(4.*np.pi)) * z/r
+    wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
-    wav = ang*rad
+    spacing = [
+        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
+        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
+        np.diff(np.arange(-zbound, zbound, step))[0],
+    ]
 
-    if n == 1:
-        ival = 0.0005
-    if n == 2:
-        ival = 0.0005
-    if n == 3:
-        ival = 0.0005
-    elif n == 4:
-        ival = 0.0005
-    elif n == 5:
-        ival = 0.0005
-    elif n == 6:
-        ival = 0.0010
-
-    n_points = np.shape(x)[0]
-
-    return n_points, wav, x, y, z, ival, step
+    return wav, spacing
 
 
-def dz_3d(n: int, cutaway: float = 1.):
+def dz_3d(n: int):
     '''
     Calculates dz2 orbital wavefunction on a grid
 
@@ -196,21 +155,12 @@ def dz_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
+    x: np.meshgrid
+    y: np.meshgrid
+    z: np.meshgrid
     lower: float
         min value of axes
     ival: float
@@ -218,43 +168,43 @@ def dz_3d(n: int, cutaway: float = 1.):
     '''
 
     if n == 3:
-        upper = 50.
-        step = 2*upper/60.
-        lower = - upper
+        zbound = 70.
+        step = 1.
     elif n == 4:
-        upper = 70.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 90.
+        step = 2.
     elif n == 5:
-        upper = 98.
-        step = 2*upper/80.
-        lower = - upper
+        zbound = 110.
+        step = 2.
     elif n == 6:
-        upper = 135.
-        step = 2*upper/90.
-        lower = - upper
+        zbound = 140.
+        step = 2.
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
+    x, y, z = np.meshgrid(
+        np.arange(-0.9 * zbound, 0.9 * zbound, step),
+        np.arange(-0.9 * zbound, 0.9 * zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_d(n, 2*r/n)
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 2*z**2-x**2-y**2
 
     wav = rad*ang
 
-    n_points = np.shape(x)[0]
+    spacing = [
+        np.diff(np.arange(-0.9 * zbound, 0.9 * zbound, step))[0],
+        np.diff(np.arange(-0.9 * zbound, 0.9 * zbound, step))[0],
+        np.diff(np.arange(-zbound, zbound, step))[0]
+    ]
 
-    return n_points, wav, x, y, z, 0.08, step
+    return wav, spacing
 
 
-def dxy_3d(n: int, cutaway: float = 1.):
+def dxy_3d(n: int):
     '''
     Calculates dxy orbital wavefunction on a grid
 
@@ -262,21 +212,12 @@ def dxy_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
+    x: np.meshgrid
+    y: np.meshgrid
+    z: np.meshgrid
     lower: float
         min value of axes
     ival: float
@@ -284,52 +225,42 @@ def dxy_3d(n: int, cutaway: float = 1.):
     '''
 
     if n == 3:
-        upper = 45.
-        step = 2*upper/60.
-        lower = - upper
+        zbound = 45.
+        step = 1.
     elif n == 4:
-        upper = 70.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 70.
+        step = 1.
     elif n == 5:
-        upper = 98.
-        step = 2*upper/80.
-        lower = - upper
+        zbound = 98.
+        step = 2.
     elif n == 6:
-        upper = 135.
-        step = 2*upper/90.
-        lower = - upper
+        zbound = 135.
+        step = 2.
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
-
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_d(n, 2*r/n)
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = x*y
 
     wav = rad*ang
 
-    if n == 3:
-        ival = 0.005
-    elif n == 4:
-        ival = 0.01
-    elif n == 5:
-        ival = 0.01
-    elif n == 6:
-        ival = 0.01
+    spacing = np.diff(np.arange(-zbound, zbound, step))[0]
 
-    n_points = np.shape(x)[0]
+    spacing = [
+        spacing, spacing, spacing
+    ]
 
-    return n_points, wav, x, y, z, ival, step
+    return wav, spacing
 
 
-def fz_3d(n: int, cutaway: float = 1.):
+def fz_3d(n: int):
     '''
     Calculates fz3 orbital wavefunction on a grid
 
@@ -337,21 +268,12 @@ def fz_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
+    x: np.meshgrid
+    y: np.meshgrid
+    z: np.meshgrid
     lower: float
         min value of axes
     ival: float
@@ -359,39 +281,40 @@ def fz_3d(n: int, cutaway: float = 1.):
     '''
 
     if n == 4:
-        upper = 100.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 100.
+        step = 2.
     elif n == 5:
-        upper = 100.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 100.
+        step = 2.
     elif n == 6:
-        upper = 130.
-        step = 2*upper/85.
-        lower = - upper
+        zbound = 130.
+        step = 2.
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        copy=True
+    )
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_f(n, 2*r/n)
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 0.25 * np.sqrt(7/np.pi) * z*(2*z**2-3*x**2-3*y**2)/(r**3)
-
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad*ang
 
-    n_points = np.shape(x)[0]
+    spacing = [
+        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
+        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
+        np.diff(np.arange(-zbound, zbound, step))[0],
+    ]
 
-    return n_points, wav, x, y, z, 0.000005, step
+    return wav, spacing
 
 
-def fxyz_3d(n: int, cutaway: float = 1.):
+def fxyz_3d(n: int):
     '''
     Calculates fxyz orbital wavefunction on a grid
 
@@ -399,21 +322,12 @@ def fxyz_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
+    x: np.meshgrid
+    y: np.meshgrid
+    z: np.meshgrid
     lower: float
         min value of axes
     ival: float
@@ -421,46 +335,37 @@ def fxyz_3d(n: int, cutaway: float = 1.):
     '''
 
     if n == 4:
-        upper = 60.
-        step = 2*upper/60.
-        lower = - upper
+        zbound = 60.
+        step = 1.
     elif n == 5:
-        upper = 90.
-        step = 2*upper/70.
-        lower = - upper
+        zbound = 90.
+        step = 2.
     elif n == 6:
-        upper = 115.
-        step = 2*upper/80.
-        lower = - upper
+        zbound = 115.
+        step = 2.
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_f(n, 2*r/n)
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 0.5 * np.sqrt(105/np.pi) * x*y*z/(r**3)
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
 
     wav = rad*ang
 
-    if n == 4:
-        ival = 0.000005
-    elif n == 5:
-        ival = 0.000005
-    elif n == 6:
-        ival = 0.000005
+    spacing = [step, step, step]
 
-    n_points = np.shape(x)[0]
-
-    return n_points, wav, x, y, z, ival, step
+    return wav, spacing
 
 
-def fyz2_3d(n: int, cutaway: float = 1.):
+def fyz2_3d(n: int):
     '''
     Calculates fyz2 orbital wavefunction on a grid
 
@@ -468,21 +373,12 @@ def fyz2_3d(n: int, cutaway: float = 1.):
     ----------
     n: int
         prinipal quantum number of orbital
-    cutaway: int
-        number used to split orbital in half
 
     Returns
     -------
-    x: np.mgrid
-        x values
-    y: np.mgrid
-        y values
-    z: np.mgrid
-        z values
-    wav: np.mgrid
-        wavefunction values at x, y, z
-    upper: float
-        max value of axes
+    x: np.meshgrid
+    y: np.meshgrid
+    z: np.meshgrid
     lower: float
         min value of axes
     ival: float
@@ -490,36 +386,33 @@ def fyz2_3d(n: int, cutaway: float = 1.):
     '''
 
     if n == 4:
-        upper = 65.
-        step = 2*upper/60.
-        lower = - upper
+        zbound = 65.
+        step = 1.
     elif n == 5:
-        upper = 90.
-        step = 2*upper/90.
-        lower = - upper
+        zbound = 90.
+        step = 2
     elif n == 6:
-        upper = 125.
-        step = 2*upper/100.
-        lower = - upper
+        zbound = 125.
+        step = 2
 
-    x, y, z = np.mgrid[
-        lower:upper:step,
-        lower:upper:step,
-        lower:upper:step
-    ]
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_f(n, 2*r/n)
-    rad[np.where(y > lower + (upper-lower)*cutaway)] = 0.
 
     ang = 0.25 * np.sqrt(35/(2*np.pi)) * (3*x**2-y**2)*y/r**3
-
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad*ang
 
-    n_points = np.shape(x)[0]
+    spacing = [step, step, step]
 
-    return n_points, wav, x, y, z, 0.000005, step
+    return wav, spacing
 
 
 class PlotDiv(common.Div):
@@ -544,18 +437,25 @@ class PlotDiv(common.Div):
                             'showgrid': False,
                             'zeroline': False,
                             'showline': False,
+                            'showticklabels': False,
+                            'visible': False
                         },
                         'yaxis': {
                             'showgrid': False,
                             'zeroline': False,
                             'showline': False,
+                            'showticklabels': False,
+                            'visible': False
                         },
                         'zaxis': {
                             'showgrid': False,
                             'zeroline': False,
                             'showline': False,
+                            'showticklabels': False,
+                            'visible': False
                         },
-                        'aspectratio': dict(x=1., y=1, z=1.)
+                        'aspectratio': dict(x=1., y=1, z=1.),
+                        'dragmode': 'orbit'
                     }
                 }
             },
@@ -564,13 +464,12 @@ class PlotDiv(common.Div):
 
         self.orb_store = dcc.Store(
             id=self.prefix('orbital_store'),
-            data=''
+            data=[]
         )
-        self.isoval_store = dcc.Store(
-            id=self.prefix('isoval_store'),
-            data=0
+        self.spacing_store = dcc.Store(
+            id=self.prefix('spacing_store'),
+            data=[]
         )
-
         self.make_div_contents()
 
     def make_div_contents(self):
@@ -582,11 +481,10 @@ class PlotDiv(common.Div):
             dbc.Row(
                 [
                     dbc.Col([
-                        # self.viewer,
-                        self.plot
+                        dcc.Loading(self.plot)
                     ]),
                     self.orb_store,
-                    self.isoval_store
+                    self.spacing_store
                 ]
             )
         ]
@@ -604,7 +502,8 @@ class OptionsDiv(common.Div):
             id=self.prefix('orb_name_3d'),
             style={
                 'textAlign': 'center',
-                'width': '50%'
+                'width': '50%',
+                'align': 'center'
             },
             options=[
                 {'label': '1s', 'value': '1s'},
@@ -636,23 +535,8 @@ class OptionsDiv(common.Div):
                 {'label': '5fyz²', 'value': '5fyz2'},
                 {'label': '6fyz²', 'value': '6fyz2'},
             ],
-            value='',
+            value='3dz2',
             placeholder='Select an orbital'
-        )
-
-        self.download_button = dbc.Button(
-            'Download Image',
-            id=self.prefix('download_image'),
-            style={
-                'boxShadow': 'none',
-                'textalign': 'top'
-            },
-            className='me-1',
-        )
-
-        self.download_hidden_div = html.Div(
-            id=self.prefix('download-hdiv'),
-            style={'display': 'none'}
         )
 
         self.x_input = dbc.Input(
@@ -777,11 +661,19 @@ class OptionsDiv(common.Div):
             options=[
                 {
                     'label': 'None',
-                    'value': 1.
+                    'value': 'none'
                 },
                 {
-                    'label': '1/2',
-                    'value': 0.5
+                    'label': '1/2 X',
+                    'value': 'x'
+                },
+                {
+                    'label': '1/2 Y',
+                    'value': 'y'
+                },
+                {
+                    'label': '1/2 Z',
+                    'value': 'z'
                 }
             ],
             value=1.
@@ -796,13 +688,12 @@ class OptionsDiv(common.Div):
         self.isoval_input = dbc.Input(
             id=self.prefix('isoval'),
             type='number',
-            value='0.1',
+            value=0.01,
             style={
-                'height': '40px'
+                'text-align': 'center'
             },
-            step=0.001,
             max=1.,
-            min=0.00000000001
+            min=0.0000000000001
         )
 
         self.isoval_ig = self.make_input_group(
@@ -838,16 +729,16 @@ class OptionsDiv(common.Div):
             ]
         )
 
-        self.wireframe_check = dbc.Checkbox(
+        self.axes_check = dbc.Checkbox(
             value=False,
-            id=self.prefix('wireframe')
+            id=self.prefix('axes')
         )
 
-        self.wireframe_ig = self.make_input_group(
+        self.axes_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Wireframe'),
+                dbc.InputGroupText('Axes'),
                 dbc.InputGroupText(
-                    self.wireframe_check
+                    self.axes_check
                 )
             ]
         )
@@ -859,7 +750,7 @@ class OptionsDiv(common.Div):
 
         group = dbc.InputGroup(
             elements,
-            className='mb-3',
+            className='mb-3 4 d-flex justify-content-center'
         )
         return group
 
@@ -875,7 +766,7 @@ class OptionsDiv(common.Div):
                         style={
                             'textAlign': 'center',
                             },
-                        children='Orbital'
+                        children='Options'
                     )
                 )
             ]),
@@ -883,36 +774,41 @@ class OptionsDiv(common.Div):
                 [
                     dbc.Col(
                         self.orb_select,
+                        className='4 d-flex justify-content-center mb-3',
+                        style={'align': 'center'}
+                    )
+                ]
+            ),
+
+            dbc.Row(
+                children=[
+                    dbc.Col(
+                        self.colours_ig,
                         className='mb-3'
                     )
-                ],
-                className='align-items-center'
+                ]
             ),
-            html.H4(
-                style={'textAlign': 'center'},
-                children='Plot Options'
-            ),
+            dbc.Row([
+                dbc.Col([
+                    self.cutaway_ig
+                ]),
+                dbc.Col(
+                    self.isoval_ig
+                ),
+            ]),
+            dbc.Row([
+                dbc.Col(
+                    self.axes_ig,
+                    className='mb-3'
+                )
+            ]),
             dbc.Row(
                 dbc.Col(
                     html.H5(
                         style={'textAlign': 'center'},
-                        children='Viewer',
-                        className='mb-3'
+                        children='Viewer'
                     )
-                ),
-                className='mb-3'
-            ),
-            dbc.Row([
-                dbc.Col(
-                    [
-                        self.download_button,
-                        self.download_hidden_div
-                    ],
-                    className='mb-3',
-                    style={'textAlign': 'center'}
                 )
-                ],
-                className='align-items-center'
             ),
             dbc.Row([
                 dbc.Col(
@@ -942,37 +838,6 @@ class OptionsDiv(common.Div):
                 dbc.Col(
                     self.qw_ig
                 ),
-            ]),
-            dbc.Row([
-                dbc.Col([
-                    html.H4(
-                        style={
-                            'textAlign': 'center',
-                        },
-                        children='Plot Options'
-                    )
-                ])
-            ]),
-            dbc.Row(
-                children=[
-                    dbc.Col(
-                        self.colours_ig,
-                        className='mb-3'
-                    )
-                ]
-            ),
-            dbc.Row([
-                dbc.Col([
-                    self.cutaway_ig
-                ]),
-                dbc.Col(
-                    self.wireframe_ig,
-                    className='mb-3'
-                ),
-                dbc.Col(
-                    self.isoval_ig,
-                    className='mb-3'
-                )
             ])
         ]
 
@@ -984,11 +849,24 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
 
     callback(
         [
+            Output(plot_div.orb_store, 'data'),
+            Output(plot_div.spacing_store, 'data')
+        ],
+        [
+            Input(options_div.orb_select, 'value')
+        ],
+        prevent_initial_callback=True
+    )(calc_wav)
+
+    callback(
+        [
             Output(plot_div.plot, 'figure')
         ],
         [
-            Input(options_div.orb_select, 'value'),
+            Input(plot_div.orb_store, 'data'),
+            Input(plot_div.spacing_store, 'data'),
             Input(options_div.cutaway_select, 'value'),
+            Input(options_div.axes_check, 'value'),
             Input(options_div.isoval_input, 'value'),
             Input(options_div.colour_input_a, 'value'),
             Input(options_div.colour_input_b, 'value')
@@ -996,75 +874,8 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
         prevent_initial_callback=True
     )(make_plotly_iso)
 
-    # # Clientside callback for javascript molecule viewer
-    # clientside_callback(
-    #     '''
-    #     function (dummy) {
 
-    #         let canvas = document.getElementById('viewer_canvas');
-    #         if (canvas == null){
-    #             return;
-    #         }
-    #         var duri = canvas.toDataURL('image/png', 1)
-    #         downloadURI(duri, 'orbital.png');
-
-    #         return ;
-    #         }
-    #     ''', # noqa
-    #     Output(options_div.download_hidden_div, 'children'),
-    #     [
-    #         Input(options_div.download_button, 'n_clicks'),
-    #     ],
-    #     prevent_initial_call=True
-    # )
-
-    # # Viewer callback
-    # clientside_callback(
-    #     ClientsideFunction(
-    #         namespace='clientside',
-    #         function_name='orbital_function'
-    #     ),
-    #     [
-    #         Output(options_div.zoom_input, 'value'),
-    #     ],
-    #     [
-    #         Input(plot_div.orb_store, 'data'),
-    #         Input(plot_div.isoval_store, 'data'),
-    #         Input(options_div.colour_input_a, 'value'),
-    #         Input(options_div.colour_input_b, 'value'),
-    #         Input(options_div.wireframe_check, 'value'),
-    #         Input(options_div.orb_select, 'value'),
-    #         Input(options_div.x_input, 'value'),
-    #         Input(options_div.y_input, 'value'),
-    #         Input(options_div.z_input, 'value'),
-    #         Input(options_div.zoom_input, 'value'),
-    #         Input(options_div.qx_input, 'value'),
-    #         Input(options_div.qy_input, 'value'),
-    #         Input(options_div.qz_input, 'value'),
-    #         Input(options_div.qw_input, 'value')
-    #     ],
-    #     prevent_initial_call=True
-    # )
-
-    return
-
-
-def make_plotly_iso(orbital_name, cutaway, isoval, colour_1, colour_2):
-
-    fig = Patch()
-    if None in [orbital_name, cutaway, isoval, colour_1, colour_2]:
-        return no_update
-
-    if isinstance(ctx.triggered_id, str) and 'iso' in ctx.triggered_id:
-        fig['data'][0]['isomin'] = -isoval
-        fig['data'][0]['isomax'] = isoval
-        return [fig]
-
-    colour_1 = colour_1.lstrip('#')
-    colour_2 = colour_2.lstrip('#')
-
-    colour_1 = tuple(int(colour_1[i:i+2], 16) for i in (0, 2, 4))
-    colour_2 = tuple(int(colour_2[i:i+2], 16) for i in (0, 2, 4))
+def calc_wav(orbital_name):
 
     if not orbital_name:
         return no_update
@@ -1083,35 +894,241 @@ def make_plotly_iso(orbital_name, cutaway, isoval, colour_1, colour_2):
         'fz3': fz_3d
     }
 
-    n_points, wav, x, y, z, _, step = orb_func_dict[name](
+    wav, spacing = orb_func_dict[name](
         n
     )
+    wav = [wa.tolist() for wa in wav]
 
-    traces = go.Isosurface(
-        x=x.flatten(),
-        y=y.flatten(),
-        z=z.flatten(),
-        value=wav.flatten(),
-        isomin=-float(isoval),
-        isomax=float(isoval),
-        caps=dict(
-            x_show=False, y_show=False, z_show=False
-        ),
-        surface_count=2,
-        colorscale=[
-            [0, 'rgb({:d},{:d},{:d})'.format(*colour_1)],
-            [1, 'rgb({:d},{:d},{:d})'.format(*colour_2)]
-        ],
-        showlegend=False
+    return wav, spacing
+
+
+def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
+                    colour_2):
+
+    if not len(wav):
+        return no_update
+
+    fig = Patch()
+
+    if None in [cutaway, isoval, colour_1, colour_2]:
+        return no_update
+
+    colour_1 = colour_1.lstrip('#')
+    colour_2 = colour_2.lstrip('#')
+
+    colour_1 = tuple(int(colour_1[i:i+2], 16) for i in (0, 2, 4))
+    colour_2 = tuple(int(colour_2[i:i+2], 16) for i in (0, 2, 4))
+
+    rounds = 10
+    try:
+        verts1, faces1, _, _ = measure.marching_cubes(
+            np.array(wav),
+            isoval,
+            spacing=spacing
+        )
+    except ValueError:
+        return no_update
+    verts1 = laplacian_smooth(verts1, faces1, rounds=rounds)
+    x1, y1, z1 = verts1.T
+    I1, J1, K1 = faces1.T
+
+    try:
+        verts2, faces2, _, _ = measure.marching_cubes(
+            np.array(wav),
+            -isoval,
+            spacing=spacing
+        )
+    except ValueError:
+        return no_update
+    verts2 = laplacian_smooth(verts2, faces2, rounds=rounds)
+    x2, y2, z2 = verts2.T
+    I2, J2, K2 = faces2.T
+
+    xzero = np.concatenate([x1, x2])
+    yzero = np.concatenate([y1, y2])
+    zzero = np.concatenate([z1, z2])
+    x1 -= np.mean(xzero)
+    x2 -= np.mean(xzero)
+    y1 -= np.mean(yzero)
+    y2 -= np.mean(yzero)
+    z1 -= np.mean(zzero)
+    z2 -= np.mean(zzero)
+
+    trace2 = go.Mesh3d(
+        x=x2,
+        y=y2,
+        z=z2,
+        color='rgb({:d},{:d},{:d})'.format(*colour_2),
+        i=I2,
+        j=J2,
+        k=K2,
+        name='',
+        showscale=False
     )
+    trace1 = go.Mesh3d(
+        x=x1,
+        y=y1,
+        z=z1,
+        color='rgb({:d},{:d},{:d})'.format(*colour_1),
+        i=I1,
+        j=J1,
+        k=K1,
+        name='',
+        showscale=False
+    )
+    traces = [trace1, trace2]
+    if axes_check:
+        trace_3 = go.Scatter3d(
+            x=[-1.2 * np.max(x1), 1.2 * np.max(x1)],
+            y=[0, 0],
+            z=[0, 0],
+            line={
+                'color': 'blue',
+                'width': 8
+            },
+            mode='lines',
+            name='x'
+        )
+        trace_4 = go.Scatter3d(
+            y=[-1.2 * np.max(y1), 1.2 * np.max(y1)],
+            x=[0, 0],
+            z=[0, 0],
+            line={
+                'color': 'green',
+                'width': 8
+            },
+            mode='lines',
+            name='y'
+        )
+        trace_5 = go.Scatter3d(
+            z=[-1.2 * np.max(z1), 1.2 * np.max(z1)],
+            x=[0, 0],
+            y=[0, 0],
+            line={
+                'color': 'red',
+                'width': 8
+            },
+            mode='lines',
+            name='z'
+        )
+        traces += [trace_3, trace_4, trace_5]
 
-    fig['data'] = [traces]
+    fig['data'] = traces
 
-    if float(cutaway) == 0.5:
-        fig['layout']['scene']['xaxis']['range'] = [np.min(x), 0]
+    if cutaway == 'x':
+        fig['layout']['scene']['yaxis']['range'] = 'auto'
+        fig['layout']['scene']['zaxis']['range'] = 'auto'
+        fig['layout']['scene']['xaxis']['range'] = [
+            np.min(np.concatenate([x1, x2])),
+            0
+        ]
         fig['layout']['scene']['aspectratio'] = {'x': 0.5, 'y': 1., 'z': 1.}
+    elif cutaway == 'y':
+        fig['layout']['scene']['zaxis']['range'] = 'auto'
+        fig['layout']['scene']['xaxis']['range'] = 'auto'
+        fig['layout']['scene']['yaxis']['range'] = [
+            np.min(np.concatenate([y1, y2])),
+            0
+        ]
+        fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 0.5, 'z': 1.}
+    elif cutaway == 'z':
+        fig['layout']['scene']['yaxis']['range'] = 'auto'
+        fig['layout']['scene']['xaxis']['range'] = 'auto'
+        fig['layout']['scene']['zaxis']['range'] = [
+            np.min(np.concatenate([z1, z2])),
+            0
+        ]
+        fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 1., 'z': 0.5}
     else:
         fig['layout']['scene']['xaxis']['range'] = 'auto'
+        fig['layout']['scene']['yaxis']['range'] = 'auto'
+        fig['layout']['scene']['zaxis']['range'] = 'auto'
         fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 1., 'z': 1.}
 
     return [fig]
+
+
+def laplacian_smooth(vertices, faces, rounds=1):
+    '''
+    Pure-python reference implementation of laplacian smoothing.
+    Smooth the mesh in-place.
+    This is simplest mesh smoothing technique, known as Laplacian Smoothing.
+    Relocates each vertex by averaging its position with those of its adjacent
+    neighbors.
+    Repeat for N iterations.
+    One disadvantage of this technique is that it results in overall shrinkage
+    of the mesh, especially for many iterations. (But nearly all smoothing
+    techniques
+    cause at least some shrinkage.)
+    (Obviously, any normals you have for this mesh will be out-of-date after
+    smoothing.)
+
+    Parameters
+    ----------
+    vertices:
+        Vertex coordinates shape=(N,3)
+    faces
+        Face definitions.  shape=(N,3)
+        Each row lists 3 vertices (indexes into the vertices array)
+    rounds:
+        How many passes to take over the data.
+        More iterations results in a smoother mesh, but more shrinkage
+        (and more CPU time).
+    Returns:
+        new vertices
+    '''
+    vertices = np.asarray(vertices, dtype=np.float32)
+    faces = np.asarray(faces)
+
+    # Compute the list of all unique vertex adjacencies
+    all_edges = np.concatenate([faces[:, (0, 1)],
+                                faces[:, (1, 2)],
+                                faces[:, (2, 0)]])
+    all_edges.sort(axis=1)
+    edges_df = pd.DataFrame(all_edges, columns=['v1_id', 'v2_id'])
+    edges_df.drop_duplicates(inplace=True)
+    del all_edges
+
+    # (This sort isn't technically necessary, but it might give
+    # better cache locality for the vertex lookups below.)
+    edges_df.sort_values(['v1_id', 'v2_id'], inplace=True)
+
+    # How many neighbors for each vertex
+    # i.e. how many times it is mentioned in the edge list
+    neighbor_counts = np.bincount(
+        edges_df.values.reshape(-1),
+        minlength=len(vertices)
+    )
+
+    new_vertices = np.empty_like(vertices)
+    for _ in range(rounds):
+        new_vertices[:] = vertices
+
+        # For the complete edge index list, accumulate (sum) the vertexes on
+        # the right side of the list into the left side's address and vversa
+        #
+        # We want something like this:
+        # v1_indexes, v2_indexes = df['v1_id'], df['v2_id']
+        # new_vertices[v1_indexes] += vertices[v2_indexes]
+        # new_vertices[v2_indexes] += vertices[v1_indexes]
+        #
+        # ...but that doesn't work because v1_indexes will contain repeats,
+        #    and "fancy indexing" behavior is undefined in that case.
+        #
+        # Instead, it turns out that np.ufunc.at() works (it's an "unbuffered"
+        # operation)
+        np.add.at(
+            new_vertices, edges_df['v1_id'], vertices[edges_df['v2_id'], :]
+        )
+        np.add.at(
+            new_vertices, edges_df['v2_id'], vertices[edges_df['v1_id'], :]
+        )
+
+        # (plus one here because each point itself is also included in the sum)
+        new_vertices[:] /= (neighbor_counts[:, None] + 1)
+
+        # Swap (save RAM allocation overhead by reusing the new_vertices array
+        # between iterations)
+        vertices, new_vertices = new_vertices, vertices
+
+    return vertices
