@@ -50,7 +50,7 @@ names = [
 
 images = [
     'assets/radial.png',
-    'assets/Orbitals.png',
+    'assets/orbital.png',
     'assets/Vibrations.png',
     'assets/4f_densities.png',
 ]
