@@ -24,7 +24,7 @@ from .core import common
 ID_PREFIX = 'rad'
 dash_id = common.dash_id(ID_PREFIX)
 
-PAGE_NAME = 'Radial Functions'
+PAGE_NAME = 'Radial Wavefunctions'
 PAGE_PATH = '/radial'
 PAGE_IMAGE = 'assets/radial.png'
 PAGE_DESCRIPTION = 'Interactive Radial Functions'

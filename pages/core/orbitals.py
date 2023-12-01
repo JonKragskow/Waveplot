@@ -292,8 +292,8 @@ def fz_3d(n: int):
 
     x, y, z = np.meshgrid(
         np.arange(-zbound, zbound, step),
-        np.arange(-0.75 * zbound, 0.75 * zbound, step),
-        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
         copy=True
     )
 
@@ -304,6 +304,105 @@ def fz_3d(n: int):
     ang = 0.25 * np.sqrt(7/np.pi) * z*(2*z**2-3*x**2-3*y**2)/(r**3)
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad*ang
+
+    spacing = [step, step, step]
+
+    return wav, spacing
+
+
+def sp_3d():
+
+    zbound = 20
+    step = 0.5
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    # radial wavefunction
+    radp = rc.radial_p(2, r)
+
+    # angular wavefunction
+    angp = np.sqrt(3. / (4. * np.pi)) * x / r
+    wavp = angp * radp
+
+    rads = rc.radial_s(2, r)
+    angs = 0.5/np.sqrt(np.pi)
+    wavs = angs * rads
+
+    wav = 1. / np.sqrt(2) * wavs + 1. / np.sqrt(2) * wavp
+    wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
+
+    spacing = [step, step, step]
+
+    return wav, spacing
+
+
+def sp3_3d():
+
+    zbound = 20
+    step = 0.5
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        np.arange(-zbound, zbound, step),
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    # radial wavefunction
+    radp = rc.radial_p(2, r)
+
+    # angular wavefunction
+    angp1 = np.sqrt(3. / (4. * np.pi)) * x / r
+    wavp1 = angp1 * radp
+
+    rads = rc.radial_s(2, r)
+    angs = 0.5/np.sqrt(np.pi)
+    wavs = angs * rads
+
+    wav = 0.5 * wavs + np.sqrt(3) / 2. * wavp1
+    wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
+
+    spacing = [step, step, step]
+
+    return wav, spacing
+
+
+def sp2_3d():
+
+    zbound = 20
+    step = 0.5
+    x, y, z = np.meshgrid(
+        np.arange(-zbound, zbound, step),
+        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    # radial wavefunction
+    radp = rc.radial_p(2, r)
+
+    # angular wavefunction
+    angp1 = np.sqrt(3. / (4. * np.pi)) * x / r
+    wavp1 = angp1 * radp
+
+    angp2 = np.sqrt(3. / (4. * np.pi)) * y / r
+    wavp2 = angp2 * radp
+
+    rads = rc.radial_s(2, r)
+    angs = 0.5/np.sqrt(np.pi)
+    wavs = angs * rads
+
+    wav = 1. / np.sqrt(3) * wavs + np.sqrt(2/3) * wavp1 + 1. / np.sqrt(2) * wavp2 # noqa
+    wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
     spacing = [
         np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
@@ -534,8 +633,11 @@ class OptionsDiv(common.Div):
                 {'label': '4fyz²', 'value': '4fyz2'},
                 {'label': '5fyz²', 'value': '5fyz2'},
                 {'label': '6fyz²', 'value': '6fyz2'},
+                {'label': 'sp', 'value': 'sp'},
+                {'label': 'sp2', 'value': 'sp2'},
+                {'label': 'sp3', 'value': 'sp3'}
             ],
-            value='3dz2',
+            value='sp3',
             placeholder='Select an orbital'
         )
 
@@ -731,9 +833,6 @@ def calc_wav(orbital_name):
     if not orbital_name:
         return no_update
 
-    n = int(orbital_name[0])
-    name = orbital_name[1:]
-
     # Get orbital n value and name
     orb_func_dict = {
         's': s_3d,
@@ -742,12 +841,25 @@ def calc_wav(orbital_name):
         'dz2': dz_3d,
         'fxyz': fxyz_3d,
         'fyz2': fyz2_3d,
-        'fz3': fz_3d
+        'fz3': fz_3d,
+        'sp': sp_3d,
+        'sp2': sp2_3d,
+        'sp3': sp3_3d
     }
 
-    wav, spacing = orb_func_dict[name](
-        n
-    )
+    special = ['sp', 'sp2', 'sp3']
+
+    if orbital_name not in special:
+
+        n = int(orbital_name[0])
+        name = orbital_name[1:]
+        wav, spacing = orb_func_dict[name](
+            n
+        )
+    else:
+        print(orbital_name)
+        wav, spacing = orb_func_dict[orbital_name]()
+
     # Lists are Json serialisable
     wav = [wa.tolist() for wa in wav]
 

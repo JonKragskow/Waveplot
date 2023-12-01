@@ -42,7 +42,7 @@ paths = [
 ]
 
 names = [
-    'Radial Functions',
+    'Radial Wavefunctions',
     'Atomic Orbitals',
     'Harmonic Oscillators',
     '4f Densities',
