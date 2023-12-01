@@ -539,118 +539,6 @@ class OptionsDiv(common.Div):
             placeholder='Select an orbital'
         )
 
-        self.x_input = dbc.Input(
-            id=self.prefix('view_x'),
-            value=0,
-            type='number'
-        )
-        self.x_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'X'
-                ),
-                self.x_input
-            ]
-        )
-
-        self.y_input = dbc.Input(
-            id=self.prefix('view_y'),
-            value=0,
-            type='number'
-        )
-        self.y_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'Y'
-                ),
-                self.y_input
-            ]
-        )
-
-        self.z_input = dbc.Input(
-            id=self.prefix('view_z'),
-            value=0,
-            type='number'
-        )
-        self.z_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'Z'
-                ),
-                self.z_input
-            ]
-        )
-
-        self.zoom_input = dbc.Input(
-            id=self.prefix('view_zoom'),
-            value='',
-            type='number'
-        )
-        self.zoom_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'Zoom'
-                ),
-                self.zoom_input
-            ]
-        )
-
-        self.qx_input = dbc.Input(
-            id=self.prefix('view_qx'),
-            value=0,
-            type='number'
-        )
-        self.qx_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'qX'
-                ),
-                self.qx_input
-            ]
-        )
-
-        self.qy_input = dbc.Input(
-            id=self.prefix('view_qy'),
-            value=0,
-            type='number'
-        )
-        self.qy_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'qY'
-                ),
-                self.qy_input
-            ]
-        )
-
-        self.qz_input = dbc.Input(
-            id=self.prefix('view_qz'),
-            value=0,
-            type='number'
-        )
-        self.qz_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'qZ'
-                ),
-                self.qz_input
-            ]
-        )
-
-        self.qw_input = dbc.Input(
-            id=self.prefix('view_qw'),
-            value=1,
-            type='number'
-        )
-        self.qw_ig = self.make_input_group(
-            [
-                dbc.InputGroupText(
-                    'qW'
-                ),
-                self.qw_input
-            ]
-        )
-
         self.cutaway_select = dbc.Select(
             id=self.prefix('cutaway_in'),
             style={
@@ -776,6 +664,10 @@ class OptionsDiv(common.Div):
                         self.orb_select,
                         className='4 d-flex justify-content-center mb-3',
                         style={'align': 'center'}
+                    ),
+                    dbc.Col(
+                        self.axes_ig,
+                        className='mb-3'
                     )
                 ]
             ),
@@ -794,49 +686,6 @@ class OptionsDiv(common.Div):
                 ]),
                 dbc.Col(
                     self.isoval_ig
-                ),
-            ]),
-            dbc.Row([
-                dbc.Col(
-                    self.axes_ig,
-                    className='mb-3'
-                )
-            ]),
-            dbc.Row(
-                dbc.Col(
-                    html.H5(
-                        style={'textAlign': 'center'},
-                        children='Viewer'
-                    )
-                )
-            ),
-            dbc.Row([
-                dbc.Col(
-                    self.x_ig
-                ),
-                dbc.Col(
-                    self.y_ig
-                ),
-                dbc.Col(
-                    self.z_ig
-                ),
-                dbc.Col(
-                    self.zoom_ig
-                ),
-
-            ]),
-            dbc.Row([
-                dbc.Col(
-                    self.qx_ig
-                ),
-                dbc.Col(
-                    self.qy_ig
-                ),
-                dbc.Col(
-                    self.qz_ig
-                ),
-                dbc.Col(
-                    self.qw_ig
                 ),
             ])
         ]
@@ -876,7 +725,9 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
 
 
 def calc_wav(orbital_name):
-
+    '''
+    Calculates given wavefunction's 3d data
+    '''
     if not orbital_name:
         return no_update
 
@@ -897,6 +748,7 @@ def calc_wav(orbital_name):
     wav, spacing = orb_func_dict[name](
         n
     )
+    # Lists are Json serialisable
     wav = [wa.tolist() for wa in wav]
 
     return wav, spacing
@@ -904,6 +756,10 @@ def calc_wav(orbital_name):
 
 def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
                     colour_2):
+    '''
+    Finds isosurface for given wavefunction data using marching cubes,
+    then smooths the surface and plots as mesh
+    '''
 
     if not len(wav):
         return no_update
@@ -913,12 +769,13 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     if None in [cutaway, isoval, colour_1, colour_2]:
         return no_update
 
+    # Convert colour from hex to rgb tuple
     colour_1 = colour_1.lstrip('#')
     colour_2 = colour_2.lstrip('#')
-
     colour_1 = tuple(int(colour_1[i:i+2], 16) for i in (0, 2, 4))
     colour_2 = tuple(int(colour_2[i:i+2], 16) for i in (0, 2, 4))
 
+    # Calculate each ±isosurface and smooth it
     rounds = 10
     try:
         verts1, faces1, _, _ = measure.marching_cubes(
@@ -944,6 +801,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     x2, y2, z2 = verts2.T
     I2, J2, K2 = faces2.T
 
+    # Shift surface origin to zero
     xzero = np.concatenate([x1, x2])
     yzero = np.concatenate([y1, y2])
     zzero = np.concatenate([z1, z2])
@@ -954,17 +812,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     z1 -= np.mean(zzero)
     z2 -= np.mean(zzero)
 
-    trace2 = go.Mesh3d(
-        x=x2,
-        y=y2,
-        z=z2,
-        color='rgb({:d},{:d},{:d})'.format(*colour_2),
-        i=I2,
-        j=J2,
-        k=K2,
-        name='',
-        showscale=False
-    )
+    # Make mesh of each isosurface
     trace1 = go.Mesh3d(
         x=x1,
         y=y1,
@@ -976,7 +824,20 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
         name='',
         showscale=False
     )
+    trace2 = go.Mesh3d(
+        x=x2,
+        y=y2,
+        z=z2,
+        color='rgb({:d},{:d},{:d})'.format(*colour_2),
+        i=I2,
+        j=J2,
+        k=K2,
+        name='',
+        showscale=False
+    )
     traces = [trace1, trace2]
+
+    # Add axes
     if axes_check:
         trace_3 = go.Scatter3d(
             x=[-1.2 * np.max(x1), 1.2 * np.max(x1)],
@@ -1013,8 +874,10 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
         )
         traces += [trace_3, trace_4, trace_5]
 
+    # Update patched figure's data
     fig['data'] = traces
 
+    # update perspective if cutaway selected
     if cutaway == 'x':
         fig['layout']['scene']['yaxis']['range'] = 'auto'
         fig['layout']['scene']['zaxis']['range'] = 'auto'
@@ -1022,7 +885,9 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
             np.min(np.concatenate([x1, x2])),
             0
         ]
-        fig['layout']['scene']['aspectratio'] = {'x': 0.5, 'y': 1., 'z': 1.}
+        fig['layout']['scene']['aspectratio'] = {
+            'x': 0.5, 'y': 1., 'z': 1.
+        }
     elif cutaway == 'y':
         fig['layout']['scene']['zaxis']['range'] = 'auto'
         fig['layout']['scene']['xaxis']['range'] = 'auto'
@@ -1030,7 +895,9 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
             np.min(np.concatenate([y1, y2])),
             0
         ]
-        fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 0.5, 'z': 1.}
+        fig['layout']['scene']['aspectratio'] = {
+            'x': 1., 'y': 0.5, 'z': 1.
+        }
     elif cutaway == 'z':
         fig['layout']['scene']['yaxis']['range'] = 'auto'
         fig['layout']['scene']['xaxis']['range'] = 'auto'
@@ -1038,12 +905,16 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
             np.min(np.concatenate([z1, z2])),
             0
         ]
-        fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 1., 'z': 0.5}
+        fig['layout']['scene']['aspectratio'] = {
+            'x': 1., 'y': 1., 'z': 0.5
+        }
     else:
         fig['layout']['scene']['xaxis']['range'] = 'auto'
         fig['layout']['scene']['yaxis']['range'] = 'auto'
         fig['layout']['scene']['zaxis']['range'] = 'auto'
-        fig['layout']['scene']['aspectratio'] = {'x': 1., 'y': 1., 'z': 1.}
+        fig['layout']['scene']['aspectratio'] = {
+            'x': 1., 'y': 1., 'z': 1.
+            }
 
     return [fig]
 

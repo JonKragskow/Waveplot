@@ -26,7 +26,7 @@ dash_id = common.dash_id(ID_PREFIX)
 
 PAGE_NAME = '3d Orbitals'
 PAGE_PATH = '/orbitals'
-PAGE_IMAGE = 'assets/Orbitals3.png'
+PAGE_IMAGE = 'assets/orbital.png'
 PAGE_DESCRIPTION = 'Interactive atomic orbitals'
 
 register_page(
