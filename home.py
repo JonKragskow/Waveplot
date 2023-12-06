@@ -16,61 +16,39 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from dash import html, register_page
+from dash import html, page_registry
 import dash_bootstrap_components as dbc
 from functools import reduce
 from operator import mul
 
-from .core import utils
+from pages.core import utils
 
 PAGE_NAME = 'Home'
 PAGE_PATH = '/'
 PAGE_DESCRIPTION = 'An interactive wavefunction viewer by Jon Kragskow'
 
-register_page(
-    __name__,
-    path=PAGE_PATH,
-    name=PAGE_NAME,
-    description=PAGE_DESCRIPTION
-)
-
-paths = [
-    '/radial',
-    '/orbitals',
-    '/vibrations',
-]
-
-names = [
-    'Radial Wavefunctions',
-    'Atomic Orbitals',
-    'Harmonic Oscillators',
-]
-
-images = [
-    'assets/radial.png',
-    'assets/orbital.png',
-    'assets/Vibrations.png',
-]
 
 grid = []
 
-for path, name, image in zip(paths, names, images):
+for name, item in page_registry.items():
+    if item['name'] == PAGE_NAME:
+        continue
     grid.append(
         dbc.Col(
             children=[
                 html.A(
                     children=[
                         html.Img(
-                            src=image,
+                            src=item['image'],
                             style={
                                 "width": "500px",
                                 "height": "500px"
                             }
                         )
                     ],
-                    href=path
+                    href=item['path']
                 ),
-                html.H4(name)
+                html.H4(item['name'])
             ],
             class_name='col-6',
             style={
@@ -78,7 +56,6 @@ for path, name, image in zip(paths, names, images):
             }
         )
     )
-
 if len(grid) % 2:
     grid.append(dbc.Col([]))
 

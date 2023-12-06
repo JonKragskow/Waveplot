@@ -15,10 +15,11 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from dash import dcc, html, page_container, callback
+from dash import dcc, html, page_container, callback, register_page
 from dash.dependencies import Output, Input
 from app import app
 from pages.core import utils
+import home
 
 navbar = utils.create_navbar("/")
 
@@ -40,6 +41,15 @@ def display_page(current_path):
     '''
     navbar = utils.create_navbar(current_path)
     return navbar
+
+
+register_page(
+    'pages',
+    path=home.PAGE_PATH,
+    name=home.PAGE_NAME,
+    description=home.PAGE_DESCRIPTION,
+    layout=home.layout
+)
 
 
 if __name__ == '__main__':
