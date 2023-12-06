@@ -38,21 +38,18 @@ paths = [
     '/radial',
     '/orbitals',
     '/vibrations',
-    '/f-densities',
 ]
 
 names = [
     'Radial Wavefunctions',
     'Atomic Orbitals',
     'Harmonic Oscillators',
-    '4f Densities',
 ]
 
 images = [
     'assets/radial.png',
     'assets/orbital.png',
     'assets/Vibrations.png',
-    'assets/4f_densities.png',
 ]
 
 grid = []
