@@ -17,15 +17,11 @@
 '''
 import numpy as np
 from functools import lru_cache
-
-
-@lru_cache()
-def factorial(n):
-
-    if n == 0:
-        return 1
-    else:
-        return n * factorial(n - 1)
+from dash import dcc, html
+import dash_bootstrap_components as dbc
+from . import common as com
+from scipy.special import factorial
+import io
 
 
 def hermite(n, x):
@@ -156,3 +152,916 @@ def harmonic_wf(n, x):
     wf = h * N * np.exp(-x**2 * 0.5)
 
     return wf
+
+
+class OptionsDiv(com.Div):
+    def __init__(self, prefix, **kwargs):
+        # Initialise base class attributes
+        super().__init__(prefix=prefix, **kwargs)
+
+        self.lin_wn_input = dbc.Input(
+            id=self.prefix('lin_wn'),
+            placeholder=2888,
+            type='number',
+            min=0.0001,
+            value=2888,
+            style={
+                'textAlign': 'center'
+            }
+        )
+        self.lin_wn_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('lin_wn_fix')
+        )
+        self.lin_wn_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(u'\u03BD'),
+                self.lin_wn_input,
+                dbc.InputGroupText(r'cm⁻¹'),
+                dbc.InputGroupText(
+                    self.lin_wn_check
+                )
+            ]
+        )
+
+        self.ang_wn_input = dbc.Input(
+            id=self.prefix('ang_wn'),
+            placeholder=18145.84,
+            type='number',
+            min=0.0001,
+            value=18145.84,
+            style={
+                'textAlign': 'center'
+            }
+        )
+        self.ang_wn_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('ang_wn_fix')
+        )
+        self.ang_wn_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(u'ω'),
+                self.ang_wn_input,
+                dbc.InputGroupText(r'cm⁻¹'),
+                dbc.InputGroupText(
+                    self.lin_wn_check
+                )
+            ]
+        )
+
+        self.fc_input = dbc.Input(
+            id=self.prefix('fc'),
+            placeholder=480,
+            type='number',
+            min=0.,
+            value=480,
+            style={
+                'textAlign': 'center'
+            }
+        )
+        self.fc_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('fc_fix')
+        )
+        self.fc_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(u'k'),
+                self.fc_input,
+                dbc.InputGroupText(r'N m⁻¹'),
+                dbc.InputGroupText(
+                    self.fc_check
+                )
+            ]
+        )
+
+        self.rm_input = dbc.Input(
+            id=self.prefix('rm'),
+            placeholder=0.9768,
+            type='number',
+            min=0.,
+            value=0.9768,
+            style={
+                'textAlign': 'center'
+            }
+        )
+        self.rm_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('rm_fix')
+        )
+        self.rm_ig = self.make_input_group(
+            [
+                dbc.InputGroupText(u'μ'),
+                self.rm_input,
+                dbc.InputGroupText(r'g mol⁻¹'),
+                dbc.InputGroupText(
+                    self.rm_check
+                )
+            ]
+        )
+
+        self.max_n_input = dbc.Input(
+            id=self.prefix('max_n'),
+            placeholder=5,
+            value=5,
+            type='number',
+            min=0,
+            max=25,
+            style={
+                'textAlign': 'center'
+            }
+        )
+
+        self.max_n_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Max. n'),
+                self.max_n_input
+            ]
+        )
+
+        self.wf_scale_input = dbc.Input(
+            id=self.prefix('wf_scale'),
+            placeholder=5,
+            value=5,
+            type='number',
+            min=0,
+            max=25,
+            style={
+                'textAlign': 'center'
+            }
+        )
+
+        self.wf_scale_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('WF Scale'),
+                self.wf_scale_input
+            ]
+        )
+
+        self.text_size_input = dbc.Input(
+            id=self.prefix('text_size'),
+            placeholder=18,
+            type='number',
+            min=10,
+            max=25,
+            value=15,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.wf_colour_select = dbc.Select(
+            id=self.prefix('wf_colour'),
+            options=[
+                {
+                    'label': 'Default',
+                    'value': 'normal'
+                },
+                {
+                    'label': 'Tol',
+                    'value': 'tol'
+                },
+                {
+                    'label': 'Wong',
+                    'value': 'wong'
+                }
+            ],
+            value='normal',
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle',
+                'alignItems': 'auto',
+                'display': 'inline'
+            }
+        )
+
+        self.wf_colour_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('WF colour'),
+                self.wf_colour_select
+            ]
+        )
+
+        self.wf_linewidth_input = dbc.Input(
+            id=self.prefix('wf_linewidth'),
+            placeholder=3,
+            type='number',
+            min=1,
+            max=10,
+            value=3,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.wf_linewidth_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Linewidth'),
+                self.wf_linewidth_input
+            ]
+        )
+
+        self.tog_wf_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('toggle_wf')
+        )
+        self.wf_toggle_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Toggle'),
+                dbc.InputGroupText(
+                    self.tog_wf_check
+                )
+            ]
+        )
+
+        self.wf_modal = self.make_modal(
+            [
+                self.wf_colour_ig,
+                self.wf_linewidth_ig,
+                self.wf_toggle_ig
+            ]
+        )
+
+        self.wf_modal_btn = dbc.Button(
+            'WF options',
+            id=self.prefix('open_wf_modal'),
+            color='primary',
+            className='me-1',
+            n_clicks=0,
+            style={
+                'textAlign': 'center',
+                'width': '100%'
+            }
+        )
+
+        self.pe_colour_select = dbc.Input(
+            id=self.prefix('PE_colour'),
+            type='color',
+            value='#ffffff',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.pe_colour_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('pe colour'),
+                self.pe_colour_select
+            ]
+        )
+
+        self.pe_linewidth_input = dbc.Input(
+            id=self.prefix('PE_linewidth'),
+            placeholder=3,
+            type='number',
+            min=1,
+            max=10,
+            value=3,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.pe_linewidth_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Linewidth'),
+                self.pe_linewidth_input
+            ]
+        )
+
+        self.tog_pe_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('toggle_pe')
+        )
+        self.pe_toggle_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Toggle'),
+                dbc.InputGroupText(
+                    self.tog_pe_check
+                )
+            ]
+        )
+
+        self.pe_modal = self.make_modal(
+            [
+                self.pe_colour_ig,
+                self.pe_linewidth_ig,
+                self.pe_toggle_ig
+            ]
+        )
+
+        self.pe_modal_btn = dbc.Button(
+            'PE options',
+            id=self.prefix('open_pe_modal'),
+            color='primary',
+            className='me-1',
+            n_clicks=0,
+            style={
+                'textAlign': 'center',
+                'width': '100%'
+            }
+        )
+
+        self.state_colour_select = dbc.Input(
+            id=self.prefix('state_colour'),
+            type='color',
+            value='#ffffff',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.state_colour_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('state colour'),
+                self.state_colour_select
+            ]
+        )
+
+        self.state_linewidth_input = dbc.Input(
+            id=self.prefix('state_linewidth'),
+            placeholder=3,
+            type='number',
+            min=1,
+            max=10,
+            value=3,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.state_linewidth_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Linewidth'),
+                self.state_linewidth_input
+            ]
+        )
+
+        self.tog_state_check = dbc.Checkbox(
+            value=True,
+            id=self.prefix('toggle_state')
+        )
+        self.state_toggle_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Toggle'),
+                dbc.InputGroupText(
+                    self.tog_state_check
+                )
+            ]
+        )
+
+        self.state_modal = self.make_modal(
+            [
+                self.state_colour_ig,
+                self.state_linewidth_ig,
+                self.state_toggle_ig
+            ]
+        )
+
+        self.state_modal_btn = dbc.Button(
+            'State options',
+            id=self.prefix('open_state_modal'),
+            color='primary',
+            className='me-1',
+            n_clicks=0,
+            style={
+                'textAlign': 'center',
+                'width': '100%'
+            }
+        )
+
+        self.text_size_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Text size'),
+                self.text_size_input
+            ]
+        )
+
+        self.download_button = dbc.Button(
+            'Download Data',
+            id=self.prefix('download_data'),
+            style={
+                'boxShadow': 'none',
+                'textalign': 'top'
+            }
+        )
+        self.download_trigger = dcc.Download(
+            id=self.prefix('download_data_trigger')
+        )
+
+        self.image_format_select = dbc.Select(
+            id=self.prefix('save_format'),
+            style={
+                'textAlign': 'center',
+                'horizontalAlign': 'center',
+                'display': 'inline'
+            },
+            options=[
+                {
+                    'label': 'svg',
+                    'value': 'svg',
+                },
+                {
+                    'label': 'png',
+                    'value': 'png',
+                },
+                {
+                    'label': 'jpeg',
+                    'value': 'jpeg',
+                }
+            ],
+            value='svg'
+        )
+
+        self.image_format_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Image format'),
+                self.image_format_select
+            ]
+        )
+
+        self.make_div_contents()
+        return
+
+    def make_input_group(self, elements):
+
+        group = dbc.InputGroup(
+            elements,
+            class_name='mb-3',
+        )
+        return group
+
+    def make_modal(self, elements):
+
+        modal = dbc.Modal(
+            elements,
+            class_name='mb-3',
+        )
+        return modal
+
+    def make_div_contents(self):
+        '''
+        Assembles div children in rows and columns
+        '''
+
+        contents = [
+            dbc.Row([
+                dbc.Col(
+                    html.H4(
+                        id=self.prefix('parameters_header'),
+                        style={
+                            'textAlign': 'center',
+                        },
+                        children='Parameters'
+                    )
+                ),
+                dbc.Tooltip(
+                    children='Toggle buttons specify the two fixed parameters',
+                    target=self.prefix('parameters_header'),
+                    style={
+                        'textAlign': 'center',
+                    }
+                )
+            ]),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.lin_wn_ig,
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.ang_wn_ig,
+                        class_name='mb-3'
+                    )
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.fc_ig,
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.rm_ig,
+                        class_name='mb-3'
+                    )
+                ]
+            ),
+            dbc.Row([
+                dbc.Col(
+                    html.H4(
+                        style={
+                            'textAlign': 'center',
+                        },
+                        children='Plot options'
+                    )
+                )
+            ]),
+            dbc.Row([
+                dbc.Col(
+                    [
+                        self.wf_modal_btn,
+                        self.wf_modal
+                    ],
+                    class_name='mb-3'
+                ),
+                dbc.Col(
+                    [
+                        self.pe_modal_btn,
+                        self.pe_modal
+                    ],
+                    class_name='mb-3'
+                ),
+                dbc.Col(
+                    [
+                        self.state_modal_btn,
+                        self.state_modal
+                    ],
+                    class_name='mb-3'
+                ),
+            ]),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.download_button,
+                            self.download_trigger
+                        ],
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        self.image_format_ig,
+                        class_name='mb-3'
+                    )
+                ],
+                className='align-items-center'
+            )
+        ]
+
+        self.div.children = contents
+        return
+
+
+def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
+    '''
+    Creates output file for harmonic potential energies, state energies,
+    and wavefunctions
+
+    Parameters
+    ----------
+    displacement : np.ndarray
+        Displacements used for classical oscillator in metres
+    state_e : np.ndarray
+        Harmonic state energies for quantum oscillator in wavenumbers
+    harmonic_e : np.ndarray
+        Harmonic energies for classical oscillator in wavenumbers
+    harmonic_wf : np.ndarray
+        Harmonic wavefunction for each state as a function of displacement
+        2D array = [n_states, displacement.size]
+    Returns
+    -------
+    str
+        string containing output file
+    '''
+
+    oc = io.StringIO()
+
+    header = (
+        'Vibrational wavefunction data calculated using waveplot.com\n'
+        'A tool by Jon Kragskow\n'
+    )
+
+    oc.write(header)
+
+    oc.write('\nState energies (cm-1)\n')
+    for se in state_e:
+        oc.write('{:.6f}\n'.format(se))
+
+    oc.write(
+        '\nDisplacement (A), Harmonic potential (cm-1)\n'
+    )
+    for di, se in zip(displacement * 10E10, harmonic_e):
+        oc.write('{:.6f} {:.6f}\n'.format(di, se))
+
+    oc.write(
+        '\nDisplacement (A), Harmonic Wavefunction for n=0, n=1, ...\n'
+    )
+
+    # transpose so rows are displacement
+    harmonic_wf = harmonic_wf.T
+
+    for di, row in zip(displacement * 10E10, harmonic_wf):
+        oc.write('{:.8f} '.format(di))
+        for state_wf in row:
+            oc.write('{:.8f} '.format(state_wf))
+        oc.write('\n')
+
+    return oc.getvalue()
+
+# @callback(
+#     Output(id('download_data_trigger'), 'data'),
+#     [
+#         Input(id('download_data'), 'n_clicks'),
+#         Input(id('data_store'), 'data')
+#     ],
+#     prevent_initial_call=True,
+# )
+# def func(n_clicks, data_str):
+#     if callback_context.triggered_id == id('data_store'):
+#         return
+#     else:
+#         return dict(content=data_str, filename='waveplot_vibrational_data.dat')
+
+# @callback(
+#     [
+#         Output(id('main_plot'), 'figure'),
+#         Output(id('main_plot'), 'config'),
+#         Output(id('data_store'), 'data'),
+#         Output(id('lin_wn'), 'value'),
+#         Output(id('ang_wn'), 'value'),
+#         Output(id('fc'), 'value'),
+#         Output(id('mu'), 'value'),
+#         Output(id('lin_wn'), 'disabled'),
+#         Output(id('ang_wn'), 'disabled'),
+#         Output(id('fc'), 'disabled'),
+#         Output(id('mu'), 'disabled'),
+#     ],
+#     [
+#         Input(id('lin_wn'), 'value'),
+#         Input(id('ang_wn'), 'value'),
+#         Input(id('fc'), 'value'),
+#         Input(id('mu'), 'value'),
+#         Input(id('max_n'), 'value'),
+#         Input(id('lin_wn_fix'), 'value'),
+#         Input(id('ang_wn_fix'), 'value'),
+#         Input(id('fc_fix'), 'value'),
+#         Input(id('mu_fix'), 'value'),
+#         Input(id('wf_scale'), 'value'),
+#         Input(id('text_size'), 'value'),
+#         Input(id('wf_linewidth'), 'value'),
+#         Input(id('pe_linewidth'), 'value'),
+#         Input(id('state_linewidth'), 'value'),
+#         Input(id('wf_colour'), 'value'),
+#         Input(id('pe_colour'), 'value'),
+#         Input(id('state_colour'), 'value'),
+#         Input(id('toggle_wf'), 'value'),
+#         Input(id('toggle_pe'), 'value'),
+#         Input(id('toggle_states'), 'value')
+#     ]
+# )
+# def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
+#                mu_fix, wf_scale, text_size, wf_linewidth, curve_linewidth,
+#                state_linewidth, wf_colour, curve_colour, state_colour,
+#                toggle_wf, toggle_pe, toggle_states):
+#     '''
+#     Updates the app, given the current state of the UI
+#     All inputs correspond (in the same order) to those in the decorator
+#     '''
+
+#     light = 2.998E10
+
+#     # Set all text entries as uneditable
+#     lin_wn_disable = True
+#     ang_wn_disable = True
+#     fc_disable = True
+#     mu_disable = True
+
+#     # Make 'fixed' values editable
+#     if lin_wn_fix:
+#         lin_wn_disable = False
+#     if ang_wn_fix:
+#         ang_wn_disable = False
+#     if fc_fix:
+#         fc_disable = False
+#     if mu_fix:
+#         mu_disable = False
+
+#     # Modebar config
+
+#     modebar_options = {
+#         'modeBarButtonsToRemove': [
+#             'toImage',
+#             'sendDataToCloud',
+#             'autoScale2d',
+#             'resetScale2d',
+#             'hoverClosestCartesian',
+#             'toggleSpikelines',
+#             'zoom2d',
+#             'zoom3d',
+#             'pan3d',
+#             'pan2d',
+#             'select2d',
+#             'zoomIn2d',
+#             'zoomOut2d',
+#             'hovermode',
+#             'resetCameraLastSave3d',
+#             'hoverClosest3d',
+#             'hoverCompareCartesian',
+#             'resetViewMapbox',
+#             'orbitRotation',
+#             'tableRotation',
+#             'resetCameraDefault3d'
+#         ],
+#         'displaylogo': False,
+#         'displayModeBar': True,
+#     }
+
+#     if sum([ang_wn_fix, lin_wn_fix, fc_fix, mu_fix]) != 2 or ang_wn_fix and lin_wn_fix: # noqa
+
+#         out_contents = 'data:text/csv;charset=utf-8,' + urllib.parse.quote(
+#             ''
+#         )
+#         fig = make_subplots()
+
+#         rounded = [
+#             round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
+#         ]
+
+#         on_off = [
+#             lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
+#         ]
+
+#         return [fig, modebar_options, out_contents] + rounded + on_off  # noqa
+
+#     #  Calculate missing parameters
+#     if ang_wn_fix and not lin_wn_fix:
+#         omega = ang_wn * light
+#         lin_wn = ang_wn / (2 * np.pi)
+#         if fc_fix and not mu_fix:
+#             mu = vibrations.calculate_mu(omega, fc)
+#         elif not fc_fix and mu_fix:
+#             fc = vibrations.calculate_k(omega, mu)
+#     elif lin_wn_fix and not ang_wn_fix:
+#         omega = lin_wn * 2 * np.pi * light
+#         ang_wn = lin_wn * 2 * np.pi
+#         if fc_fix and not mu_fix:
+#             mu = vibrations.calculate_mu(omega, fc)
+#         elif not fc_fix and mu_fix:
+#             fc = vibrations.calculate_k(omega, mu)
+#     elif not ang_wn_fix and not lin_wn_fix:
+#         ang_wn = np.sqrt(fc / (mu * 1.6605E-27)) / light
+#         lin_wn = ang_wn / (2 * np.pi)
+
+#     if max_n is None:
+#         max_n = 5
+
+#     # Read frequency or proxy frequency and convert to angular frequency in s-1
+#     omega = ang_wn * light
+#     omega = lin_wn * 2 * np.pi * light
+
+#     if fc == 0:
+#         fc = 480
+
+#     if omega == 0:
+#         omega = 2888
+
+#     # Convert wavenumbers to frequency in units of s^-1
+#     state_e, harmonic_e, displacement, zpd = vibrations.calc_harmonic_energies(
+#         fc,
+#         mu,
+#         max_n=max_n
+#     )
+
+#     # Convert to cm-1
+#     # 1 cm-1 = 1.986 30 x 10-23 J
+#     state_e /= 1.98630E-23
+#     harmonic_e /= 1.98630E-23
+
+#     fig = make_subplots(specs=[[{'secondary_y': True}]])
+
+#     if toggle_pe:
+#         # Plot harmonic energy curve
+#         fig.add_trace(
+#             go.Scatter(
+#                 x=displacement * 10E10,
+#                 y=harmonic_e,
+#                 hoverinfo='skip',
+#                 line={
+#                     'width': curve_linewidth,
+#                     'color': curve_colour
+#                 }
+#             ),
+#             secondary_y=False
+#         )
+
+#     if toggle_states:
+#         # Plot harmonic state energies
+#         for it, state in enumerate(state_e):
+#             fig.add_trace(
+#                 go.Scatter(
+#                     x=displacement * 10E10,
+#                     y=[state] * displacement.size,
+#                     line={
+#                         'width': state_linewidth,
+#                         'color': state_colour
+#                     },
+#                     name='n = {}'.format(it),
+#                     hovertemplate='%{x} ' + u'\u212B' + ' <br>%{y} cm⁻¹<br>'
+#                 ),
+#                 secondary_y=False
+#             )
+
+#     if wf_scale is None:
+#         wf_scale = 1
+
+#     if wf_colour == 'tol':
+#         wf_colour = utils.tol_cols[1:] + utils.wong_cols + utils.def_cols
+#     elif wf_colour == 'wong':
+#         wf_colour = utils.wong_cols + utils.def_cols + utils.tol_cols[1:]
+#     elif wf_colour == 'normal':
+#         wf_colour = utils.def_cols + utils.tol_cols[1:] + utils.wong_cols
+
+#     wf = np.zeros([max_n + 1, displacement.size])
+
+#     # Plot harmonic wavefunction
+#     if toggle_wf:
+#         for n in range(0, max_n + 1):
+#             wf[n] = vibrations.harmonic_wf(n, displacement * 10E10)
+#             fig.add_trace(
+#                 go.Scatter(
+#                     x=displacement * 10E10,
+#                     y=wf[n] * (n + 1) * wf_scale + n * (lin_wn) + state_e[0],
+#                     hoverinfo='skip',
+#                     line={
+#                         'width': wf_linewidth,
+#                         'color': wf_colour[n]
+#                     }
+#                 ),
+#                 secondary_y=False
+#             )
+
+#     fig.update_xaxes(
+#         autorange=True,
+#         hoverformat='.3f',
+#         ticks='outside',
+#         title={
+#             'text': 'Displacement (' + u'\u212B' + ')',
+#             'font': {
+#                 'family': 'Arial',
+#                 'size': text_size,
+#                 'color': 'black'
+#             }
+#         },
+#         tickfont={
+#             'family': 'Arial',
+#             'size': text_size,
+#             'color': 'black'
+#         },
+#         showticklabels=True,
+#         showline=True,
+#         linewidth=1,
+#         linecolor='black'
+#     )
+
+#     fig.update_yaxes(
+#         autorange=True,
+#         hoverformat='.1f',
+#         title={
+#             'text': 'Energy (cm⁻¹)',
+#             'font': {
+#                 'family': 'Arial',
+#                 'size': text_size,
+#                 'color': 'black'
+#             },
+#             'standoff': 2
+#         },
+#         tickfont={
+#             'family': 'Arial',
+#             'size': text_size,
+#             'color': 'black'
+#         },
+#         ticks='outside',
+#         showticklabels=True,
+#         tickformat='f',
+#         secondary_y=False,
+#         showline=True,
+#         linewidth=1,
+#         linecolor='black',
+#     )
+
+#     fig.update_layout(
+#         margin=dict(l=30, r=30, t=30, b=60),
+#         showlegend=False,
+#         plot_bgcolor='rgb(255, 255,255)'
+#     )
+
+#     # Create output file
+#     out_contents = create_output_file(displacement, state_e, harmonic_e, wf)
+
+#     rounded = [
+#         round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
+#     ]
+
+#     on_off = [
+#         lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
+#     ]
+
+#     return [fig, modebar_options, out_contents] + rounded + on_off
