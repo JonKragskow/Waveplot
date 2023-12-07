@@ -65,7 +65,7 @@ BASIC_SCENE = {
 
 BASIC_CONFIG = {
     'toImageButtonOptions': {
-        'format': 'png',
+        'format': 'svg',
         'filename': 'plot',
         'height': 500,
         'width': 600,
