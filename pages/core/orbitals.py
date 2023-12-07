@@ -22,7 +22,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from skimage import measure
 import pandas as pd
-from . import common
+from . import common as com
 from . import radial as rc
 
 
@@ -74,11 +74,11 @@ def s_3d(n: int):
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_s(n, 2*r/n)
+    rad = rc.radial_s(n, 2 * r / n)
 
-    ang = 0.5/np.sqrt(np.pi)
+    ang = 0.5 / np.sqrt(np.pi)
 
-    wav = ang*rad
+    wav = ang * rad
 
     spacing = [
         np.diff(np.arange(-zbound, zbound, step))[0],
@@ -189,11 +189,11 @@ def dz_3d(n: int):
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_d(n, 2*r/n)
+    rad = rc.radial_d(n, 2 * r / n)
 
-    ang = 2*z**2-x**2-y**2
+    ang = 2 * z**2 - x**2 - y**2
 
-    wav = rad*ang
+    wav = rad * ang
 
     spacing = [
         np.diff(np.arange(-0.9 * zbound, 0.9 * zbound, step))[0],
@@ -245,11 +245,11 @@ def dxy_3d(n: int):
     )
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_d(n, 2*r/n)
+    rad = rc.radial_d(n, 2 * r / n)
 
-    ang = x*y
+    ang = x * y
 
-    wav = rad*ang
+    wav = rad * ang
 
     spacing = np.diff(np.arange(-zbound, zbound, step))[0]
 
@@ -299,11 +299,11 @@ def fz_3d(n: int):
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_f(n, 2*r/n)
+    rad = rc.radial_f(n, 2 * r / n)
 
-    ang = 0.25 * np.sqrt(7/np.pi) * z*(2*z**2-3*x**2-3*y**2)/(r**3)
+    ang = 0.25 * np.sqrt(7 / np.pi) * z * (2 * z**2 - 3 * x**2 - 3 * y**2) / (r**3) # noqa
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
-    wav = rad*ang
+    wav = rad * ang
 
     spacing = [step, step, step]
 
@@ -331,7 +331,7 @@ def sp_3d():
     wavp = angp * radp
 
     rads = rc.radial_s(2, r)
-    angs = 0.5/np.sqrt(np.pi)
+    angs = 0.5 / np.sqrt(np.pi)
     wavs = angs * rads
 
     wav = 1. / np.sqrt(2) * wavs + 1. / np.sqrt(2) * wavp
@@ -363,7 +363,7 @@ def sp3_3d():
     wavp1 = angp1 * radp
 
     rads = rc.radial_s(2, r)
-    angs = 0.5/np.sqrt(np.pi)
+    angs = 0.5 / np.sqrt(np.pi)
     wavs = angs * rads
 
     wav = 0.5 * wavs + np.sqrt(3) / 2. * wavp1
@@ -398,7 +398,7 @@ def sp2_3d():
     wavp2 = angp2 * radp
 
     rads = rc.radial_s(2, r)
-    angs = 0.5/np.sqrt(np.pi)
+    angs = 0.5 / np.sqrt(np.pi)
     wavs = angs * rads
 
     wav = 1. / np.sqrt(3) * wavs + np.sqrt(2/3) * wavp1 + 1. / np.sqrt(2) * wavp2 # noqa
@@ -452,12 +452,12 @@ def fxyz_3d(n: int):
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_f(n, 2*r/n)
+    rad = rc.radial_f(n, 2 * r / n)
 
-    ang = 0.5 * np.sqrt(105/np.pi) * x*y*z/(r**3)
+    ang = 0.5 * np.sqrt(105 / np.pi) * x * y * z / (r**3)
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
 
-    wav = rad*ang
+    wav = rad * ang
 
     spacing = [step, step, step]
 
@@ -503,18 +503,18 @@ def fyz2_3d(n: int):
 
     r = np.sqrt(x**2 + y**2 + z**2)
 
-    rad = rc.radial_f(n, 2*r/n)
+    rad = rc.radial_f(n, 2 * r / n)
 
-    ang = 0.25 * np.sqrt(35/(2*np.pi)) * (3*x**2-y**2)*y/r**3
+    ang = 0.25 * np.sqrt(35 / (2 * np.pi)) * (3 * x**2 - y**2) * y / r**3
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
-    wav = rad*ang
+    wav = rad * ang
 
     spacing = [step, step, step]
 
     return wav, spacing
 
 
-class PlotDiv(common.Div):
+class PlotDiv(com.Div):
     def __init__(self, prefix, **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
@@ -531,34 +531,10 @@ class PlotDiv(common.Div):
             figure={
                 'data': [],
                 'layout': {
-                    'scene': {
-                        'xaxis': {
-                            'showgrid': False,
-                            'zeroline': False,
-                            'showline': False,
-                            'showticklabels': False,
-                            'visible': False
-                        },
-                        'yaxis': {
-                            'showgrid': False,
-                            'zeroline': False,
-                            'showline': False,
-                            'showticklabels': False,
-                            'visible': False
-                        },
-                        'zaxis': {
-                            'showgrid': False,
-                            'zeroline': False,
-                            'showline': False,
-                            'showticklabels': False,
-                            'visible': False
-                        },
-                        'aspectratio': dict(x=1., y=1, z=1.),
-                        'dragmode': 'orbit'
-                    }
+                    'scene': com.BASIC_SCENE
                 }
             },
-            config=rc.BASIC_CONFIG
+            config=com.BASIC_CONFIG
         )
 
         self.orb_store = dcc.Store(
@@ -592,7 +568,7 @@ class PlotDiv(common.Div):
         return
 
 
-class OptionsDiv(common.Div):
+class OptionsDiv(com.Div):
     def __init__(self, prefix, **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
@@ -755,7 +731,7 @@ class OptionsDiv(common.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
-                            },
+                        },
                         children='Options'
                     )
                 )
@@ -884,8 +860,8 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     # Convert colour from hex to rgb tuple
     colour_1 = colour_1.lstrip('#')
     colour_2 = colour_2.lstrip('#')
-    colour_1 = tuple(int(colour_1[i:i+2], 16) for i in (0, 2, 4))
-    colour_2 = tuple(int(colour_2[i:i+2], 16) for i in (0, 2, 4))
+    colour_1 = tuple(int(colour_1[i:i + 2], 16) for i in (0, 2, 4))
+    colour_2 = tuple(int(colour_2[i:i + 2], 16) for i in (0, 2, 4))
 
     # Calculate each ±isosurface and smooth it
     rounds = 10
@@ -1026,7 +1002,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
         fig['layout']['scene']['zaxis']['range'] = 'auto'
         fig['layout']['scene']['aspectratio'] = {
             'x': 1., 'y': 1., 'z': 1.
-            }
+        }
 
     return [fig]
 

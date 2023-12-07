@@ -1,5 +1,89 @@
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
+
+BASIC_LAYOUT = go.Layout(
+    xaxis={
+        'autorange': True,
+        'showgrid': False,
+        'zeroline': False,
+        'showline': True,
+        'ticks': 'outside',
+        'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
+        'showticklabels': True,
+        'minor_ticks': 'outside',
+        'tickformat': 'digit'
+    },
+    yaxis={
+        'autorange': True,
+        'showgrid': False,
+        'zeroline': False,
+        'title_standoff': 20,
+        'showline': True,
+        'ticks': 'outside',
+        'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
+        'showticklabels': True,
+        'minor_ticks': 'outside',
+        'tickformat': 'digit'
+    },
+    showlegend=True,
+    margin=dict(l=90, r=30, t=30, b=60),
+    legend={
+        'font': {
+            'family': 'Arial',
+            'size': 12,
+            'color': 'black'
+        }
+    }
+)
+
+BASIC_SCENE = {
+    'xaxis': {
+        'showgrid': False,
+        'zeroline': False,
+        'showline': False,
+        'showticklabels': False,
+        'visible': False
+    },
+    'yaxis': {
+        'showgrid': False,
+        'zeroline': False,
+        'showline': False,
+        'showticklabels': False,
+        'visible': False
+    },
+    'zaxis': {
+        'showgrid': False,
+        'zeroline': False,
+        'showline': False,
+        'showticklabels': False,
+        'visible': False
+    },
+    'aspectratio': dict(x=1., y=1, z=1.),
+    'dragmode': 'orbit'
+}
+
+BASIC_CONFIG = {
+    'toImageButtonOptions': {
+        'format': 'png',
+        'filename': 'plot',
+        'height': 500,
+        'width': 600,
+        'scale': 8
+    },
+    'modeBarButtonsToRemove': [
+        'sendDataToCloud',
+        'select2d',
+        'lasso',
+        'zoom3d',
+        'pan3d',
+        'autoScale2d',
+        'tableRotation',
+        'orbitRotation',
+        'resetCameraLastSave3d'
+    ],
+    'displaylogo': False
+}
 
 
 def dash_id(page: str):
@@ -49,6 +133,43 @@ class Div():
     @children.setter
     def children(self, value: list):
         self.tab.children = value
+
+
+class PlotDiv(Div):
+    def __init__(self, prefix, layout, config, **kwargs):
+        # Initialise base class attributes
+        super().__init__(prefix=prefix, **kwargs)
+
+        self.plot = dcc.Graph(
+            id=self.prefix('2d_plot'),
+            className='plot_area',
+            mathjax=True,
+            figure={
+                'data': [],
+                'layout': layout
+            },
+            config=config
+        )
+
+        self.make_div_contents()
+
+    def make_div_contents(self):
+        '''
+        Assembles div children in rows and columns
+        '''
+
+        contents = [
+            dbc.Row(
+                [
+                    dbc.Col(
+                        self.plot,
+                    )
+                ]
+            )
+        ]
+
+        self.div.children = contents
+        return
 
 
 def make_layout(left_divs: html.Div, right_divs: html.Div) -> html.Div:

@@ -19,10 +19,10 @@
 from dash import register_page
 from .core import radial as rc
 from .core import utils
-from .core import common
+from .core import common as com
 
 ID_PREFIX = 'rad'
-dash_id = common.dash_id(ID_PREFIX)
+dash_id = com.dash_id(ID_PREFIX)
 
 PAGE_NAME = 'Radial Wavefunctions'
 PAGE_PATH = '/radial'
@@ -41,7 +41,7 @@ register_page(
 
 prefix = utils.dash_id('orb3')
 
-plot_div = rc.PlotDiv(ID_PREFIX)
+plot_div = com.PlotDiv(ID_PREFIX, rc.RDF_LAYOUT, com.BASIC_CONFIG)
 
 # Make AC options tab and all callbacks
 options = rc.OptionsDiv(ID_PREFIX)
@@ -49,4 +49,4 @@ options = rc.OptionsDiv(ID_PREFIX)
 rc.assemble_callbacks(plot_div, options)
 
 # Layout of webpage
-layout = common.make_layout(plot_div.div, options.div)
+layout = com.make_layout(plot_div.div, options.div)
