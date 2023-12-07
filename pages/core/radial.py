@@ -24,47 +24,12 @@ import plotly.graph_objects as go
 import copy
 
 
-from . import common
+from . import common as com
 from . import utils as ut
 
 
-BASIC_LAYOUT = go.Layout(
-    xaxis={
-        'autorange': True,
-        'showgrid': False,
-        'zeroline': False,
-        'showline': True,
-        'ticks': 'outside',
-        'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
-        'showticklabels': True,
-        'minor_ticks': 'outside',
-        'tickformat': 'digit'
-    },
-    yaxis={
-        'autorange': True,
-        'showgrid': False,
-        'zeroline': False,
-        'title_standoff': 20,
-        'showline': True,
-        'ticks': 'outside',
-        'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
-        'showticklabels': True,
-        'minor_ticks': 'outside',
-        'tickformat': 'digit'
-    },
-    showlegend=True,
-    margin=dict(l=90, r=30, t=30, b=60),
-    legend={
-        'font': {
-            'family': 'Arial',
-            'size': 12,
-            'color': 'black'
-        }
-    }
-)
-
-RDF_LAYOUT = copy.copy(BASIC_LAYOUT)
-RDF_LAYOUT.xaxis.title = {
+RADIAL_LAYOUT = copy.copy(com.BASIC_LAYOUT)
+RADIAL_LAYOUT.xaxis.title = {
     'text': 'r (a<sub>0</sup>)',
     'font': {
         'family': 'Arial',
@@ -72,7 +37,7 @@ RDF_LAYOUT.xaxis.title = {
         'color': 'black'
     }
 }
-RDF_LAYOUT.yaxis.title = {
+RADIAL_LAYOUT.yaxis.title = {
     'text': '4πr<sup>2</sup>R(r)<sup>2</sup>',
     'font': {
         'family': 'Arial',
@@ -80,32 +45,7 @@ RDF_LAYOUT.yaxis.title = {
         'color': 'black'
     }
 }
-RDF_LAYOUT.yaxis.tickformat = '.2f'
-
-RWF_LAYOUT = copy.copy(RDF_LAYOUT)
-RWF_LAYOUT.yaxis.title.text = 'R(r)'
-
-BASIC_CONFIG = {
-    'toImageButtonOptions': {
-        'format': 'png',
-        'filename': 'plot',
-        'height': 500,
-        'width': 600,
-        'scale': 8
-    },
-    'modeBarButtonsToRemove': [
-        'sendDataToCloud',
-        'select2d',
-        'lasso',
-        'zoom3d',
-        'pan3d',
-        'autoScale2d',
-        'tableRotation',
-        'orbitRotation',
-        'resetCameraLastSave3d'
-    ],
-    'displaylogo': False
-}
+RADIAL_LAYOUT.yaxis.tickformat = '.2f'
 
 
 def s_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
@@ -129,9 +69,9 @@ def s_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_s(n, 2.*r/n)**2
+        return r**2. * radial_s(n, 2. * r / n)**2
     if 'rwf' in wf_type:
-        return radial_s(n, 2.*r/n)
+        return radial_s(n, 2. * r / n)
 
 
 def p_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
@@ -155,9 +95,9 @@ def p_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_p(n, 2.*r/n)**2
+        return r**2. * radial_p(n, 2. * r / n)**2
     elif 'rwf' in wf_type:
-        return radial_p(n, 2.*r/n)
+        return radial_p(n, 2. * r / n)
 
 
 def d_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
@@ -181,9 +121,9 @@ def d_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_d(n, 2.*r/n)**2
+        return r**2. * radial_d(n, 2. * r / n)**2
     if 'rwf' in wf_type:
-        return radial_d(n, 2.*r/n)
+        return radial_d(n, 2. * r / n)
 
 
 def f_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
@@ -207,9 +147,9 @@ def f_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_f(n, 2.*r/n)**2
+        return r**2. * radial_f(n, 2. * r / n)**2
     if 'rwf' in wf_type:
-        return radial_f(n, 2.*r/n)
+        return radial_f(n, 2. * r / n)
 
 
 def radial_s(n: int, rho: ArrayLike):
@@ -222,7 +162,7 @@ def radial_s(n: int, rho: ArrayLike):
     n: int
         principal quantum number
     rho: array_like
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
+        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
 
     Returns
     -------
@@ -231,19 +171,19 @@ def radial_s(n: int, rho: ArrayLike):
     '''
 
     if n == 1:
-        rad = 2.*np.exp(-rho/2.)
+        rad = 2. * np.exp(-rho / 2.)
     if n == 2:
-        rad = 1./(2.*np.sqrt(2.))*(2.-rho)*np.exp(-rho/2.)
+        rad = 1. / (2. * np.sqrt(2.)) * (2. - rho) * np.exp(-rho / 2.)
     if n == 3:
-        rad = 1./(9.*np.sqrt(3.))*(6.-6.*rho+rho**2.)*np.exp(-rho/2.)
+        rad = 1. / (9. * np.sqrt(3.)) * (6. - 6. * rho + rho**2.) * np.exp(-rho / 2.) # noqa
     if n == 4:
-        rad = (1./96.)*(24.-36.*rho+12.*rho**2.-rho**3.)*np.exp(-rho/2.)
+        rad = (1. / 96.) * (24.-36. * rho + 12. * rho**2. - rho**3.) * np.exp(-rho / 2.) # noqa
     if n == 5:
-        rad = (1./(300.*np.sqrt(5.)))*(120.-240.*rho+120.*rho**2.-20.*rho**3.+rho**4.)*np.exp(-rho/2.) # noqa
+        rad = (1. / (300. * np.sqrt(5.)))*(120.-240. * rho + 120. * rho**2.-20. * rho**3. + rho**4.) * np.exp(-rho / 2.) # noqa
     if n == 6:
-        rad = (1./(2160.*np.sqrt(6.)))*(720.-1800.*rho+1200.*rho**2.-300.*rho**3.+30.*rho**4.-rho**5.)*np.exp(-rho/2.) # noqa
+        rad = (1. / (2160. * np.sqrt(6.)))*(720.-1800. * rho + 1200. * rho**2.-300. * rho**3.+30. * rho**4.-rho**5.) * np.exp(-rho / 2.) # noqa
     if n == 7:
-        rad = (1./(17640.*np.sqrt(7)))*(5040. - 15120.*rho + 12600.*rho**2. - 4200.*rho**3. + 630.*rho**4. -42* rho**5. + rho**6)*np.exp(-rho/2.) # noqa
+        rad = (1. / (17640. * np.sqrt(7)))*(5040. - 15120. * rho + 12600. * rho**2. - 4200. * rho**3. + 630. * rho**4. -42* rho**5. + rho**6) * np.exp(-rho / 2.) # noqa
 
     return rad
 
@@ -258,7 +198,7 @@ def radial_p(n: int, rho: ArrayLike) -> NDArray:
     n: int
         principal quantum number
     rho: array_like
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
+        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
 
     Returns
     -------
@@ -267,17 +207,17 @@ def radial_p(n: int, rho: ArrayLike) -> NDArray:
     '''
 
     if n == 2:
-        rad = 1./(2.*np.sqrt(6.))*rho*np.exp(-rho/2.)
+        rad = 1. / (2. * np.sqrt(6.)) * rho * np.exp(-rho / 2.)
     elif n == 3:
-        rad = 1./(9.*np.sqrt(6.))*rho*(4.-rho)*np.exp(-rho/2.)
+        rad = 1. / (9. * np.sqrt(6.)) * rho * (4. - rho) * np.exp(-rho / 2.)
     elif n == 4:
-        rad = 1./(32.*np.sqrt(15.))*rho*(20.-10.*rho+rho**2.)*np.exp(-rho/2.)
+        rad = 1. / (32. * np.sqrt(15.)) * rho * (20.-10. * rho + rho**2.) * np.exp(-rho / 2.) # noqa
     elif n == 5:
-        rad = 1./(150.*np.sqrt(30.))*rho*(120.-90.*rho+18.*rho**2.-rho**3.)*np.exp(-rho/2.) # noqa
+        rad = 1. / (150. * np.sqrt(30.)) * rho * (120.-90. * rho + 18. * rho**2. - rho**3.) * np.exp(-rho / 2.) # noqa
     elif n == 6:
-        rad = 1./(432.*np.sqrt(210.))*rho*(840.-840.*rho+252.*rho**2.-28.*rho**3.+rho**4.)*np.exp(-rho/2.) # noqa
+        rad = 1. / (432. * np.sqrt(210.)) * rho * (840.-840. * rho + 252. * rho**2.-28. * rho**3. + rho**4.) * np.exp(-rho / 2.) # noqa
     elif n == 7:
-        rad = 1./(11760.*np.sqrt(21.))*rho*(6720. - 8400.*rho+3360.*rho**2.-560.*rho**3.+40*rho**4. - rho**5)*np.exp(-rho/2.) # noqa
+        rad = 1. / (11760. * np.sqrt(21.)) * rho * (6720. - 8400. * rho + 3360. * rho**2.-560. * rho**3.+40 * rho**4. - rho**5) * np.exp(-rho / 2.) # noqa
     return rad
 
 
@@ -291,7 +231,7 @@ def radial_d(n: int, rho: ArrayLike) -> NDArray:
     n: int
         principal quantum number
     rho: array_like
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
+        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
 
     Returns
     -------
@@ -300,15 +240,15 @@ def radial_d(n: int, rho: ArrayLike) -> NDArray:
     '''
 
     if n == 3:
-        rad = 1./(9.*np.sqrt(30.))*rho**2.*np.exp(-rho/2.)
+        rad = 1. / (9. * np.sqrt(30.)) * rho**2. * np.exp(-rho / 2.)
     elif n == 4:
-        rad = 1./(96.*np.sqrt(5.))*(6.-rho)*rho**2.*np.exp(-rho/2.)
+        rad = 1. / (96. * np.sqrt(5.))*(6.-rho) * rho**2. * np.exp(-rho / 2.) # noqa
     elif n == 5:
-        rad = 1./(150.*np.sqrt(70.))*(42.-14.*rho+rho**2)*rho**2.*np.exp(-rho/2.) # noqa
+        rad = 1. / (150. * np.sqrt(70.))*(42.-14. * rho + rho**2) * rho**2. * np.exp(-rho / 2.) # noqa
     elif n == 6:
-        rad = 1./(864.*np.sqrt(105.))*(336.-168.*rho+24.*rho**2.-rho**3.)*rho**2.*np.exp(-rho/2.) # noqa
+        rad = 1. / (864. * np.sqrt(105.))*(336.-168. * rho + 24. * rho**2. - rho**3.) * rho**2. * np.exp(-rho / 2.) # noqa
     elif n == 7:
-        rad = 1./(7056.*np.sqrt(105.))*(3024. - 2016.*rho + 432.*rho**2. -36* rho**3. + rho**4)*rho**2.*np.exp(-rho/2.) # noqa
+        rad = 1. / (7056. * np.sqrt(105.))*(3024. - 2016. * rho + 432. * rho**2. -36* rho**3. + rho**4) * rho**2. * np.exp(-rho / 2.) # noqa
 
     return rad
 
@@ -323,7 +263,7 @@ def radial_f(n: int, rho: ArrayLike) -> NDArray:
     n: int
         principal quantum number
     rho: array_like
-        values of rho = 2.*r/n, where r^2 = x^2+y^2+z^2
+        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
 
     Returns
     -------
@@ -332,55 +272,18 @@ def radial_f(n: int, rho: ArrayLike) -> NDArray:
     '''
 
     if n == 4:
-        rad = 1./(96.*np.sqrt(35.))*rho**3.*np.exp(-rho/2.)
+        rad = 1. / (96. * np.sqrt(35.)) * rho**3. * np.exp(-rho / 2.)
     elif n == 5:
-        rad = 1./(300.*np.sqrt(70.))*(8.-rho)*rho**3.*np.exp(-rho/2.)
+        rad = 1. / (300. * np.sqrt(70.)) * (8. - rho) * rho**3. * np.exp(-rho / 2.) # noqa
     elif n == 6:
-        rad = 1./(2592.*np.sqrt(35.))*(rho**2.-18.*rho+72.)*rho**3.*np.exp(-rho/2.) # noqa
+        rad = 1. / (2592. * np.sqrt(35.)) * (rho**2.-18. * rho + 72.) * rho**3. * np.exp(-rho / 2.) # noqa
     elif n == 7:
-        rad = 1./(17640.*np.sqrt(42.))*(-rho**3 + 30*rho**2. - 270.*rho + 720.)*rho**3.*np.exp(-rho/2.) # noqa
+        rad = 1. / (17640. * np.sqrt(42.)) * (-rho**3 + 30 * rho**2. - 270. * rho + 720.) * rho**3. * np.exp(-rho / 2.) # noqa
 
     return rad
 
 
-class PlotDiv(common.Div):
-    def __init__(self, prefix, **kwargs):
-        # Initialise base class attributes
-        super().__init__(prefix=prefix, **kwargs)
-
-        self.plot = dcc.Graph(
-            id=self.prefix('2d_plot'),
-            className='plot_area',
-            mathjax=True,
-            figure={
-                'data': [],
-                'layout': RDF_LAYOUT
-            },
-            config=BASIC_CONFIG
-        )
-
-        self.make_div_contents()
-
-    def make_div_contents(self):
-        '''
-        Assembles div children in rows and columns
-        '''
-
-        contents = [
-            dbc.Row(
-                [
-                    dbc.Col(
-                        self.plot,
-                    )
-                ]
-            )
-        ]
-
-        self.div.children = contents
-        return
-
-
-class OptionsDiv(common.Div):
+class OptionsDiv(com.Div):
     def __init__(self, prefix, **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
@@ -603,7 +506,7 @@ class OptionsDiv(common.Div):
                     'value': 'jpeg',
                 }
             ],
-            value='svg'
+            value='png'
         )
 
         self.image_format_ig = self.make_input_group(
@@ -635,7 +538,7 @@ class OptionsDiv(common.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
-                            },
+                        },
                         children='Orbital'
                     )
                 ),
@@ -643,7 +546,7 @@ class OptionsDiv(common.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
-                            },
+                        },
                         children='Function'
                     )
                 )
@@ -741,7 +644,7 @@ class OptionsDiv(common.Div):
         return
 
 
-def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv) -> None:
+def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     '''
     Creates callbacks between experimental and fitted AC plots and elements in
     AC options tab
@@ -783,9 +686,26 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv) -> None:
         Input(options_div.colour_select, 'value')
     ]
     callback(
-        [Output(plot_div.plot, 'figure')],
-        inputs
+        [Output(plot_div.plot, 'figure', allow_duplicate=True)],
+        inputs,
+        prevent_initial_call='initial_duplicate'
     )(plot_data)
+
+    # Update plot save format
+    callback(
+        [
+            Output(plot_div.plot, 'figure', allow_duplicate=True),
+            Output(plot_div.plot, 'config'),
+        ],
+        [
+            Input(options_div.image_format_select, 'value')
+        ],
+        [
+            State(options_div.func_select, 'value'),
+            State(options_div.distance_select, 'value')
+        ],
+        prevent_initial_call=True
+    )(update_save_format)
 
     return
 
@@ -800,7 +720,7 @@ def compute_radials(func, orbs, low_x, up_x, unit):
     low_x /= unit_conv[unit]
     up_x /= unit_conv[unit]
 
-    x = np.linspace(low_x, up_x, 1000)
+    x = np.linspace(low_x, up_x, 10000)
 
     # Dictionary of orbital functions
     orb_funcs = {
@@ -898,3 +818,48 @@ def plot_data(func, orbs, low_x, up_x, unit, colour_scheme):
     fig['layout']['yaxis']['title']['text'] = func_to_label[func]
 
     return [fig]
+
+
+def update_save_format(fmt: str, func: str, unit: str):
+    '''
+    Updates save format of plot.
+
+    Parameters
+    ----------
+    fmt: str {png, svg, jpeg}
+        Image format to use
+    func: str {rdf, rwf}
+        Type of function being plotted
+    unit: str {'bohr', 'angstrom'}
+        x unit used for data
+    '''
+
+    # Figures
+    # resetting their layout attr redraws the plot
+    # which is necessary because editing the config attr (below) does not...
+    fig = Patch()
+    fig['layout'] = RADIAL_LAYOUT
+
+    func_to_label = {
+        'rdf': '4πr<sup>2</sup>R(r)<sup>2</sup>',
+        'rwf': 'R(r)'
+    }
+
+    unit_to_label = {
+        'bohr': 'r (a<sub>0</sub>)',
+        'angstrom': 'r (Å)'
+    }
+
+    # Update x axis with correct unit
+    fig['layout']['xaxis']['title']['text'] = unit_to_label[unit]
+
+    # Update y axis with correct label
+    fig['layout']['yaxis']['title']['text'] = func_to_label[func]
+
+    # Config
+    config = Patch()
+
+    # Update plot format in config dict
+    config['toImageButtonOptions']['format'] = fmt
+
+    return fig, config
