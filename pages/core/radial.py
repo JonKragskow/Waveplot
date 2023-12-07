@@ -506,7 +506,7 @@ class OptionsDiv(com.Div):
                     'value': 'jpeg',
                 }
             ],
-            value='png'
+            value='svg'
         )
 
         self.image_format_ig = self.make_input_group(
@@ -686,7 +686,10 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         Input(options_div.colour_select, 'value')
     ]
     callback(
-        [Output(plot_div.plot, 'figure', allow_duplicate=True)],
+        [
+            Output(plot_div.plot, 'figure', allow_duplicate=True),
+            Output(plot_div.plot, 'config', allow_duplicate=True),
+        ],
         inputs,
         prevent_initial_call='initial_duplicate'
     )(plot_data)
@@ -695,7 +698,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     callback(
         [
             Output(plot_div.plot, 'figure', allow_duplicate=True),
-            Output(plot_div.plot, 'config'),
+            Output(plot_div.plot, 'config', allow_duplicate=True),
         ],
         [
             Input(options_div.image_format_select, 'value')
@@ -817,7 +820,16 @@ def plot_data(func, orbs, low_x, up_x, unit, colour_scheme):
     # Update y axis with correct label
     fig['layout']['yaxis']['title']['text'] = func_to_label[func]
 
-    return [fig]
+    func_to_fname = {
+        'rdf': 'radial_distribution_function',
+        'rwf': 'radial_wave_function'
+    }
+
+    config = Patch()
+
+    config['toImageButtonOptions']['filename'] = func_to_fname[func]
+
+    return fig, config
 
 
 def update_save_format(fmt: str, func: str, unit: str):
