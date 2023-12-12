@@ -151,6 +151,11 @@ class PlotDiv(Div):
             config=config
         )
 
+        self.store = dcc.Store(
+            id=self.prefix('store'),
+            data=[]
+        )
+
         self.make_div_contents()
 
     def make_div_contents(self):
@@ -162,7 +167,10 @@ class PlotDiv(Div):
             dbc.Row(
                 [
                     dbc.Col(
-                        self.plot,
+                        [
+                            self.plot,
+                            self.store
+                        ]
                     )
                 ]
             )

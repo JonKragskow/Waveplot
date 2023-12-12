@@ -44,7 +44,7 @@ plot_div = com.PlotDiv(ID_PREFIX, com.BASIC_LAYOUT, com.BASIC_CONFIG)
 # Make AC options tab and all callbacks
 options = vib.OptionsDiv(ID_PREFIX)
 # Connect callbacks for plots and options
-# vib.assemble_callbacks(plot_div, options)
+vib.assemble_callbacks(plot_div, options)
 
 # Layout of webpage
 layout = com.make_layout(plot_div.div, options.div)

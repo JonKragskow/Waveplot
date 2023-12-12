@@ -17,14 +17,19 @@
 '''
 import numpy as np
 from functools import lru_cache
-from dash import dcc, html
+from dash import dcc, html, Input, Output, State, callback, no_update, Patch
 import dash_bootstrap_components as dbc
 from . import common as com
 from scipy.special import factorial
+import scipy.constants as con
 import io
+import plotly.graph_objects as go
+from numpy.typing import NDArray, ArrayLike
+
+LIGHT = con.speed_of_light * 100
 
 
-def hermite(n, x):
+def hermite(n: int, x: ArrayLike):
 
     if n == 0:
         return x * 0 + 1
@@ -34,7 +39,8 @@ def hermite(n, x):
         return 2 * x * hermite(n - 1, x) - 2 * n * hermite(n - 2, x)
 
 
-def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
+def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
+                               NDArray, NDArray, NDArray, float]:
     '''
     Calculate energy of harmonic oscillator as both classical and quantum
     entity
@@ -46,17 +52,16 @@ def calc_harmonic_energies(k, m, max_n=10, max_x=1E-12):
     m : float
         Reduced mass (g mol-1)
     max_n : int
-        maximum value of n used for Harmonic states - used to find maximum
-        displacement
+        maximum value of n used for Harmonic states
     Returns
     -------
-    np.ndarray:
+    ndarray of floats
         Harmonic state energies for quantum oscillator in Joules
-    np.ndarray:
+    ndarray of floats
         Harmonic energies for classical oscillator in Joules
-    np.ndarray:
+    ndarray of floats
         Displacements used for classical oscillator in metres
-    float:
+    float
         Zero point displacement in metres
     '''
 
@@ -95,7 +100,7 @@ def calculate_mu(w, k):
 
     Returns
     -------
-    float:
+    float
         Reduced mass mu (g mol^-1)
     '''
 
@@ -118,7 +123,7 @@ def calculate_k(w, mu):
 
     Returns
     -------
-    float:
+    float
         Force constant k (N m^-1)
     '''
 
@@ -128,7 +133,7 @@ def calculate_k(w, mu):
     return k
 
 
-def harmonic_wf(n, x):
+def harmonic_wf(n: int, x: ArrayLike):
     '''
     Calculates normalised harmonic wavefunction for nth state over x
 
@@ -136,14 +141,16 @@ def harmonic_wf(n, x):
     ----------
     n : int
         Harmonic oscillator quantum number
-    x : np.ndarray
+    x : array_like
         Displacement
 
     Returns
     -------
-    np.ndarray:
+    ndarray of floats
         Harmonic wavefunction of nth levels evaluated at each point in x
     '''
+
+    x = np.asarray(x)
 
     h = hermite(n, x)
 
@@ -170,7 +177,7 @@ class OptionsDiv(com.Div):
             }
         )
         self.lin_wn_check = dbc.Checkbox(
-            value=True,
+            value=False,
             id=self.prefix('lin_wn_fix')
         )
         self.lin_wn_ig = self.make_input_group(
@@ -195,7 +202,7 @@ class OptionsDiv(com.Div):
             }
         )
         self.ang_wn_check = dbc.Checkbox(
-            value=True,
+            value=False,
             id=self.prefix('ang_wn_fix')
         )
         self.ang_wn_ig = self.make_input_group(
@@ -204,7 +211,7 @@ class OptionsDiv(com.Div):
                 self.ang_wn_input,
                 dbc.InputGroupText(r'cm⁻¹'),
                 dbc.InputGroupText(
-                    self.lin_wn_check
+                    self.ang_wn_check
                 )
             ]
         )
@@ -257,6 +264,11 @@ class OptionsDiv(com.Div):
                     self.rm_check
                 )
             ]
+        )
+
+        self.var_store = dcc.Store(
+            id=self.prefix('var_store'),
+            data={}
         )
 
         self.max_n_input = dbc.Input(
@@ -652,7 +664,7 @@ class OptionsDiv(com.Div):
                     dbc.Col(
                         self.rm_ig,
                         class_name='mb-3'
-                    )
+                    ), self.var_store
                 ]
             ),
             dbc.Row([
@@ -663,6 +675,11 @@ class OptionsDiv(com.Div):
                         },
                         children='Plot options'
                     )
+                )
+            ]),
+            dbc.Row([
+                dbc.Col(
+                    self.max_n_ig
                 )
             ]),
             dbc.Row([
@@ -708,6 +725,219 @@ class OptionsDiv(com.Div):
 
         self.div.children = contents
         return
+
+
+def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
+
+    # Toggle editable inputs
+    outputs = [
+        Output(options.var_store, 'data'),
+        Output(options.lin_wn_input, 'value'),
+        Output(options.ang_wn_input, 'value'),
+        Output(options.fc_input, 'value'),
+        Output(options.rm_input, 'value'),
+        Output(options.lin_wn_input, 'disabled'),
+        Output(options.ang_wn_input, 'disabled'),
+        Output(options.fc_input, 'disabled'),
+        Output(options.rm_input, 'disabled')
+    ]
+    inputs = [
+        Input(options.lin_wn_input, 'value'),
+        Input(options.ang_wn_input, 'value'),
+        Input(options.fc_input, 'value'),
+        Input(options.rm_input, 'value'),
+        Input(options.lin_wn_check, 'value'),
+        Input(options.ang_wn_check, 'value'),
+        Input(options.fc_check, 'value'),
+        Input(options.rm_check, 'value')
+    ]
+
+    callback(outputs, inputs)(update_inputs)
+
+    # Calculate data and store
+    outputs = [
+        Output(plot_div.store, 'data'),
+    ]
+    inputs = [
+        Input(options.var_store, 'data'),
+        Input(options.max_n_input, 'value')
+    ]
+    callback(outputs, inputs)(calc_data)
+
+    # Plot data
+    outputs = [
+        Output(plot_div.plot, 'figure')
+    ]
+    inputs = [
+        Input(plot_div.store, 'data')
+    ]
+    callback(outputs, inputs, prevent_initial_callback=True)(update_plot)
+
+    # Open with WF, PE, and state modals
+
+
+    # Interaction with WF, PE, and state modals
+
+
+    # Save data to file
+
+
+    # Uodate plot save format
+
+    return
+
+
+def update_inputs(lin_wn: float, ang_wn: float, fc: float, mu: float,
+                  lin_wn_fix: bool, ang_wn_fix: bool, fc_fix: bool,
+                  mu_fix: bool) -> tuple[dict[str, float,], list[float], list[bool]]: # noqa
+    '''
+    Updates input values using checkboxes and current values
+    '''
+
+    # Set all text entries as uneditable
+    lin_wn_disable = True
+    ang_wn_disable = True
+    fc_disable = True
+    mu_disable = True
+
+    # Make 'fixed' values editable
+    if lin_wn_fix:
+        lin_wn_disable = False
+    if ang_wn_fix:
+        ang_wn_disable = False
+    if fc_fix:
+        fc_disable = False
+    if mu_fix:
+        mu_disable = False
+
+    if sum([ang_wn_fix, lin_wn_fix, fc_fix, mu_fix]) != 2 or ang_wn_fix and lin_wn_fix: # noqa
+
+        rounded = [
+            round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
+        ]
+
+        on_off = [
+            lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
+        ]
+
+        return {'fc': None, 'mu': None}, *rounded, *on_off
+
+    #  Calculate missing parameters
+    if ang_wn_fix and not lin_wn_fix:
+        omega = ang_wn * LIGHT
+        lin_wn = ang_wn / (2 * np.pi)
+        if fc_fix and not mu_fix:
+            mu = calculate_mu(omega, fc)
+        elif not fc_fix and mu_fix:
+            fc = calculate_k(omega, mu)
+    elif lin_wn_fix and not ang_wn_fix:
+        omega = lin_wn * 2 * np.pi * LIGHT
+        ang_wn = lin_wn * 2 * np.pi
+        if fc_fix and not mu_fix:
+            mu = calculate_mu(omega, fc)
+        elif not fc_fix and mu_fix:
+            fc = calculate_k(omega, mu)
+    elif not ang_wn_fix and not lin_wn_fix:
+        ang_wn = np.sqrt(fc / (mu * 1.6605E-27)) / LIGHT
+        lin_wn = ang_wn / (2 * np.pi)
+
+    rounded = [
+        round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
+    ]
+
+    on_off = [
+        lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
+    ]
+
+    return {'fc': fc, 'mu': mu}, *rounded, *on_off
+
+
+def calc_data(vars, max_n):
+    '''
+    Calculates harmonic potential, states, and wavefunctions
+    '''
+
+    if None in vars.values():
+        return no_update
+
+    if max_n is None:
+        max_n = 5
+
+    # Convert wavenumbers to frequency in units of s^-1
+    state_e, harmonic_e, displacement, _ = calc_harmonic_energies(
+        vars['fc'],
+        vars['mu'],
+        max_n
+    )
+
+    # Convert to cm-1
+    # 1 cm-1 = 1.986 30 x 10-23 J
+    state_e /= 1.98630E-23
+    harmonic_e /= 1.98630E-23
+
+    wf = [
+        harmonic_wf(n, displacement * 10E10)
+        for n in range(max_n)
+    ]
+
+    final = [
+        wf,
+        state_e.tolist(),
+        harmonic_e.tolist(),
+        (displacement * 10E10).tolist()
+    ]
+
+    return [final]
+
+
+def update_plot(data):
+
+    fig = Patch()
+
+    traces = []
+
+    # Harmonic potential
+    traces.append(
+        go.Scatter(
+            x=data[-1],
+            y=data[2]
+        )
+    )
+
+    _x = [
+        min(data[-1]), max(data[-1])
+    ]
+    _states = [
+        [da, da]
+        for da in data[1]
+    ]
+
+    # States
+    for state in _states:
+        traces.append(
+            go.Scatter(
+                x=_x,
+                y=state,
+                line={
+                    'color': 'black'
+                },
+                mode='lines'
+            )
+        )
+
+    # WF
+    # TODO subplots
+    for wf, state in zip(data[0], _states):
+        traces.append(
+            go.Scatter(
+                x=data[-1],
+                y=[val + state[0] for val in wf]
+            )
+        )
+
+    fig['data'] = traces
+
+    return [fig]
 
 
 def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
@@ -817,251 +1047,4 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
 #         Input(id('toggle_states'), 'value')
 #     ]
 # )
-# def update_app(lin_wn, ang_wn, fc, mu, max_n, lin_wn_fix, ang_wn_fix, fc_fix,
-#                mu_fix, wf_scale, text_size, wf_linewidth, curve_linewidth,
-#                state_linewidth, wf_colour, curve_colour, state_colour,
-#                toggle_wf, toggle_pe, toggle_states):
-#     '''
-#     Updates the app, given the current state of the UI
-#     All inputs correspond (in the same order) to those in the decorator
-#     '''
 
-#     light = 2.998E10
-
-#     # Set all text entries as uneditable
-#     lin_wn_disable = True
-#     ang_wn_disable = True
-#     fc_disable = True
-#     mu_disable = True
-
-#     # Make 'fixed' values editable
-#     if lin_wn_fix:
-#         lin_wn_disable = False
-#     if ang_wn_fix:
-#         ang_wn_disable = False
-#     if fc_fix:
-#         fc_disable = False
-#     if mu_fix:
-#         mu_disable = False
-
-#     # Modebar config
-
-#     modebar_options = {
-#         'modeBarButtonsToRemove': [
-#             'toImage',
-#             'sendDataToCloud',
-#             'autoScale2d',
-#             'resetScale2d',
-#             'hoverClosestCartesian',
-#             'toggleSpikelines',
-#             'zoom2d',
-#             'zoom3d',
-#             'pan3d',
-#             'pan2d',
-#             'select2d',
-#             'zoomIn2d',
-#             'zoomOut2d',
-#             'hovermode',
-#             'resetCameraLastSave3d',
-#             'hoverClosest3d',
-#             'hoverCompareCartesian',
-#             'resetViewMapbox',
-#             'orbitRotation',
-#             'tableRotation',
-#             'resetCameraDefault3d'
-#         ],
-#         'displaylogo': False,
-#         'displayModeBar': True,
-#     }
-
-#     if sum([ang_wn_fix, lin_wn_fix, fc_fix, mu_fix]) != 2 or ang_wn_fix and lin_wn_fix: # noqa
-
-#         out_contents = 'data:text/csv;charset=utf-8,' + urllib.parse.quote(
-#             ''
-#         )
-#         fig = make_subplots()
-
-#         rounded = [
-#             round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
-#         ]
-
-#         on_off = [
-#             lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
-#         ]
-
-#         return [fig, modebar_options, out_contents] + rounded + on_off  # noqa
-
-#     #  Calculate missing parameters
-#     if ang_wn_fix and not lin_wn_fix:
-#         omega = ang_wn * light
-#         lin_wn = ang_wn / (2 * np.pi)
-#         if fc_fix and not mu_fix:
-#             mu = vibrations.calculate_mu(omega, fc)
-#         elif not fc_fix and mu_fix:
-#             fc = vibrations.calculate_k(omega, mu)
-#     elif lin_wn_fix and not ang_wn_fix:
-#         omega = lin_wn * 2 * np.pi * light
-#         ang_wn = lin_wn * 2 * np.pi
-#         if fc_fix and not mu_fix:
-#             mu = vibrations.calculate_mu(omega, fc)
-#         elif not fc_fix and mu_fix:
-#             fc = vibrations.calculate_k(omega, mu)
-#     elif not ang_wn_fix and not lin_wn_fix:
-#         ang_wn = np.sqrt(fc / (mu * 1.6605E-27)) / light
-#         lin_wn = ang_wn / (2 * np.pi)
-
-#     if max_n is None:
-#         max_n = 5
-
-#     # Read frequency or proxy frequency and convert to angular frequency in s-1
-#     omega = ang_wn * light
-#     omega = lin_wn * 2 * np.pi * light
-
-#     if fc == 0:
-#         fc = 480
-
-#     if omega == 0:
-#         omega = 2888
-
-#     # Convert wavenumbers to frequency in units of s^-1
-#     state_e, harmonic_e, displacement, zpd = vibrations.calc_harmonic_energies(
-#         fc,
-#         mu,
-#         max_n=max_n
-#     )
-
-#     # Convert to cm-1
-#     # 1 cm-1 = 1.986 30 x 10-23 J
-#     state_e /= 1.98630E-23
-#     harmonic_e /= 1.98630E-23
-
-#     fig = make_subplots(specs=[[{'secondary_y': True}]])
-
-#     if toggle_pe:
-#         # Plot harmonic energy curve
-#         fig.add_trace(
-#             go.Scatter(
-#                 x=displacement * 10E10,
-#                 y=harmonic_e,
-#                 hoverinfo='skip',
-#                 line={
-#                     'width': curve_linewidth,
-#                     'color': curve_colour
-#                 }
-#             ),
-#             secondary_y=False
-#         )
-
-#     if toggle_states:
-#         # Plot harmonic state energies
-#         for it, state in enumerate(state_e):
-#             fig.add_trace(
-#                 go.Scatter(
-#                     x=displacement * 10E10,
-#                     y=[state] * displacement.size,
-#                     line={
-#                         'width': state_linewidth,
-#                         'color': state_colour
-#                     },
-#                     name='n = {}'.format(it),
-#                     hovertemplate='%{x} ' + u'\u212B' + ' <br>%{y} cm⁻¹<br>'
-#                 ),
-#                 secondary_y=False
-#             )
-
-#     if wf_scale is None:
-#         wf_scale = 1
-
-#     if wf_colour == 'tol':
-#         wf_colour = utils.tol_cols[1:] + utils.wong_cols + utils.def_cols
-#     elif wf_colour == 'wong':
-#         wf_colour = utils.wong_cols + utils.def_cols + utils.tol_cols[1:]
-#     elif wf_colour == 'normal':
-#         wf_colour = utils.def_cols + utils.tol_cols[1:] + utils.wong_cols
-
-#     wf = np.zeros([max_n + 1, displacement.size])
-
-#     # Plot harmonic wavefunction
-#     if toggle_wf:
-#         for n in range(0, max_n + 1):
-#             wf[n] = vibrations.harmonic_wf(n, displacement * 10E10)
-#             fig.add_trace(
-#                 go.Scatter(
-#                     x=displacement * 10E10,
-#                     y=wf[n] * (n + 1) * wf_scale + n * (lin_wn) + state_e[0],
-#                     hoverinfo='skip',
-#                     line={
-#                         'width': wf_linewidth,
-#                         'color': wf_colour[n]
-#                     }
-#                 ),
-#                 secondary_y=False
-#             )
-
-#     fig.update_xaxes(
-#         autorange=True,
-#         hoverformat='.3f',
-#         ticks='outside',
-#         title={
-#             'text': 'Displacement (' + u'\u212B' + ')',
-#             'font': {
-#                 'family': 'Arial',
-#                 'size': text_size,
-#                 'color': 'black'
-#             }
-#         },
-#         tickfont={
-#             'family': 'Arial',
-#             'size': text_size,
-#             'color': 'black'
-#         },
-#         showticklabels=True,
-#         showline=True,
-#         linewidth=1,
-#         linecolor='black'
-#     )
-
-#     fig.update_yaxes(
-#         autorange=True,
-#         hoverformat='.1f',
-#         title={
-#             'text': 'Energy (cm⁻¹)',
-#             'font': {
-#                 'family': 'Arial',
-#                 'size': text_size,
-#                 'color': 'black'
-#             },
-#             'standoff': 2
-#         },
-#         tickfont={
-#             'family': 'Arial',
-#             'size': text_size,
-#             'color': 'black'
-#         },
-#         ticks='outside',
-#         showticklabels=True,
-#         tickformat='f',
-#         secondary_y=False,
-#         showline=True,
-#         linewidth=1,
-#         linecolor='black',
-#     )
-
-#     fig.update_layout(
-#         margin=dict(l=30, r=30, t=30, b=60),
-#         showlegend=False,
-#         plot_bgcolor='rgb(255, 255,255)'
-#     )
-
-#     # Create output file
-#     out_contents = create_output_file(displacement, state_e, harmonic_e, wf)
-
-#     rounded = [
-#         round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
-#     ]
-
-#     on_off = [
-#         lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
-#     ]
-
-#     return [fig, modebar_options, out_contents] + rounded + on_off

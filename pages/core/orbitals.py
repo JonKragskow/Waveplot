@@ -864,7 +864,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     colour_2 = tuple(int(colour_2[i:i + 2], 16) for i in (0, 2, 4))
 
     # Calculate each ±isosurface and smooth it
-    rounds = 10
+    rounds = 3
     try:
         verts1, faces1, _, _ = measure.marching_cubes(
             np.array(wav),
