@@ -17,7 +17,6 @@
 '''
 
 from dash import register_page
-from .core import utils
 from .core import vibrations as vib
 from .core import common as com
 

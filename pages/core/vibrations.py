@@ -29,7 +29,8 @@ import uuid
 
 # c in cm s-1
 LIGHT = con.speed_of_light * 100
-HBAR = con.Planck
+HBAR = con.hbar
+H = con.Planck
 
 VIB_LAYOUT = copy.copy(com.BASIC_LAYOUT)
 VIB_LAYOUT.xaxis.title = {
@@ -79,8 +80,7 @@ def hermite(n: int, x: ArrayLike) -> NDArray:
 def harmonic_energies(k: float, m: float,
                       max_n: int) -> tuple[NDArray, NDArray, NDArray, float]:
     '''
-    Calculate energy of harmonic oscillator as both classical and quantum
-    entity
+    Calculate classical and quantum energies of harmonic oscillator
 
     Parameters
     ----------
@@ -102,21 +102,21 @@ def harmonic_energies(k: float, m: float,
         Zero point displacement in metres
     '''
 
-    # Angular frequency
-    omega = np.sqrt(k / m) / (2 * np.pi)  # rad s^-1
+    # Linear frequency
+    nu = np.sqrt(k / m) / (np.pi * 2)  # s^-1
 
     # Harmonic state energies
-    state_E = np.array([HBAR * omega * (n + 0.5) for n in range(0, max_n + 1)])
+    state_E = np.array([H * nu * (n + 0.5) for n in range(max_n + 1)])
 
     # Harmonic potential
     # E = 1/2 kx^2
-    max_x = np.sqrt((max_n + 0.5) * 2 * HBAR * omega / k)
+    max_x = np.sqrt((max_n + 0.5) * 2 * H * nu / k)
 
-    displacement = np.linspace(-max_x * 3, max_x * 3, 1000)  # m
+    displacement = np.linspace(-max_x * 1.5, max_x * 1.5, 1000)  # m
     harmonic_E = 0.5 * k * displacement**2  # J
 
     # Find zero point displacement
-    zpd = np.sqrt(HBAR * omega / k)  # m
+    zpd = np.sqrt(H * nu / k)  # m
 
     return state_E, harmonic_E, displacement, zpd
 
@@ -215,10 +215,10 @@ class OptionsDiv(com.Div):
 
         self.lin_wn_input = dbc.Input(
             id=str(uuid.uuid1()),
-            placeholder=2888,
+            placeholder=3000,
             type='number',
             min=0.0001,
-            value=2888,
+            value=3000,
             style={
                 'textAlign': 'center'
             }
@@ -265,10 +265,10 @@ class OptionsDiv(com.Div):
 
         self.fc_input = dbc.Input(
             id=str(uuid.uuid1()),
-            placeholder=480,
+            placeholder=517.95,
             type='number',
             min=0.00000000000001,
-            value=480,
+            value=517.95,
             style={
                 'textAlign': 'center'
             }
@@ -1129,22 +1129,6 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
 
     traces = []
 
-    if toggle_pe:
-
-        # Harmonic potential
-        traces.append(
-            go.Scatter(
-                x=data['x'],
-                y=data['potential'],
-                line={
-                    'color': colour_pe,
-                    'width': lw_pe
-                },
-                mode='lines',
-                hoverinfo='skip'
-            )
-        )
-
     # Plot harmonic wavefunction and states
 
     _states = [
@@ -1239,10 +1223,24 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
             )
     # Find nmax + 1 th state and use this energy as y limit
     upen = 2 * data['states'][-1] - data['states'][-2]
-    lowen = data['states'][0] - (data['states'][-1] - data['states'][-2]) / 2
 
-    fig['layout']['yaxis']['autorange'] = False
-    fig['layout']['yaxis']['range'] = [lowen, upen]
+    # Harmonic potential
+    if toggle_pe:
+
+        pot_energy = np.asarray(data['potential'])
+
+        traces.append(
+            go.Scatter(
+                x=x_vals[np.where(pot_energy <= upen)],
+                y=pot_energy[np.where(pot_energy <= upen)],
+                line={
+                    'color': colour_pe,
+                    'width': lw_pe
+                },
+                mode='lines',
+                hoverinfo='skip'
+            )
+        )
 
     fig['data'] = traces
 
