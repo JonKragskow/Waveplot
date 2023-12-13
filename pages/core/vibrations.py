@@ -1033,7 +1033,7 @@ def update_plot(data: dict[str, list]) -> Patch:
     if toggle_wf:
 
         # WF
-        for n, (wf, state) in enumerate(zip(data['wf'], _states)):
+        for wf, state in zip(data['wf'], _states):
             traces.append(
                 go.Scatter(
                     x=data['x'],
