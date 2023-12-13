@@ -173,7 +173,7 @@ def calculate_k(w, mu):
     return k
 
 
-def harmonic_wf(n: int, x: ArrayLike, mu: float, ang: float):
+def harmonic_wf(n: int, x: ArrayLike, m: float, omega: float):
     '''
     Calculates normalised harmonic wavefunction for nth state over x
 
@@ -183,7 +183,10 @@ def harmonic_wf(n: int, x: ArrayLike, mu: float, ang: float):
         Harmonic oscillator quantum number
     x : array_like
         Displacement (m)
-
+    m : float
+        Reduced mass (kg)
+    omega : float
+        Angular frequency (float)
     Returns
     -------
     ndarray of floats
@@ -192,13 +195,13 @@ def harmonic_wf(n: int, x: ArrayLike, mu: float, ang: float):
 
     x = np.asarray(x)
 
-    beta = np.sqrt(mu*ang / HBAR)
+    beta = np.sqrt(m*omega / HBAR)
 
     # Compute hermite polynomial
     h = hermite(n, beta * x)
 
     # Normalisation factor
-    N = 1. / np.sqrt(2**n * factorial(n)) * ((mu * ang)/(np.pi * HBAR))**0.25
+    N = 1. / np.sqrt(2**n * factorial(n)) * ((m * omega)/(np.pi * HBAR))**0.25
 
     # Wavefunction
     wf = h * N * np.exp(-beta**2 * x**2 * 0.5)
@@ -954,7 +957,7 @@ def calc_data(vars: dict[str, float], max_n: int):
     harmonic_e /= 1.98630E-23
 
     wf = [
-        harmonic_wf(n, displacement, vars['mu'], vars['ang_wn'])
+        harmonic_wf(n, displacement, vars['mu'], vars['ang_wn'] * LIGHT)
         for n in range(max_n + 1)
     ]
 
@@ -988,7 +991,7 @@ def update_plot(data: dict[str, list]) -> Patch:
     Patch
         Patch graph figure
     '''
-    toggle_pe, toggle_wf, toggle_states = False, True, False
+    toggle_pe, toggle_wf, toggle_states = True, True, True
 
     fig = Patch()
 
@@ -1034,7 +1037,7 @@ def update_plot(data: dict[str, list]) -> Patch:
             traces.append(
                 go.Scatter(
                     x=data['x'],
-                    y=[val + state[0] for val in wf]
+                    y=[val * 0.01 + state[0] for val in wf]
                 )
             )
 
