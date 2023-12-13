@@ -28,6 +28,41 @@ from . import common as com
 from . import radial as rc
 
 
+DEFAULT_ISO = {
+    '1s': 0.1,
+    '2s': 0.01,
+    '3s': 0.001,
+    '4s': 0.001,
+    '5s': 0.001,
+    '6s': 0.0005,
+    '2p': 0.01,
+    '3p': 0.001,
+    '4p': 0.001,
+    '5p': 0.001,
+    '6p': 0.0006,
+    '3dz2': 0.1,
+    '4dz2': 0.1,
+    '5dz2': 0.1,
+    '6dz2': 0.1,
+    '3dxy': 0.01,
+    '4dxy': 0.01,
+    '5dxy': 0.01,
+    '6dxy': 0.01,
+    '4fz3': 0.0006,
+    '5fz3': 0.0006,
+    '6fz3': 0.0004,
+    '4fxyz': 0.0006,
+    '5fxyz': 0.0006,
+    '6fxyz': 0.0004,
+    '4fyz2': 0.0006,
+    '5fyz2': 0.0006,
+    '6fyz2': 0.0006,
+    'sp': 0.01,
+    'sp2': 0.01,
+    'sp3': 0.01
+}
+
+
 def s_3d(n: int):
     '''
     Calculates s orbital wavefunction on a grid
@@ -44,8 +79,6 @@ def s_3d(n: int):
     z: np.meshgrid
     lower: float
         min value of axes
-    ival: float
-        isoval for orbital plotting
     '''
 
     if n == 1:
@@ -82,13 +115,7 @@ def s_3d(n: int):
 
     wav = ang * rad
 
-    spacing = [
-        np.diff(np.arange(-zbound, zbound, step))[0],
-        np.diff(np.arange(-zbound, zbound, step))[0],
-        np.diff(np.arange(-zbound, zbound, step))[0],
-    ]
-
-    return wav, spacing
+    return wav
 
 
 def p_3d(n: int):
@@ -140,13 +167,7 @@ def p_3d(n: int):
 
     wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
-    spacing = [
-        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
-        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
-        np.diff(np.arange(-zbound, zbound, step))[0],
-    ]
-
-    return wav, spacing
+    return wav
 
 
 def dz_3d(n: int):
@@ -165,8 +186,6 @@ def dz_3d(n: int):
     z: np.meshgrid
     lower: float
         min value of axes
-    ival: float
-        isoval for orbital plotting
     '''
 
     if n == 3:
@@ -183,8 +202,8 @@ def dz_3d(n: int):
         step = 2.
 
     x, y, z = np.meshgrid(
-        np.arange(-0.9 * zbound, 0.9 * zbound, step),
-        np.arange(-0.9 * zbound, 0.9 * zbound, step),
+        np.arange(-0.95 * zbound, 0.95 * zbound, step),
+        np.arange(-0.95 * zbound, 0.95 * zbound, step),
         np.arange(-zbound, zbound, step),
         copy=True
     )
@@ -197,13 +216,7 @@ def dz_3d(n: int):
 
     wav = rad * ang
 
-    spacing = [
-        np.diff(np.arange(-0.9 * zbound, 0.9 * zbound, step))[0],
-        np.diff(np.arange(-0.9 * zbound, 0.9 * zbound, step))[0],
-        np.diff(np.arange(-zbound, zbound, step))[0]
-    ]
-
-    return wav, spacing
+    return wav
 
 
 def dxy_3d(n: int):
@@ -222,8 +235,6 @@ def dxy_3d(n: int):
     z: np.meshgrid
     lower: float
         min value of axes
-    ival: float
-        isoval for orbital plotting
     '''
 
     if n == 3:
@@ -253,13 +264,7 @@ def dxy_3d(n: int):
 
     wav = rad * ang
 
-    spacing = np.diff(np.arange(-zbound, zbound, step))[0]
-
-    spacing = [
-        spacing, spacing, spacing
-    ]
-
-    return wav, spacing
+    return wav
 
 
 def fz_3d(n: int):
@@ -278,8 +283,6 @@ def fz_3d(n: int):
     z: np.meshgrid
     lower: float
         min value of axes
-    ival: float
-        isoval for orbital plotting
     '''
 
     if n == 4:
@@ -307,9 +310,7 @@ def fz_3d(n: int):
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad * ang
 
-    spacing = [step, step, step]
-
-    return wav, spacing
+    return wav
 
 
 def sp_3d():
@@ -339,9 +340,7 @@ def sp_3d():
     wav = 1. / np.sqrt(2) * wavs + 1. / np.sqrt(2) * wavp
     wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
-    spacing = [step, step, step]
-
-    return wav, spacing
+    return wav
 
 
 def sp3_3d():
@@ -371,9 +370,7 @@ def sp3_3d():
     wav = 0.5 * wavs + np.sqrt(3) / 2. * wavp1
     wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
-    spacing = [step, step, step]
-
-    return wav, spacing
+    return wav
 
 
 def sp2_3d():
@@ -406,13 +403,7 @@ def sp2_3d():
     wav = 1. / np.sqrt(3) * wavs + np.sqrt(2/3) * wavp1 + 1. / np.sqrt(2) * wavp2 # noqa
     wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
-    spacing = [
-        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
-        np.diff(np.arange(-0.75 * zbound, 0.75 * zbound, step))[0],
-        np.diff(np.arange(-zbound, zbound, step))[0],
-    ]
-
-    return wav, spacing
+    return wav
 
 
 def fxyz_3d(n: int):
@@ -431,8 +422,6 @@ def fxyz_3d(n: int):
     z: np.meshgrid
     lower: float
         min value of axes
-    ival: float
-        isoval for orbital plotting
     '''
 
     if n == 4:
@@ -461,9 +450,7 @@ def fxyz_3d(n: int):
 
     wav = rad * ang
 
-    spacing = [step, step, step]
-
-    return wav, spacing
+    return wav
 
 
 def fyz2_3d(n: int):
@@ -482,8 +469,6 @@ def fyz2_3d(n: int):
     z: np.meshgrid
     lower: float
         min value of axes
-    ival: float
-        isoval for orbital plotting
     '''
 
     if n == 4:
@@ -511,9 +496,7 @@ def fyz2_3d(n: int):
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad * ang
 
-    spacing = [step, step, step]
-
-    return wav, spacing
+    return wav
 
 
 class PlotDiv(com.Div):
@@ -521,26 +504,36 @@ class PlotDiv(com.Div):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
+        config = com.BASIC_CONFIG
+        config['toImageButtonOptions']['format'] = 'png'
+        config['toImageButtonOptions']['scale'] = 2
+        config['toImageButtonOptions']['filename'] = 'orbital.png'
+
+        layout = com.BASIC_LAYOUT
+        layout['xaxis']['showline'] = False
+        layout['xaxis']['ticks'] = ''
+        layout['xaxis']['showticklabels'] = False
+        layout['xaxis']['minor_ticks'] = ''
+        layout['yaxis']['showline'] = False
+        layout['yaxis']['ticks'] = ''
+        layout['yaxis']['showticklabels'] = False
+        layout['yaxis']['minor_ticks'] = ''
+        layout['scene'] = com.BASIC_SCENE
+        layout['margin'] = dict(r=20, b=10, l=10, t=10)
+        layout['showlegend'] = False
+
         self.plot = dcc.Graph(
             id=str(uuid.uuid1()),
             className='plot_area',
             mathjax=True,
             figure={
                 'data': [],
-                'layout': {
-                    'scene': com.BASIC_SCENE,
-                    'margin': dict(r=20, b=10, l=10, t=10),
-                    'showlegend': False
-                }
+                'layout': layout
             },
-            config=com.BASIC_CONFIG
+            config=config
         )
 
         self.orb_store = dcc.Store(
-            id=str(uuid.uuid1()),
-            data=[]
-        )
-        self.spacing_store = dcc.Store(
             id=str(uuid.uuid1()),
             data=[]
         )
@@ -557,8 +550,7 @@ class PlotDiv(com.Div):
                     dbc.Col([
                         dcc.Loading(self.plot)
                     ]),
-                    self.orb_store,
-                    self.spacing_store
+                    self.orb_store
                 ]
             )
         ]
@@ -612,8 +604,15 @@ class OptionsDiv(com.Div):
                 {'label': 'sp2', 'value': 'sp2'},
                 {'label': 'sp3', 'value': 'sp3'}
             ],
-            value='sp3',
+            value='3dz2',
             placeholder='Select an orbital'
+        )
+
+        self.orb_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Orbital'),
+                self.orb_select
+            ]
         )
 
         self.cutaway_select = dbc.Select(
@@ -629,15 +628,15 @@ class OptionsDiv(com.Div):
                     'value': 'none'
                 },
                 {
-                    'label': '1/2 X',
+                    'label': 'yz plane',
                     'value': 'x'
                 },
                 {
-                    'label': '1/2 Y',
+                    'label': 'xz plane',
                     'value': 'y'
                 },
                 {
-                    'label': '1/2 Z',
+                    'label': 'xy plane',
                     'value': 'z'
                 }
             ],
@@ -645,7 +644,7 @@ class OptionsDiv(com.Div):
         )
         self.cutaway_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Cutaway'),
+                dbc.InputGroupText('Cut through'),
                 self.cutaway_select
             ]
         )
@@ -661,15 +660,16 @@ class OptionsDiv(com.Div):
             min=0.0000000000001
         )
 
+        self.update_isoval_btn = dbc.Button(
+            children='Default'
+        )
+
         self.isoval_ig = self.make_input_group(
             [
                 dbc.InputGroupText('Isovalue'),
-                self.isoval_input
+                self.isoval_input,
+                self.update_isoval_btn
             ]
-        )
-
-        self.update_isoval_btn = dbc.Button(
-            children='Suggest Isovalue'
         )
 
         self.colour_input_a = dbc.Input(
@@ -701,15 +701,7 @@ class OptionsDiv(com.Div):
         self.axes_check = dbc.Checkbox(
             value=False,
             id=str(uuid.uuid1()),
-        )
-
-        self.axes_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Axes'),
-                dbc.InputGroupText(
-                    self.axes_check
-                )
-            ]
+            style={'margin-left': '5%'}
         )
 
         self.x_axis_col_input = dbc.Input(
@@ -739,9 +731,11 @@ class OptionsDiv(com.Div):
             }
         )
 
-        self.axes_colour_ig = self.make_input_group(
+        self.axes_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Axis colours'),
+                dbc.InputGroupText(
+                    ['Show axes', self.axes_check]
+                ),
                 self.x_axis_col_input,
                 self.y_axis_col_input,
                 self.z_axis_col_input
@@ -755,7 +749,7 @@ class OptionsDiv(com.Div):
 
         group = dbc.InputGroup(
             elements,
-            className='mb-3 4 d-flex justify-content-center'
+            className='mb-3'
         )
         return group
 
@@ -770,29 +764,30 @@ class OptionsDiv(com.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
+                            'margin-bottom': '5%',
+                            'margin-top': '5%'
                         },
-                        children='Options'
+                        children='Configuration'
                     )
                 )
             ]),
             dbc.Row(
                 [
                     dbc.Col(
-                        self.orb_select,
+                        self.orb_ig,
                         className='4 d-flex justify-content-center mb-3',
                         style={'align': 'center'}
-                    ),
-                    dbc.Col(
-                        self.axes_ig,
-                        className='mb-3'
                     )
                 ]
             ),
-            dbc.Row(self.axes_colour_ig),
             dbc.Row(
                 children=[
                     dbc.Col(
                         self.colours_ig,
+                        className='mb-3'
+                    ),
+                    dbc.Col(
+                        self.axes_ig,
                         className='mb-3'
                     )
                 ]
@@ -804,11 +799,6 @@ class OptionsDiv(com.Div):
                 dbc.Col(
                     self.isoval_ig
                 ),
-            ]),
-            dbc.Row([
-                dbc.Col(
-                    self.update_isoval_btn
-                )
             ])
         ]
 
@@ -821,89 +811,62 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
     callback(
         [
             Output(plot_div.orb_store, 'data'),
-            Output(plot_div.spacing_store, 'data')
+            Output(
+                options_div.isoval_input,
+                'value',
+                allow_duplicate=True
+            )
         ],
-        [
-            Input(options_div.orb_select, 'value')
-        ]
+        Input(options_div.orb_select, 'value'),
+        prevent_initial_call='initial_duplicate'
     )(calc_wav)
 
     # Suggest new isovalue from list of "good" values
     callback(
-        Output(options_div.isoval_input, 'value'),
+        Output(options_div.isoval_input, 'value', allow_duplicate=True),
         Input(options_div.update_isoval_btn, 'n_clicks'),
         State(options_div.orb_select, 'value'),
         prevent_initial_call=True
-    )(suggest_new_isoval)
+    )(lambda x, y: DEFAULT_ISO[y])
 
     callback(
         [
-            Output(plot_div.plot, 'figure')
+            Output(options_div.x_axis_col_input, 'disabled'),
+            Output(options_div.y_axis_col_input, 'disabled'),
+            Output(options_div.z_axis_col_input, 'disabled')
         ],
+        Input(options_div.axes_check, 'value')
+    )(lambda x: [not x] * 3)
+
+    callback(
+        Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
             Input(plot_div.orb_store, 'data'),
             Input(options_div.cutaway_select, 'value'),
             Input(options_div.axes_check, 'value'),
+            Input(options_div.isoval_input, 'value')
+        ],
+        [
+            State(options_div.x_axis_col_input, 'value'),
+            State(options_div.y_axis_col_input, 'value'),
+            State(options_div.z_axis_col_input, 'value'),
+            State(options_div.colour_input_a, 'value'),
+            State(options_div.colour_input_b, 'value')
+        ],
+        prevent_initial_call='initial_duplicate'
+    )(plot_data)
+
+    callback(
+        Output(plot_div.plot, 'figure', allow_duplicate=True),
+        [
+            Input(options_div.colour_input_a, 'value'),
+            Input(options_div.colour_input_b, 'value'),
             Input(options_div.x_axis_col_input, 'value'),
             Input(options_div.y_axis_col_input, 'value'),
-            Input(options_div.z_axis_col_input, 'value'),
-            Input(options_div.isoval_input, 'value'),
-            Input(options_div.colour_input_a, 'value'),
-            Input(options_div.colour_input_b, 'value')
-        ]
-    )(make_plotly_iso)
-
-
-def suggest_new_isoval(_nc: int, orb_name: str) -> float:
-    '''
-    Suggests "nice" isovalues for a given orbital
-
-    Parameters
-    ----------
-    orb_name: str
-        Orbital name
-
-    Returns
-    -------
-    float
-        "Nice" isovalue
-    '''
-
-    suggest = {
-        '1s': 0.1,
-        '2s': 0.01,
-        '3s': 0.001,
-        '4s': 0.001,
-        '5s': 0.001,
-        '6s': 0.0005,
-        '2p': 0.01,
-        '3p': 0.001,
-        '4p': 0.001,
-        '5p': 0.001,
-        '6p': 0.0006,
-        '3dz2': 0.01,
-        '4dz2': 0.01,
-        '5dz2': 0.001,
-        '6dz2': 0.001,
-        '3dxy': 0.01,
-        '4dxy': 0.01,
-        '5dxy': 0.01,
-        '6dxy': 0.01,
-        '4fz3': 0.0006,
-        '5fz3': 0.0006,
-        '6fz3': 0.0004,
-        '4fxyz': 0.0006,
-        '5fxyz': 0.0006,
-        '6fxyz': 0.0004,
-        '4fyz2': 0.0006,
-        '5fyz2': 0.0006,
-        '6fyz2': 0.0006,
-        'sp': 0.01,
-        'sp2': 0.01,
-        'sp3': 0.01
-    }
-
-    return suggest[orb_name]
+            Input(options_div.z_axis_col_input, 'value')
+        ],
+        prevent_initial_call=True
+    )(update_iso_colour)
 
 
 def calc_wav(orbital_name):
@@ -933,20 +896,21 @@ def calc_wav(orbital_name):
 
         n = int(orbital_name[0])
         name = orbital_name[1:]
-        wav, spacing = orb_func_dict[name](
+        wav = orb_func_dict[name](
             n
         )
     else:
-        wav, spacing = orb_func_dict[orbital_name]()
+        wav = orb_func_dict[orbital_name]()
 
     # Lists are Json serialisable
     wav = [wa.tolist() for wa in wav]
 
-    return wav, spacing
+    return wav, DEFAULT_ISO[orbital_name]
 
 
-def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
-                    zax_col, isoval, colour_1, colour_2):
+def plot_data(wav: list[float], cutaway: str, axes_check: bool, isoval: float,
+              x_col: str, y_col: str, z_col: str, colour_1: str,
+              colour_2: str):
     '''
     Finds isosurface for given wavefunction data using marching cubes,
     then smooths the surface and plots as mesh
@@ -957,21 +921,15 @@ def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
 
     fig = Patch()
 
-    if None in [cutaway, isoval, colour_1, colour_2]:
+    if None in [cutaway, isoval, colour_1, colour_2, x_col, y_col, z_col]:
         return no_update
-
-    # Convert colour from hex to rgb tuple
-    colour_1 = colour_1.lstrip('#')
-    colour_2 = colour_2.lstrip('#')
-    colour_1 = tuple(int(colour_1[i:i + 2], 16) for i in (0, 2, 4))
-    colour_2 = tuple(int(colour_2[i:i + 2], 16) for i in (0, 2, 4))
 
     # Calculate each ±isosurface and smooth it
     rounds = 3
     try:
         verts1, faces1, _, _ = measure.marching_cubes(
             np.array(wav),
-            isoval
+            level=isoval
         )
     except ValueError:
         return no_update
@@ -1006,7 +964,7 @@ def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
         x=x1,
         y=y1,
         z=z1,
-        color='rgb({:d},{:d},{:d})'.format(*colour_1),
+        color=colour_1,
         i=I1,
         j=J1,
         k=K1,
@@ -1017,7 +975,7 @@ def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
         x=x2,
         y=y2,
         z=z2,
-        color='rgb({:d},{:d},{:d})'.format(*colour_2),
+        color=colour_2,
         i=I2,
         j=J2,
         k=K2,
@@ -1033,29 +991,29 @@ def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
             y=[0, 0],
             z=[0, 0],
             line={
-                'color': xax_col,
+                'color': x_col,
                 'width': 8
             },
             mode='lines',
             name='x'
         )
         trace_4 = go.Scatter3d(
-            y=[-4. * np.max(y1), 4. * np.max(y1)],
+            y=[-4. * np.max(x1), 4. * np.max(x1)],
             x=[0, 0],
             z=[0, 0],
             line={
-                'color': yax_col,
+                'color': y_col,
                 'width': 8
             },
             mode='lines',
             name='y'
         )
         trace_5 = go.Scatter3d(
-            z=[-4. * np.max(z1), 4. * np.max(z1)],
+            z=[-4. * np.max(x1), 4. * np.max(x1)],
             x=[0, 0],
             y=[0, 0],
             line={
-                'color': zax_col,
+                'color': z_col,
                 'width': 8
             },
             mode='lines',
@@ -1105,8 +1063,20 @@ def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
             'x': 1., 'y': 1., 'z': 1.
         }
 
-    fig['layout']['scene']['aspectmode'] = 'data'
-    return [fig]
+    return fig
+
+
+def update_iso_colour(colour_1, colour_2, x_col, y_col, z_col):
+
+    fig = Patch()
+
+    fig['data'][0]['color'] = colour_1
+    fig['data'][1]['color'] = colour_2
+    fig['data'][2]['line']['color'] = x_col
+    fig['data'][3]['line']['color'] = y_col
+    fig['data'][4]['line']['color'] = z_col
+
+    return fig
 
 
 def laplacian_smooth(vertices, faces, rounds=1):

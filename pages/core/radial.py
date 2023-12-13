@@ -319,7 +319,7 @@ class OptionsDiv(com.Div):
             ],
             value=['1s', '2p', '3d', '4f'],
             multi=True,
-            placeholder='Orbital...'
+            placeholder='Select an Orbital'
         )
 
         self.func_select = dbc.Select(
@@ -341,24 +341,10 @@ class OptionsDiv(com.Div):
             value='rdf',
         )
 
-        self.lower_x_input = dbc.Input(
-            id=str(uuid.uuid1()),
-            placeholder=0,
-            type='number',
-            min=-10,
-            max=100,
-            value=0,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.lower_x_ig = self.make_input_group(
+        self.func_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Lower x limit'),
-                self.lower_x_input
+                dbc.InputGroupText('Function'),
+                self.func_select
             ]
         )
 
@@ -378,7 +364,7 @@ class OptionsDiv(com.Div):
 
         self.upper_x_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Lower x limit'),
+                dbc.InputGroupText('Upper x limit'),
                 self.upper_x_input
             ]
         )
@@ -433,38 +419,6 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.output_height_input = dbc.Input(
-            id=str(uuid.uuid1()),
-            placeholder=500,
-            type='number',
-            value=500,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.output_height_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Output height'),
-                self.output_height_input,
-                dbc.InputGroupText('px'),
-            ]
-        )
-
-        self.output_width_input = dbc.Input(
-            id=str(uuid.uuid1()),
-            placeholder=500,
-            type='number',
-            value=500,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
         # Legend toggle checkbox
         self.legend_toggle = dbc.Checkbox(
             value=True,
@@ -479,20 +433,12 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.output_width_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Output width'),
-                self.output_width_input,
-                dbc.InputGroupText('px'),
-            ]
-        )
-
         self.download_button = dbc.Button(
             'Download Data',
             id=str(uuid.uuid1()),
             style={
                 'boxShadow': 'none',
-                'textalign': 'top'
+                'width': '100%'
             }
         )
         self.download_trigger = dcc.Download(
@@ -536,7 +482,8 @@ class OptionsDiv(com.Div):
     def make_input_group(self, elements):
 
         group = dbc.InputGroup(
-            elements,
+            id=str(uuid.uuid1()),
+            children=elements,
             class_name='mb-3',
         )
         return group
@@ -552,16 +499,10 @@ class OptionsDiv(com.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
+                            'margin-bottom': '5%',
+                            'margin-top': '5%'
                         },
-                        children='Orbital'
-                    )
-                ),
-                dbc.Col(
-                    html.H4(
-                        style={
-                            'textAlign': 'center',
-                        },
-                        children='Function'
+                        children='Configuration'
                     )
                 )
             ]),
@@ -572,41 +513,31 @@ class OptionsDiv(com.Div):
                         class_name='mb-3'
                     ),
                     dbc.Col(
-                        self.func_select,
+                        self.func_ig,
                         class_name='mb-3'
                     )
                 ]
-            ),
-            html.H4(
-                style={'textAlign': 'center'},
-                children='Plot Options'
             ),
             dbc.Row(
                 children=[
                     dbc.Col(
-                        self.lower_x_ig,
+                        self.upper_x_ig,
                         class_name='mb-3'
                     ),
                     dbc.Col(
-                        self.upper_x_ig,
+                        self.distance_ig,
                         class_name='mb-3'
                     )
                 ]
             ),
             dbc.Row(
-                dbc.Col(
-                    self.legend_ig,
-                    class_name='mb-3'
-                )
-            ),
-            dbc.Row(
                 [
                     dbc.Col(
-                        self.distance_ig,
+                        self.colour_ig,
                         class_name='mb-3'
                     ),
                     dbc.Col(
-                        self.colour_ig,
+                        self.legend_ig,
                         class_name='mb-3'
                     )
                 ]
@@ -616,34 +547,19 @@ class OptionsDiv(com.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
+                            'margin-bottom': '5%',
+                            'margin-top': '5%'
                         },
-                        children='Save Options',
-                        id=str(uuid.uuid1()),
-                    ),
-                    dbc.Tooltip(
-                        children='Use the camera button in the top right of \
-                                the plot to save an image',
-                        target=str(uuid.uuid1()),
-                        style={
-                            'textAlign': 'center',
-                        },
+                        children='Output'
                     )
                 ])
             ]),
             dbc.Row(
                 [
                     dbc.Col(
-                        self.output_height_ig,
+                        self.image_format_ig,
                         class_name='mb-3'
                     ),
-                    dbc.Col(
-                        self.output_width_ig,
-                        class_name='mb-3'
-                    )
-                ]
-            ),
-            dbc.Row(
-                [
                     dbc.Col(
                         [
                             self.download_button,
@@ -651,12 +567,15 @@ class OptionsDiv(com.Div):
                         ],
                         class_name='mb-3'
                     ),
-                    dbc.Col(
-                        self.image_format_ig,
-                        class_name='mb-3'
+                    dbc.Tooltip(
+                        children='Use the camera button in the top right of \
+                                the plot to save an image',
+                        target=self.image_format_ig.id,
+                        style={
+                            'textAlign': 'center',
+                        },
                     )
-                ],
-                className='align-items-center'
+                ]
             )
         ]
 
@@ -685,7 +604,6 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     states = [
         State(options_div.func_select, 'value'),
         State(options_div.orb_select, 'value'),
-        State(options_div.lower_x_input, 'value'),
         State(options_div.upper_x_input, 'value'),
         State(options_div.distance_select, 'value')
     ]
@@ -700,7 +618,6 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     inputs = [
         Input(options_div.func_select, 'value'),
         Input(options_div.orb_select, 'value'),
-        Input(options_div.lower_x_input, 'value'),
         Input(options_div.upper_x_input, 'value'),
         Input(options_div.distance_select, 'value'),
         Input(options_div.colour_select, 'value'),
@@ -786,7 +703,7 @@ def compute_radials(func: str, orbs: list[str], low_x: float, up_x: float,
     return full_data
 
 
-def download_data(_nc: int, func: str, orbs: list[str], low_x: float,
+def download_data(_nc: int, func: str, orbs: list[str],
                   up_x: float, unit: str) -> dict:
     '''
     Creates output file for Radial wavefunction/distribution function
@@ -799,8 +716,6 @@ def download_data(_nc: int, func: str, orbs: list[str], low_x: float,
         Name of function
     orbs: list[str]
         Orbitals to include
-    low_x: float
-        Lower x value in either Angstrom or Bohr radii (depends on `unit`)
     up_x: float
         Upper x value in either Angstrom or Bohr radii (depends on `unit`)
     unit: str {'Angstrom', 'Bohr Radii'}
@@ -812,14 +727,14 @@ def download_data(_nc: int, func: str, orbs: list[str], low_x: float,
         Output dictionary used by dcc.Download
     '''
 
-    if None in [low_x, up_x, unit, func, orbs]:
+    if None in [up_x, unit, func, orbs]:
         return no_update
 
     if not len(orbs):
         return no_update
 
     # Recompute the data
-    data = compute_radials(func, orbs, low_x, up_x, unit)
+    data = compute_radials(func, orbs, 0., up_x, unit)
 
     func_to_name = {
         'rdf': 'Radial Distribution Function',
@@ -849,7 +764,7 @@ def download_data(_nc: int, func: str, orbs: list[str], low_x: float,
     return output
 
 
-def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
+def plot_data(func: str, orbs: list[str], up_x: float,
               unit: str, colour_scheme: str,
               legend: bool) -> tuple[Patch, Patch]:
     '''
@@ -861,8 +776,6 @@ def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
         Name of function
     orbs: list[str]
         Orbitals to include
-    low_x: float
-        Lower x value in either Angstrom or Bohr radii (depends on `unit`)
     up_x: float
         Upper x value in either Angstrom or Bohr radii (depends on `unit`)
     unit: str {'Angstrom', 'Bohr Radii'}
@@ -882,7 +795,7 @@ def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
 
     fig = Patch()
 
-    if None in [low_x, up_x, unit, func, orbs]:
+    if None in [up_x, unit, func, orbs]:
         return no_update
 
     if not len(orbs):
@@ -897,7 +810,7 @@ def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
     else:
         cols = ut.def_cols + ut.tol_cols + ut.wong_cols
 
-    data = compute_radials(func, orbs, low_x, up_x, unit)
+    data = compute_radials(func, orbs, 0., up_x, unit)
 
     # Create plotly trace
     traces = [

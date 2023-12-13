@@ -471,7 +471,9 @@ class OptionsDiv(com.Div):
                         self.wf_colour_ig,
                         self.wf_linewidth_ig,
                         self.wf_toggle_ig,
-                        self.wf_ftype_ig
+                        self.wf_ftype_ig,
+                        self.wf_scale_ig,
+                        self.max_n_ig
                     ]
                 )
             ]
@@ -708,8 +710,10 @@ class OptionsDiv(com.Div):
                         id=self.prefix('parameters_header'),
                         style={
                             'textAlign': 'center',
+                            'margin-bottom': '5%',
+                            'margin-top': '5%'
                         },
-                        children='Parameters'
+                        children='Configuration'
                     )
                 ),
                 dbc.Tooltip(
@@ -783,30 +787,6 @@ class OptionsDiv(com.Div):
             ),
             dbc.Row([
                 dbc.Col(
-                    html.H4(
-                        style={
-                            'textAlign': 'center',
-                        },
-                        children='Plot options'
-                    )
-                )
-            ]),
-            dbc.Row([
-                dbc.Col(
-                    self.max_n_ig
-                ),
-                dbc.Col(
-                    [
-                        self.wf_scale_ig,
-                        dbc.Tooltip(
-                            children='Scales wavefunction plot relative to states', # noqa
-                            target=self.wf_scale_ig.id
-                        )
-                    ]
-                )
-            ]),
-            dbc.Row([
-                dbc.Col(
                     [
                         self.open_wf_modal_btn,
                         self.wf_modal
@@ -828,15 +808,20 @@ class OptionsDiv(com.Div):
                     class_name='mb-3'
                 ),
             ]),
+            dbc.Row([
+                dbc.Col([
+                    html.H4(
+                        style={
+                            'textAlign': 'center',
+                            'margin-bottom': '5%',
+                            'margin-top': '5%'
+                        },
+                        children='Output'
+                    )
+                ])
+            ]),
             dbc.Row(
                 [
-                    dbc.Col(
-                        [
-                            self.download_button,
-                            self.download_trigger
-                        ],
-                        class_name='mb-3'
-                    ),
                     dbc.Col(
                         [
                             self.image_format_ig,
@@ -844,6 +829,13 @@ class OptionsDiv(com.Div):
                                 children='Use the camera button in the top right of the plot to save an image', # noqa
                                 target=self.image_format_ig.id
                             )
+                        ],
+                        class_name='mb-3'
+                    ),
+                    dbc.Col(
+                        [
+                            self.download_button,
+                            self.download_trigger
                         ],
                         class_name='mb-3'
                     )
