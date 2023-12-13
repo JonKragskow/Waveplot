@@ -22,7 +22,7 @@ import dash_bootstrap_components as dbc
 import io
 import plotly.graph_objects as go
 import copy
-
+import uuid
 
 from . import common as com
 from . import utils as ut
@@ -289,7 +289,7 @@ class OptionsDiv(com.Div):
         super().__init__(prefix=prefix, **kwargs)
 
         self.orb_select = dcc.Dropdown(
-            id=self.prefix('orb_select'),
+            id=str(uuid.uuid1()),
             style={
                 'textAlign': 'left'
             },
@@ -323,7 +323,7 @@ class OptionsDiv(com.Div):
         )
 
         self.func_select = dbc.Select(
-            id=self.prefix('function_type'),
+            id=str(uuid.uuid1()),
             style={
                 'textAlign': 'center',
                 'display': 'block'
@@ -342,7 +342,7 @@ class OptionsDiv(com.Div):
         )
 
         self.lower_x_input = dbc.Input(
-            id=self.prefix('lower_x_in'),
+            id=str(uuid.uuid1()),
             placeholder=0,
             type='number',
             min=-10,
@@ -363,7 +363,7 @@ class OptionsDiv(com.Div):
         )
 
         self.upper_x_input = dbc.Input(
-            id=self.prefix('upper_x_in'),
+            id=str(uuid.uuid1()),
             placeholder=0,
             type='number',
             min=0,
@@ -384,7 +384,7 @@ class OptionsDiv(com.Div):
         )
 
         self.distance_select = dbc.Select(
-            id=self.prefix('distance_unit'),
+            id=str(uuid.uuid1()),
             options=[
                 {'value': 'bohr', 'label': 'Bohr Radii'},
                 {'value': 'angstrom', 'label': 'Angstrom'}
@@ -401,7 +401,7 @@ class OptionsDiv(com.Div):
         )
 
         self.colour_select = dbc.Select(
-            id=self.prefix('colours_2d'),
+            id=str(uuid.uuid1()),
             options=[
                 {
                     'label': 'Standard',
@@ -434,7 +434,7 @@ class OptionsDiv(com.Div):
         )
 
         self.output_height_input = dbc.Input(
-            id=self.prefix('save_height_in'),
+            id=str(uuid.uuid1()),
             placeholder=500,
             type='number',
             value=500,
@@ -454,7 +454,7 @@ class OptionsDiv(com.Div):
         )
 
         self.output_width_input = dbc.Input(
-            id=self.prefix('save_width_in'),
+            id=str(uuid.uuid1()),
             placeholder=500,
             type='number',
             value=500,
@@ -463,6 +463,20 @@ class OptionsDiv(com.Div):
                 'verticalAlign': 'middle',
                 'horizontalAlign': 'middle'
             }
+        )
+
+        # Legend toggle checkbox
+        self.legend_toggle = dbc.Checkbox(
+            value=True,
+            id=str(uuid.uuid1()),
+        )
+        self.legend_ig = dbc.InputGroup(
+            children=[
+                dbc.InputGroupText('Legend'),
+                dbc.InputGroupText(
+                    self.legend_toggle
+                )
+            ]
         )
 
         self.output_width_ig = self.make_input_group(
@@ -475,18 +489,18 @@ class OptionsDiv(com.Div):
 
         self.download_button = dbc.Button(
             'Download Data',
-            id=self.prefix('download_data'),
+            id=str(uuid.uuid1()),
             style={
                 'boxShadow': 'none',
                 'textalign': 'top'
             }
         )
         self.download_trigger = dcc.Download(
-            id=self.prefix('download_data_trigger')
+            id=str(uuid.uuid1()),
         )
 
         self.image_format_select = dbc.Select(
-            id=self.prefix('save_format'),
+            id=str(uuid.uuid1()),
             style={
                 'textAlign': 'center',
                 'horizontalAlign': 'center',
@@ -580,6 +594,12 @@ class OptionsDiv(com.Div):
                 ]
             ),
             dbc.Row(
+                dbc.Col(
+                    self.legend_ig,
+                    class_name='mb-3'
+                )
+            ),
+            dbc.Row(
                 [
                     dbc.Col(
                         self.distance_ig,
@@ -598,12 +618,12 @@ class OptionsDiv(com.Div):
                             'textAlign': 'center',
                         },
                         children='Save Options',
-                        id=self.prefix('save_options_header')
+                        id=str(uuid.uuid1()),
                     ),
                     dbc.Tooltip(
                         children='Use the camera button in the top right of \
                                 the plot to save an image',
-                        target=self.prefix('save_options_header'),
+                        target=str(uuid.uuid1()),
                         style={
                             'textAlign': 'center',
                         },
@@ -683,7 +703,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         Input(options_div.lower_x_input, 'value'),
         Input(options_div.upper_x_input, 'value'),
         Input(options_div.distance_select, 'value'),
-        Input(options_div.colour_select, 'value')
+        Input(options_div.colour_select, 'value'),
+        Input(options_div.legend_toggle, 'value')
     ]
     callback(
         [
@@ -797,29 +818,40 @@ def download_data(_nc: int, func: str, orbs: list[str], low_x: float,
     if not len(orbs):
         return no_update
 
+    # Recompute the data
     data = compute_radials(func, orbs, low_x, up_x, unit)
 
-    # Write all data to string
-    data_header = '{}'.format(func)
-    data_header += ' Data generated using waveplot.com, an app by'
-    data_header += f' Jon Kragskow \n x ({unit}),  '
+    func_to_name = {
+        'rdf': 'Radial Distribution Function',
+        'rwf': 'Radial Wavefunction'
+    }
 
+    # Comments
+    comment = '{}\n'.format(func_to_name[func])
+    comment += 'Data generated using waveplot.com\n'
+    comment += 'an app by Jon Kragskow \n '
+
+    # Column headers
+    header = f'x ({unit}),'
     for orb in orbs:
-        data_header += '{}, '.format(orb)
-    data_str = io.StringIO()
-    np.savetxt(data_str, data, header=data_header)
-    output_str = data_str.getvalue()
+        header += '{}, '.format(orb)
 
+    # Create iostring and save data to it
+    data_str = io.StringIO()
+    np.savetxt(data_str, data, comments=comment, header=header, delimiter=',')
+
+    # Create output dictionary for dcc.Download
     output = {
-        'content': output_str.getvalue(),
-        'filename': 'waveplot_orbital_data.dat'
+        'content': data_str.getvalue(),
+        'filename': 'waveplot_orbital_data.csv'
     }
 
     return output
 
 
 def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
-              unit: str, colour_scheme: str) -> tuple[Patch, Patch]:
+              unit: str, colour_scheme: str,
+              legend: bool) -> tuple[Patch, Patch]:
     '''
     Plots Radial wavefunction/distribution function data
 
@@ -837,6 +869,8 @@ def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
         Distance unit
     colour_scheme: str ['tol', 'wong', 'standard']
         Colour scheme to use for plots
+    legend: bool
+        Display legend (on=True, off=False)
 
     Returns
     -------
@@ -897,6 +931,8 @@ def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
 
     # Update y axis with correct label
     fig['layout']['yaxis']['title']['text'] = func_to_label[func]
+
+    fig['layout']['showlegend'] = legend
 
     func_to_fname = {
         'rdf': 'radial_distribution_function',

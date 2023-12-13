@@ -152,6 +152,15 @@ class PlotDiv(Div):
             config=config
         )
 
+        self.error_alert = dbc.Alert(
+            id=self.prefix('plot_error'),
+            children='',
+            is_open=False,
+            dismissable=False,
+            color='danger',
+            style={'text-align': 'center'}
+        )
+
         self.store = dcc.Store(
             id=self.prefix('store'),
             data={}
@@ -169,6 +178,7 @@ class PlotDiv(Div):
                 [
                     dbc.Col(
                         [
+                            self.error_alert,
                             self.plot,
                             self.store
                         ]

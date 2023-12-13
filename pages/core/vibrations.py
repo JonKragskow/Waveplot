@@ -17,7 +17,6 @@
 '''
 import numpy as np
 from numpy.typing import NDArray, ArrayLike
-from functools import lru_cache
 from dash import dcc, html, Input, Output, State, callback, no_update, Patch
 import dash_bootstrap_components as dbc
 from . import common as com
@@ -25,9 +24,8 @@ from scipy.special import factorial
 import scipy.constants as con
 import io
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import copy
-
+import uuid
 
 # c in cm s-1
 LIGHT = con.speed_of_light * 100
@@ -50,9 +48,7 @@ VIB_LAYOUT.yaxis.title = {
         'color': 'black'
     }
 }
-
 VIB_LAYOUT.showlegend = False
-VIB_LAYOUT.yaxis.tickformat = '.2f'
 
 
 def hermite(n: int, x: ArrayLike) -> NDArray:
@@ -77,22 +73,22 @@ def hermite(n: int, x: ArrayLike) -> NDArray:
     elif n == 1:
         return 2 * x
     else:
-        return 2 * x * hermite(n - 1, x) - 2 * (n-1) * hermite(n - 2, x)
+        return 2 * x * hermite(n - 1, x) - 2 * (n - 1) * hermite(n - 2, x)
 
 
-def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
-                               NDArray, NDArray, NDArray, float]:
+def harmonic_energies(k: float, m: float,
+                      max_n: int) -> tuple[NDArray, NDArray, NDArray, float]:
     '''
     Calculate energy of harmonic oscillator as both classical and quantum
     entity
 
     Parameters
     ----------
-    k : float
+    k: float
         Force constant (N/m)
-    m : float
+    m: float
         Reduced mass (kg)
-    max_n : int
+    max_n: int
         maximum value of n used for Harmonic states
     Returns
     -------
@@ -107,7 +103,7 @@ def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
     '''
 
     # Angular frequency
-    omega = np.sqrt(k / m) / (2*np.pi)  # rad s^-1
+    omega = np.sqrt(k / m) / (2 * np.pi)  # rad s^-1
 
     # Harmonic state energies
     state_E = np.array([HBAR * omega * (n + 0.5) for n in range(0, max_n + 1)])
@@ -116,7 +112,7 @@ def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
     # E = 1/2 kx^2
     max_x = np.sqrt((max_n + 0.5) * 2 * HBAR * omega / k)
 
-    displacement = np.linspace(-max_x*1.2, max_x*1.2, 100)  # m
+    displacement = np.linspace(-max_x * 3, max_x * 3, 1000)  # m
     harmonic_E = 0.5 * k * displacement**2  # J
 
     # Find zero point displacement
@@ -131,9 +127,9 @@ def calculate_mu(w, k):
 
     Parameters
     ----------
-    w : float
+    w: float
         Angular frequency Omega (s^-1)
-    k : float
+    k: float
         Force constant k (N m^-1)
 
     Returns
@@ -155,9 +151,9 @@ def calculate_k(w, mu):
 
     Parameters
     ----------
-    w : float
+    w: float
         Angular frequency Omega (s^-1)
-    mu : float
+    mu: float
         Reduced mass (g mol^-1)
 
     Returns
@@ -175,18 +171,21 @@ def calculate_k(w, mu):
 
 def harmonic_wf(n: int, x: ArrayLike, m: float, omega: float):
     '''
-    Calculates normalised harmonic wavefunction for nth state over x
+    Calculates normalised harmonic wavefunction for nth state as
+    N_n * H_n(beta * x) * exp(-0.5*(beta*x)**2) \n
+    where beta = sqrt(m*omega/hbar) and N = 1 / sqrt(2**n * n! * pi**0.5)
 
     Parameters
     ----------
-    n : int
+    n: int
         Harmonic oscillator quantum number
-    x : array_like
+    x: array_like
         Displacement (m)
-    m : float
+    m: float
         Reduced mass (kg)
-    omega : float
-        Angular frequency (float)
+    omega: float
+        Angular frequency (rad s-1)
+
     Returns
     -------
     ndarray of floats
@@ -195,17 +194,16 @@ def harmonic_wf(n: int, x: ArrayLike, m: float, omega: float):
 
     x = np.asarray(x)
 
-    beta = np.sqrt(m*omega / HBAR)
+    y = np.sqrt(m * omega / HBAR) * x
 
     # Compute hermite polynomial
-    h = hermite(n, beta * x)
+    h = hermite(n, y)
 
     # Normalisation factor
-    N = 1. / np.sqrt(2**n * factorial(n)) * ((m * omega)/(np.pi * HBAR))**0.25
+    N = 1 / np.sqrt(2**n * factorial(n) * np.pi**0.5)
 
     # Wavefunction
-    wf = h * N * np.exp(-beta**2 * x**2 * 0.5)
-    print(n, h)
+    wf = h * N * np.exp(-y**2 * 0.5)
 
     return wf
 
@@ -216,7 +214,7 @@ class OptionsDiv(com.Div):
         super().__init__(prefix=prefix, **kwargs)
 
         self.lin_wn_input = dbc.Input(
-            id=self.prefix('lin_wn'),
+            id=str(uuid.uuid1()),
             placeholder=2888,
             type='number',
             min=0.0001,
@@ -227,11 +225,11 @@ class OptionsDiv(com.Div):
         )
         self.lin_wn_check = dbc.Checkbox(
             value=False,
-            id=self.prefix('lin_wn_fix')
+            id=str(uuid.uuid1()),
         )
         self.lin_wn_ig = self.make_input_group(
             [
-                dbc.InputGroupText(u'v\u0334'),
+                dbc.InputGroupText(u'v\u0305'),
                 self.lin_wn_input,
                 dbc.InputGroupText(r'cm⁻¹'),
                 dbc.InputGroupText(
@@ -241,7 +239,7 @@ class OptionsDiv(com.Div):
         )
 
         self.ang_wn_input = dbc.Input(
-            id=self.prefix('ang_wn'),
+            id=str(uuid.uuid1()),
             placeholder=18145.84,
             type='number',
             min=0.0001,
@@ -252,7 +250,7 @@ class OptionsDiv(com.Div):
         )
         self.ang_wn_check = dbc.Checkbox(
             value=False,
-            id=self.prefix('ang_wn_fix')
+            id=str(uuid.uuid1()),
         )
         self.ang_wn_ig = self.make_input_group(
             [
@@ -266,10 +264,10 @@ class OptionsDiv(com.Div):
         )
 
         self.fc_input = dbc.Input(
-            id=self.prefix('fc'),
+            id=str(uuid.uuid1()),
             placeholder=480,
             type='number',
-            min=0.,
+            min=0.00000000000001,
             value=480,
             style={
                 'textAlign': 'center'
@@ -277,7 +275,7 @@ class OptionsDiv(com.Div):
         )
         self.fc_check = dbc.Checkbox(
             value=True,
-            id=self.prefix('fc_fix')
+            id=str(uuid.uuid1()),
         )
         self.fc_ig = self.make_input_group(
             [
@@ -291,10 +289,10 @@ class OptionsDiv(com.Div):
         )
 
         self.rm_input = dbc.Input(
-            id=self.prefix('rm'),
+            id=str(uuid.uuid1()),
             placeholder=0.9768,
             type='number',
-            min=0.,
+            min=0.000000000001,
             value=0.9768,
             style={
                 'textAlign': 'center'
@@ -302,7 +300,7 @@ class OptionsDiv(com.Div):
         )
         self.rm_check = dbc.Checkbox(
             value=True,
-            id=self.prefix('rm_fix')
+            id=str(uuid.uuid1()),
         )
         self.rm_ig = self.make_input_group(
             [
@@ -316,12 +314,12 @@ class OptionsDiv(com.Div):
         )
 
         self.var_store = dcc.Store(
-            id=self.prefix('var_store'),
+            id=str(uuid.uuid1()),
             data={}
         )
 
         self.max_n_input = dbc.Input(
-            id=self.prefix('max_n'),
+            id=str(uuid.uuid1()),
             placeholder=5,
             value=5,
             type='number',
@@ -340,12 +338,12 @@ class OptionsDiv(com.Div):
         )
 
         self.wf_scale_input = dbc.Input(
-            id=self.prefix('wf_scale'),
-            placeholder=5,
-            value=5,
+            id=str(uuid.uuid1()),
+            placeholder=2000,
+            value=2000,
             type='number',
             min=0,
-            max=25,
+            max=1E9,
             style={
                 'textAlign': 'center'
             }
@@ -359,7 +357,7 @@ class OptionsDiv(com.Div):
         )
 
         self.text_size_input = dbc.Input(
-            id=self.prefix('text_size'),
+            id=str(uuid.uuid1()),
             placeholder=18,
             type='number',
             min=10,
@@ -372,46 +370,60 @@ class OptionsDiv(com.Div):
             }
         )
 
-        self.wf_colour_select = dbc.Select(
-            id=self.prefix('wf_colour'),
+        self.wf_pos_colour_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            type='color',
+            value='#1f77b4',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.wf_neg_colour_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            type='color',
+            value='#d62728',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.wf_ftype_select = dbc.Select(
             options=[
                 {
-                    'label': 'Default',
-                    'value': 'normal'
+                    'label': 'Probability',
+                    'value': 'psi2'
                 },
                 {
-                    'label': 'Tol',
-                    'value': 'tol'
-                },
-                {
-                    'label': 'Wong',
-                    'value': 'wong'
+                    'label': 'Wavefunction',
+                    'value': 'psi'
                 }
             ],
-            value='normal',
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle',
-                'alignItems': 'auto',
-                'display': 'inline'
-            }
+            value='psi'
+        )
+
+        self.wf_ftype_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Plot:'),
+                self.wf_ftype_select
+            ]
         )
 
         self.wf_colour_ig = self.make_input_group(
             [
-                dbc.InputGroupText('WF colour'),
-                self.wf_colour_select
+                dbc.InputGroupText('Colours'),
+                self.wf_pos_colour_input,
+                self.wf_neg_colour_input
             ]
         )
 
         self.wf_linewidth_input = dbc.Input(
-            id=self.prefix('wf_linewidth'),
-            placeholder=3,
+            id=str(uuid.uuid1()),
+            placeholder=2.,
             type='number',
             min=1,
             max=10,
-            value=3,
+            value=2.,
             style={
                 'textAlign': 'center',
                 'verticalAlign': 'middle',
@@ -428,28 +440,20 @@ class OptionsDiv(com.Div):
 
         self.tog_wf_check = dbc.Checkbox(
             value=True,
-            id=self.prefix('toggle_wf')
+            id=str(uuid.uuid1()),
         )
         self.wf_toggle_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Toggle'),
+                dbc.InputGroupText('On/Off'),
                 dbc.InputGroupText(
                     self.tog_wf_check
                 )
             ]
         )
 
-        self.wf_modal = self.make_modal(
-            [
-                self.wf_colour_ig,
-                self.wf_linewidth_ig,
-                self.wf_toggle_ig
-            ]
-        )
-
-        self.wf_modal_btn = dbc.Button(
-            'WF options',
-            id=self.prefix('open_wf_modal'),
+        self.open_wf_modal_btn = dbc.Button(
+            'Wavefunctions',
+            id=str(uuid.uuid1()),
             color='primary',
             className='me-1',
             n_clicks=0,
@@ -459,29 +463,42 @@ class OptionsDiv(com.Div):
             }
         )
 
-        self.pe_colour_select = dbc.Input(
-            id=self.prefix('PE_colour'),
+        self.wf_modal = self.make_modal(
+            [
+                dbc.ModalHeader('Wavefunction plot options'),
+                dbc.ModalBody(
+                    [
+                        self.wf_colour_ig,
+                        self.wf_linewidth_ig,
+                        self.wf_toggle_ig,
+                        self.wf_ftype_ig
+                    ]
+                )
+            ]
+        )
+
+        self.pe_colour_input = dbc.Input(
+            id=str(uuid.uuid1()),
             type='color',
-            value='#ffffff',
+            value='#d62728',
             style={
                 'height': '40px'
             }
         )
-
         self.pe_colour_ig = self.make_input_group(
             [
-                dbc.InputGroupText('pe colour'),
-                self.pe_colour_select
+                dbc.InputGroupText('Colour'),
+                self.pe_colour_input
             ]
         )
 
         self.pe_linewidth_input = dbc.Input(
-            id=self.prefix('PE_linewidth'),
-            placeholder=3,
+            id=str(uuid.uuid1()),
+            placeholder=2.,
             type='number',
             min=1,
             max=10,
-            value=3,
+            value=2.,
             style={
                 'textAlign': 'center',
                 'verticalAlign': 'middle',
@@ -498,28 +515,20 @@ class OptionsDiv(com.Div):
 
         self.tog_pe_check = dbc.Checkbox(
             value=True,
-            id=self.prefix('toggle_pe')
+            id=str(uuid.uuid1()),
         )
         self.pe_toggle_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Toggle'),
+                dbc.InputGroupText('On/Off'),
                 dbc.InputGroupText(
                     self.tog_pe_check
                 )
             ]
         )
 
-        self.pe_modal = self.make_modal(
-            [
-                self.pe_colour_ig,
-                self.pe_linewidth_ig,
-                self.pe_toggle_ig
-            ]
-        )
-
-        self.pe_modal_btn = dbc.Button(
-            'PE options',
-            id=self.prefix('open_pe_modal'),
+        self.open_pe_modal_btn = dbc.Button(
+            'Potential Energy',
+            id=str(uuid.uuid1()),
             color='primary',
             className='me-1',
             n_clicks=0,
@@ -529,10 +538,23 @@ class OptionsDiv(com.Div):
             }
         )
 
-        self.state_colour_select = dbc.Input(
-            id=self.prefix('state_colour'),
+        self.pe_modal = self.make_modal(
+            [
+                dbc.ModalHeader('Potential Energy plot options'),
+                dbc.ModalBody(
+                    [
+                        self.pe_colour_ig,
+                        self.pe_linewidth_ig,
+                        self.pe_toggle_ig
+                    ]
+                )
+            ]
+        )
+
+        self.state_colour_input = dbc.Input(
+            id=str(uuid.uuid1()),
             type='color',
-            value='#ffffff',
+            value='#000000',
             style={
                 'height': '40px'
             }
@@ -540,18 +562,18 @@ class OptionsDiv(com.Div):
 
         self.state_colour_ig = self.make_input_group(
             [
-                dbc.InputGroupText('state colour'),
-                self.state_colour_select
+                dbc.InputGroupText('Colour'),
+                self.state_colour_input
             ]
         )
 
         self.state_linewidth_input = dbc.Input(
-            id=self.prefix('state_linewidth'),
-            placeholder=3,
+            id=str(uuid.uuid1()),
+            placeholder=2.,
             type='number',
             min=1,
             max=10,
-            value=3,
+            value=2.,
             style={
                 'textAlign': 'center',
                 'verticalAlign': 'middle',
@@ -568,28 +590,20 @@ class OptionsDiv(com.Div):
 
         self.tog_state_check = dbc.Checkbox(
             value=True,
-            id=self.prefix('toggle_state')
+            id=str(uuid.uuid1()),
         )
         self.state_toggle_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Toggle'),
+                dbc.InputGroupText('On/Off'),
                 dbc.InputGroupText(
                     self.tog_state_check
                 )
             ]
         )
 
-        self.state_modal = self.make_modal(
-            [
-                self.state_colour_ig,
-                self.state_linewidth_ig,
-                self.state_toggle_ig
-            ]
-        )
-
-        self.state_modal_btn = dbc.Button(
-            'State options',
-            id=self.prefix('open_state_modal'),
+        self.open_state_modal_btn = dbc.Button(
+            'States',
+            id=str(uuid.uuid1()),
             color='primary',
             className='me-1',
             n_clicks=0,
@@ -597,6 +611,19 @@ class OptionsDiv(com.Div):
                 'textAlign': 'center',
                 'width': '100%'
             }
+        )
+
+        self.state_modal = self.make_modal(
+            [
+                dbc.ModalHeader('State plot options'),
+                dbc.ModalBody(
+                    [
+                        self.state_colour_ig,
+                        self.state_linewidth_ig,
+                        self.state_toggle_ig
+                    ]
+                )
+            ]
         )
 
         self.text_size_ig = self.make_input_group(
@@ -608,18 +635,18 @@ class OptionsDiv(com.Div):
 
         self.download_button = dbc.Button(
             'Download Data',
-            id=self.prefix('download_data'),
+            id=str(uuid.uuid1()),
             style={
                 'boxShadow': 'none',
-                'textalign': 'top'
+                'width': '100%'
             }
         )
         self.download_trigger = dcc.Download(
-            id=self.prefix('download_data_trigger')
+            id=str(uuid.uuid1()),
         )
 
         self.image_format_select = dbc.Select(
-            id=self.prefix('save_format'),
+            id=str(uuid.uuid1()),
             style={
                 'textAlign': 'center',
                 'horizontalAlign': 'center',
@@ -655,7 +682,8 @@ class OptionsDiv(com.Div):
     def make_input_group(self, elements):
 
         group = dbc.InputGroup(
-            elements,
+            id=str(uuid.uuid1()),
+            children=elements,
             class_name='mb-3',
         )
         return group
@@ -695,11 +723,29 @@ class OptionsDiv(com.Div):
             dbc.Row(
                 [
                     dbc.Col(
-                        self.lin_wn_ig,
+                        [
+                            self.lin_wn_ig,
+                            dbc.Tooltip(
+                                children='Linear Wavenumber',
+                                target=self.lin_wn_ig.id,
+                                style={
+                                    'textAlign': 'center',
+                                }
+                            )
+                        ],
                         class_name='mb-3'
                     ),
                     dbc.Col(
-                        self.ang_wn_ig,
+                        [
+                            self.ang_wn_ig,
+                            dbc.Tooltip(
+                                children='Angular Wavenumber',
+                                target=self.ang_wn_ig.id,
+                                style={
+                                    'textAlign': 'center',
+                                }
+                            )
+                        ],
                         class_name='mb-3'
                     )
                 ]
@@ -707,13 +753,32 @@ class OptionsDiv(com.Div):
             dbc.Row(
                 [
                     dbc.Col(
-                        self.fc_ig,
+                        [
+                            self.fc_ig,
+                            dbc.Tooltip(
+                                children='Force Constant',
+                                target=self.fc_ig.id,
+                                style={
+                                    'textAlign': 'center',
+                                }
+                            )
+                        ],
                         class_name='mb-3'
                     ),
                     dbc.Col(
-                        self.rm_ig,
+                        [
+                            self.rm_ig,
+                            dbc.Tooltip(
+                                children='Reduced mass',
+                                target=self.rm_ig.id,
+                                style={
+                                    'textAlign': 'center',
+                                }
+                            )
+                        ],
                         class_name='mb-3'
-                    ), self.var_store
+                    ),
+                    self.var_store
                 ]
             ),
             dbc.Row([
@@ -729,26 +794,35 @@ class OptionsDiv(com.Div):
             dbc.Row([
                 dbc.Col(
                     self.max_n_ig
+                ),
+                dbc.Col(
+                    [
+                        self.wf_scale_ig,
+                        dbc.Tooltip(
+                            children='Scales wavefunction plot relative to states', # noqa
+                            target=self.wf_scale_ig.id
+                        )
+                    ]
                 )
             ]),
             dbc.Row([
                 dbc.Col(
                     [
-                        self.wf_modal_btn,
+                        self.open_wf_modal_btn,
                         self.wf_modal
                     ],
                     class_name='mb-3'
                 ),
                 dbc.Col(
                     [
-                        self.pe_modal_btn,
+                        self.open_pe_modal_btn,
                         self.pe_modal
                     ],
                     class_name='mb-3'
                 ),
                 dbc.Col(
                     [
-                        self.state_modal_btn,
+                        self.open_state_modal_btn,
                         self.state_modal
                     ],
                     class_name='mb-3'
@@ -764,11 +838,16 @@ class OptionsDiv(com.Div):
                         class_name='mb-3'
                     ),
                     dbc.Col(
-                        self.image_format_ig,
+                        [
+                            self.image_format_ig,
+                            dbc.Tooltip(
+                                children='Use the camera button in the top right of the plot to save an image', # noqa
+                                target=self.image_format_ig.id
+                            )
+                        ],
                         class_name='mb-3'
                     )
-                ],
-                className='align-items-center'
+                ]
             )
         ]
 
@@ -788,7 +867,9 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Output(options.lin_wn_input, 'disabled'),
         Output(options.ang_wn_input, 'disabled'),
         Output(options.fc_input, 'disabled'),
-        Output(options.rm_input, 'disabled')
+        Output(options.rm_input, 'disabled'),
+        Output(plot_div.error_alert, 'is_open'),
+        Output(plot_div.error_alert, 'children')
     ]
     inputs = [
         Input(options.lin_wn_input, 'value'),
@@ -798,7 +879,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Input(options.lin_wn_check, 'value'),
         Input(options.ang_wn_check, 'value'),
         Input(options.fc_check, 'value'),
-        Input(options.rm_check, 'value')
+        Input(options.rm_check, 'value'),
     ]
 
     callback(outputs, inputs)(update_inputs)
@@ -814,14 +895,55 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
     )(calc_data)
 
     # Plot data
+
+    inputs = [
+        Input(plot_div.store, 'data'),
+        Input(options.tog_pe_check, 'value'),
+        Input(options.tog_wf_check, 'value'),
+        Input(options.tog_state_check, 'value'),
+        Input(options.pe_colour_input, 'value'),
+        Input(options.wf_pos_colour_input, 'value'),
+        Input(options.wf_neg_colour_input, 'value'),
+        Input(options.state_colour_input, 'value'),
+        Input(options.pe_linewidth_input, 'value'),
+        Input(options.wf_linewidth_input, 'value'),
+        Input(options.state_linewidth_input, 'value'),
+        Input(options.wf_scale_input, 'value'),
+        Input(options.wf_ftype_select, 'value')
+    ]
+
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
-        Input(plot_div.store, 'data'),
+        inputs,
         prevent_initial_call='initial_duplicate'
     )(update_plot)
 
-    # Open with WF, PE, and state modals
+    # Open WF, PE, and state modals
+    callback(
+        Output(options.wf_modal, 'is_open'),
+        [
+            Input(options.open_wf_modal_btn, 'n_clicks')
+        ],
+        prevent_initial_call=True
+    )(lambda x: True)
 
+    # Open WF, PE, and state modals
+    callback(
+        Output(options.pe_modal, 'is_open'),
+        [
+            Input(options.open_pe_modal_btn, 'n_clicks')
+        ],
+        prevent_initial_call=True
+    )(lambda x: True)
+
+    # Open WF, PE, and state modals
+    callback(
+        Output(options.state_modal, 'is_open'),
+        [
+            Input(options.open_state_modal_btn, 'n_clicks')
+        ],
+        prevent_initial_call=True
+    )(lambda x: True)
 
     # Interaction with WF, PE, and state modals
 
@@ -858,6 +980,9 @@ def update_inputs(lin_wn: float, ang_wn: float, fc: float, mu: float,
     Updates input values using checkboxes and current values
     '''
 
+    if None in [lin_wn, ang_wn, fc, mu]:
+        return no_update
+
     # Set all text entries as uneditable
     lin_wn_disable = True
     ang_wn_disable = True
@@ -876,6 +1001,10 @@ def update_inputs(lin_wn: float, ang_wn: float, fc: float, mu: float,
 
     if sum([ang_wn_fix, lin_wn_fix, fc_fix, mu_fix]) != 2 or ang_wn_fix and lin_wn_fix: # noqa
 
+        if ang_wn_fix and lin_wn_fix:
+            err_msg = 'Cannot have both angular and linear wavenumber as variables' # noqa
+        else:
+            err_msg = 'Only two variables can be independent!'
         rounded = [
             round(lin_wn, 2), round(ang_wn, 2), round(fc, 2), round(mu, 4)
         ]
@@ -884,7 +1013,7 @@ def update_inputs(lin_wn: float, ang_wn: float, fc: float, mu: float,
             lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
         ]
 
-        return {'fc': None, 'mu': None}, *rounded, *on_off
+        return {'fc': None, 'mu': None}, *rounded, *on_off, True, err_msg
 
     #  Calculate missing parameters
     if ang_wn_fix and not lin_wn_fix:
@@ -913,7 +1042,7 @@ def update_inputs(lin_wn: float, ang_wn: float, fc: float, mu: float,
         lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
     ]
 
-    return {'fc': fc, 'mu': mu * 1.6605E-27, 'ang_wn': ang_wn, 'lin_wn': lin_wn}, *rounded, *on_off # noqa
+    return {'fc': fc, 'mu': mu * 1.6605E-27, 'ang_wn': ang_wn, 'lin_wn': lin_wn}, *rounded, *on_off, False, '' # noqa
 
 
 def calc_data(vars: dict[str, float], max_n: int):
@@ -930,7 +1059,7 @@ def calc_data(vars: dict[str, float], max_n: int):
 
     Returns
     -------
-    data : dict[str: list]
+    data: dict[str: list]
         Keys and values:\n
         'x': list[float] Displacement (x) in metres
         'wf': list[list[float]] Harmonic wavefunction(s) at x
@@ -945,7 +1074,7 @@ def calc_data(vars: dict[str, float], max_n: int):
         max_n = 5
 
     # Convert wavenumbers to frequency in units of s^-1
-    state_e, harmonic_e, displacement, _ = calc_harmonic_energies(
+    state_e, potential_e, displacement, _ = harmonic_energies(
         vars['fc'],
         vars['mu'],
         max_n
@@ -954,7 +1083,7 @@ def calc_data(vars: dict[str, float], max_n: int):
     # Convert to cm-1
     # 1 cm-1 = 1.986 30 x 10-23 J
     state_e /= 1.98630E-23
-    harmonic_e /= 1.98630E-23
+    potential_e /= 1.98630E-23
 
     wf = [
         harmonic_wf(n, displacement, vars['mu'], vars['ang_wn'] * LIGHT)
@@ -965,22 +1094,23 @@ def calc_data(vars: dict[str, float], max_n: int):
         'x': (displacement * 10E10).tolist(),
         'wf': wf,
         'states': state_e.tolist(),
-        'potential': harmonic_e.tolist()
+        'potential': potential_e.tolist()
     }
 
     return final
 
-# , toggle_pe: bool, toggle_wf: bool,
-#                 toggle_states: bool, colour_pbe: str, colour_wf: str,
-#                 colour_states: str
 
-def update_plot(data: dict[str, list]) -> Patch:
+def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
+                toggle_states: bool, colour_pe: str, pcolour_wf: str,
+                ncolour_wf: str, colour_states: str, lw_pe: float,
+                lw_wf: float, lw_states: float, wf_scale: float,
+                wf_prob: str) -> Patch:
     '''
     Plots harmonic state energies and wavefunctions, and harmonic potential
 
     Parameters
     ----------
-    data : dict[str: list]
+    data: dict[str: list]
         Keys and values:\n
         'x': list[float] Displacement (x) in metres
         'wf': list[list[float]] Harmonic wavefunction(s) at x
@@ -991,7 +1121,9 @@ def update_plot(data: dict[str, list]) -> Patch:
     Patch
         Patch graph figure
     '''
-    toggle_pe, toggle_wf, toggle_states = True, True, True
+
+    if None in [lw_wf, lw_pe, lw_states, wf_scale]:
+        return no_update
 
     fig = Patch()
 
@@ -1003,48 +1135,113 @@ def update_plot(data: dict[str, list]) -> Patch:
         traces.append(
             go.Scatter(
                 x=data['x'],
-                y=data['potential']
+                y=data['potential'],
+                line={
+                    'color': colour_pe,
+                    'width': lw_pe
+                },
+                mode='lines',
+                hoverinfo='skip'
             )
         )
+
+    # Plot harmonic wavefunction and states
 
     _states = [
         [da, da]
         for da in data['states']
     ]
 
-    if toggle_states:
-        _x = [
-            min(data['x']), max(data['x'])
-        ]
-        # States
-        for state in _states:
+    _x = [
+        min(data['x']), max(data['x'])
+    ]
+    x_vals = np.array(data['x'])
+
+    for nit, (wf, state) in enumerate(zip(np.asarray(data['wf']), _states)):
+        traces.append(
+            go.Scatter(
+                x=_x,
+                y=state,
+                line={
+                    'color': 'rgba(0,0,0,0)'
+                },
+                mode='lines',
+                hoverinfo='skip'
+            )
+        )
+        if toggle_wf:
+            if wf_prob == 'psi2':
+                wf *= wf
+            # Find split point for +ve and negative
+            wf_posi = np.where(wf >= 0.)[0]
+            wf_negi = np.where(wf < 0.)[0]
+
+            # Plot positive values
+            # Set negative values to 0 to avoid plotly fill bug
+            poswf = copy.copy(wf)
+            poswf[wf_negi] = 0.
+            traces.append(
+                go.Scatter(
+                    x=x_vals,
+                    y=poswf * wf_scale + state[0],
+                    line={
+                        'color': pcolour_wf,
+                        'width': lw_wf
+                    },
+                    connectgaps=False,
+                    fill='tonexty',
+                    hoverinfo='skip'
+                )
+            )
+            # Add invisible traces for next tonexty fill
             traces.append(
                 go.Scatter(
                     x=_x,
                     y=state,
                     line={
-                        'color': 'black'
+                        'color': 'rgba(0,0,0,0)'
                     },
-                    mode='lines'
+                    mode='lines',
+                    hoverinfo='skip'
                 )
             )
-
-    # Plot harmonic wavefunction
-    if toggle_wf:
-
-        # WF
-        for wf, state in zip(data['wf'], _states):
+            # Plot negative values
+            # Set positive values to 0 to avoid plotly fill bug
+            negwf = copy.copy(wf)
+            negwf[wf_posi] = 0.
             traces.append(
                 go.Scatter(
-                    x=data['x'],
-                    y=[val * 0.01 + state[0] for val in wf]
+                    x=x_vals,
+                    y=negwf * wf_scale + state[0],
+                    line={
+                        'color': ncolour_wf,
+                        'width': lw_wf
+                    },
+                    connectgaps=False,
+                    fill='tonexty',
+                    hoverinfo='skip'
                 )
             )
-
+        # Plot states on top to cover red and blue zero lines
+        if toggle_states:
+            traces.append(
+                go.Scatter(
+                    x=x_vals,
+                    y=[state[0]] * len(x_vals),
+                    line={
+                        'color': colour_states,
+                        'width': lw_states
+                    },
+                    mode='lines',
+                    hoverinfo='text',
+                    hovertext=f'n = {nit:d}, E={state[0]:.0f} cm⁻¹'
+                )
+            )
     # Find nmax + 1 th state and use this energy as y limit
-    upen = 2*data['states'][-1] - data['states'][-2]
+    upen = 2 * data['states'][-1] - data['states'][-2]
     lowen = data['states'][0] - (data['states'][-1] - data['states'][-2]) / 2
 
+    fig['layout']['yaxis']['autorange'] = False
     fig['layout']['yaxis']['range'] = [lowen, upen]
 
     fig['data'] = traces
@@ -1061,7 +1258,7 @@ def download_data(_nc: int, data: dict) -> dict:
     ----------
     _nc: int
         Number of clicks on download button. Used only to trigger callback
-    data : dict[str: list]
+    data: dict[str: list]
         Keys and values:\n
         'x': list[float] Displacement (x) in metres
         'wf': list[list[float]] Harmonic wavefunction(s) at x

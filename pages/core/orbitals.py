@@ -17,11 +17,13 @@
 '''
 import numpy as np
 from dash import dcc, html, Input, Output, callback, no_update, \
-    Patch
+    Patch, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from skimage import measure
 import pandas as pd
+import uuid
+
 from . import common as com
 from . import radial as rc
 
@@ -519,30 +521,27 @@ class PlotDiv(com.Div):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
-        self.viewer = html.Div(
-            id=self.prefix('mol_div'),
-            className='molecule_div'
-        )
-
         self.plot = dcc.Graph(
-            id=self.prefix('plotly_iso'),
+            id=str(uuid.uuid1()),
             className='plot_area',
             mathjax=True,
             figure={
                 'data': [],
                 'layout': {
-                    'scene': com.BASIC_SCENE
+                    'scene': com.BASIC_SCENE,
+                    'margin': dict(r=20, b=10, l=10, t=10),
+                    'showlegend': False
                 }
             },
             config=com.BASIC_CONFIG
         )
 
         self.orb_store = dcc.Store(
-            id=self.prefix('orbital_store'),
+            id=str(uuid.uuid1()),
             data=[]
         )
         self.spacing_store = dcc.Store(
-            id=self.prefix('spacing_store'),
+            id=str(uuid.uuid1()),
             data=[]
         )
         self.make_div_contents()
@@ -574,7 +573,7 @@ class OptionsDiv(com.Div):
         super().__init__(prefix=prefix, **kwargs)
 
         self.orb_select = dbc.Select(
-            id=self.prefix('orb_name_3d'),
+            id=str(uuid.uuid1()),
             style={
                 'textAlign': 'center',
                 'width': '50%',
@@ -618,7 +617,7 @@ class OptionsDiv(com.Div):
         )
 
         self.cutaway_select = dbc.Select(
-            id=self.prefix('cutaway_in'),
+            id=str(uuid.uuid1()),
             style={
                 'textAlign': 'center',
                 'verticalAlign': 'middle',
@@ -652,7 +651,7 @@ class OptionsDiv(com.Div):
         )
 
         self.isoval_input = dbc.Input(
-            id=self.prefix('isoval'),
+            id=str(uuid.uuid1()),
             type='number',
             value=0.01,
             style={
@@ -669,8 +668,12 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.update_isoval_btn = dbc.Button(
+            children='Suggest Isovalue'
+        )
+
         self.colour_input_a = dbc.Input(
-            id=self.prefix('colour_a'),
+            id=str(uuid.uuid1()),
             type='color',
             value='#491688',
             style={
@@ -679,7 +682,7 @@ class OptionsDiv(com.Div):
         )
 
         self.colour_input_b = dbc.Input(
-            id=self.prefix('colour_b'),
+            id=str(uuid.uuid1()),
             type='color',
             value='#ffeb0a',
             style={
@@ -689,7 +692,7 @@ class OptionsDiv(com.Div):
 
         self.colours_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Colours'),
+                dbc.InputGroupText('Orbital colours'),
                 self.colour_input_a,
                 self.colour_input_b
             ]
@@ -697,7 +700,7 @@ class OptionsDiv(com.Div):
 
         self.axes_check = dbc.Checkbox(
             value=False,
-            id=self.prefix('axes')
+            id=str(uuid.uuid1()),
         )
 
         self.axes_ig = self.make_input_group(
@@ -706,6 +709,42 @@ class OptionsDiv(com.Div):
                 dbc.InputGroupText(
                     self.axes_check
                 )
+            ]
+        )
+
+        self.x_axis_col_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            type='color',
+            value='#ff0000',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.y_axis_col_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            type='color',
+            value='#00ff00',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.z_axis_col_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            type='color',
+            value='#0000ff',
+            style={
+                'height': '40px'
+            }
+        )
+
+        self.axes_colour_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Axis colours'),
+                self.x_axis_col_input,
+                self.y_axis_col_input,
+                self.z_axis_col_input
             ]
         )
 
@@ -749,7 +788,7 @@ class OptionsDiv(com.Div):
                     )
                 ]
             ),
-
+            dbc.Row(self.axes_colour_ig),
             dbc.Row(
                 children=[
                     dbc.Col(
@@ -765,6 +804,11 @@ class OptionsDiv(com.Div):
                 dbc.Col(
                     self.isoval_ig
                 ),
+            ]),
+            dbc.Row([
+                dbc.Col(
+                    self.update_isoval_btn
+                )
             ])
         ]
 
@@ -781,9 +825,16 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
         ],
         [
             Input(options_div.orb_select, 'value')
-        ],
-        prevent_initial_callback=True
+        ]
     )(calc_wav)
+
+    # Suggest new isovalue from list of "good" values
+    callback(
+        Output(options_div.isoval_input, 'value'),
+        Input(options_div.update_isoval_btn, 'n_clicks'),
+        State(options_div.orb_select, 'value'),
+        prevent_initial_call=True
+    )(suggest_new_isoval)
 
     callback(
         [
@@ -791,15 +842,68 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
         ],
         [
             Input(plot_div.orb_store, 'data'),
-            Input(plot_div.spacing_store, 'data'),
             Input(options_div.cutaway_select, 'value'),
             Input(options_div.axes_check, 'value'),
+            Input(options_div.x_axis_col_input, 'value'),
+            Input(options_div.y_axis_col_input, 'value'),
+            Input(options_div.z_axis_col_input, 'value'),
             Input(options_div.isoval_input, 'value'),
             Input(options_div.colour_input_a, 'value'),
             Input(options_div.colour_input_b, 'value')
-        ],
-        prevent_initial_callback=True
+        ]
     )(make_plotly_iso)
+
+
+def suggest_new_isoval(_nc: int, orb_name: str) -> float:
+    '''
+    Suggests "nice" isovalues for a given orbital
+
+    Parameters
+    ----------
+    orb_name: str
+        Orbital name
+
+    Returns
+    -------
+    float
+        "Nice" isovalue
+    '''
+
+    suggest = {
+        '1s': 0.1,
+        '2s': 0.01,
+        '3s': 0.001,
+        '4s': 0.001,
+        '5s': 0.001,
+        '6s': 0.0005,
+        '2p': 0.01,
+        '3p': 0.001,
+        '4p': 0.001,
+        '5p': 0.001,
+        '6p': 0.0006,
+        '3dz2': 0.01,
+        '4dz2': 0.01,
+        '5dz2': 0.001,
+        '6dz2': 0.001,
+        '3dxy': 0.01,
+        '4dxy': 0.01,
+        '5dxy': 0.01,
+        '6dxy': 0.01,
+        '4fz3': 0.0006,
+        '5fz3': 0.0006,
+        '6fz3': 0.0004,
+        '4fxyz': 0.0006,
+        '5fxyz': 0.0006,
+        '6fxyz': 0.0004,
+        '4fyz2': 0.0006,
+        '5fyz2': 0.0006,
+        '6fyz2': 0.0006,
+        'sp': 0.01,
+        'sp2': 0.01,
+        'sp3': 0.01
+    }
+
+    return suggest[orb_name]
 
 
 def calc_wav(orbital_name):
@@ -833,7 +937,6 @@ def calc_wav(orbital_name):
             n
         )
     else:
-        print(orbital_name)
         wav, spacing = orb_func_dict[orbital_name]()
 
     # Lists are Json serialisable
@@ -842,8 +945,8 @@ def calc_wav(orbital_name):
     return wav, spacing
 
 
-def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
-                    colour_2):
+def make_plotly_iso(wav, cutaway, axes_check, xax_col, yax_col,
+                    zax_col, isoval, colour_1, colour_2):
     '''
     Finds isosurface for given wavefunction data using marching cubes,
     then smooths the surface and plots as mesh
@@ -868,8 +971,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     try:
         verts1, faces1, _, _ = measure.marching_cubes(
             np.array(wav),
-            isoval,
-            spacing=spacing
+            isoval
         )
     except ValueError:
         return no_update
@@ -880,8 +982,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     try:
         verts2, faces2, _, _ = measure.marching_cubes(
             np.array(wav),
-            -isoval,
-            spacing=spacing
+            -isoval
         )
     except ValueError:
         return no_update
@@ -928,33 +1029,33 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
     # Add axes
     if axes_check:
         trace_3 = go.Scatter3d(
-            x=[-1.2 * np.max(x1), 1.2 * np.max(x1)],
+            x=[-4. * np.max(x1), 4. * np.max(x1)],
             y=[0, 0],
             z=[0, 0],
             line={
-                'color': 'blue',
+                'color': xax_col,
                 'width': 8
             },
             mode='lines',
             name='x'
         )
         trace_4 = go.Scatter3d(
-            y=[-1.2 * np.max(y1), 1.2 * np.max(y1)],
+            y=[-4. * np.max(y1), 4. * np.max(y1)],
             x=[0, 0],
             z=[0, 0],
             line={
-                'color': 'green',
+                'color': yax_col,
                 'width': 8
             },
             mode='lines',
             name='y'
         )
         trace_5 = go.Scatter3d(
-            z=[-1.2 * np.max(z1), 1.2 * np.max(z1)],
+            z=[-4. * np.max(z1), 4. * np.max(z1)],
             x=[0, 0],
             y=[0, 0],
             line={
-                'color': 'red',
+                'color': zax_col,
                 'width': 8
             },
             mode='lines',
@@ -1004,6 +1105,7 @@ def make_plotly_iso(wav, spacing, cutaway, axes_check, isoval, colour_1,
             'x': 1., 'y': 1., 'z': 1.
         }
 
+    fig['layout']['scene']['aspectmode'] = 'data'
     return [fig]
 
 
