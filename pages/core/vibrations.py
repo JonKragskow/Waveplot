@@ -1112,7 +1112,7 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
     ----------
     data: dict[str: list]
         Keys and values:\n
-        'x': list[float] Displacement (x) in metres
+        'x': list[float] Displacement (x) in angstrom
         'wf': list[list[float]] Harmonic wavefunction(s) at x
         'states': list[float] Harmonic state energies
         'potential': list[float] Harmonic potential at x
@@ -1260,7 +1260,7 @@ def download_data(_nc: int, data: dict) -> dict:
         Number of clicks on download button. Used only to trigger callback
     data: dict[str: list]
         Keys and values:\n
-        'x': list[float] Displacement (x) in metres
+        'x': list[float] Displacement (x) in angstrom
         'wf': list[list[float]] Harmonic wavefunction(s) at x
         'states': list[float] Harmonic state energies
         'potential': list[float] Harmonic potential at x
@@ -1287,17 +1287,17 @@ def download_data(_nc: int, data: dict) -> dict:
         oc.write('{:.6f}\n'.format(se))
 
     oc.write(
-        '\nDisplacement (A), Harmonic potential (cm-1)\n'
+        '\nDisplacement (Å), Harmonic potential (cm-1)\n'
     )
     for di, se in zip(data['x'], data['potential']):
-        oc.write('{:.6f}, {:.6f}\n'.format(di * 10E10, se))
+        oc.write('{:.6f}, {:.6f}\n'.format(di, se))
 
     oc.write(
-        '\nDisplacement (A), Harmonic Wavefunction for n=0, n=1, ...\n'
+        '\nDisplacement (Å), Harmonic Wavefunction for n=0, n=1, ...\n'
     )
 
     for di, row in zip(data['x'], data['wf']):
-        oc.write('{:.8f}, '.format(di * 10E10))
+        oc.write('{:.8f}, '.format(di))
         for state_wf in row:
             oc.write('{:.8f}, '.format(state_wf))
         oc.write('\n')
