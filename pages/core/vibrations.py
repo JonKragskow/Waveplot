@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import numpy as np
+from numpy.typing import NDArray, ArrayLike
 from functools import lru_cache
 from dash import dcc, html, Input, Output, State, callback, no_update, Patch
 import dash_bootstrap_components as dbc
@@ -24,19 +25,59 @@ from scipy.special import factorial
 import scipy.constants as con
 import io
 import plotly.graph_objects as go
-from numpy.typing import NDArray, ArrayLike
+from plotly.subplots import make_subplots
+import copy
 
+
+# c in cm s-1
 LIGHT = con.speed_of_light * 100
+HBAR = con.Planck
+
+VIB_LAYOUT = copy.copy(com.BASIC_LAYOUT)
+VIB_LAYOUT.xaxis.title = {
+    'text': 'x (Å)',
+    'font': {
+        'family': 'Arial',
+        'size': 14,
+        'color': 'black'
+    }
+}
+VIB_LAYOUT.yaxis.title = {
+    'text': 'Energy (cm<sup>-1</sup>)',
+    'font': {
+        'family': 'Arial',
+        'size': 14,
+        'color': 'black'
+    }
+}
+
+VIB_LAYOUT.showlegend = False
+VIB_LAYOUT.yaxis.tickformat = '.2f'
 
 
-def hermite(n: int, x: ArrayLike):
+def hermite(n: int, x: ArrayLike) -> NDArray:
+    '''
+    Computes nth hermite polynomial values for a given set of x values
+
+    Parameters
+    ----------
+    n: int
+        Order of polynomial
+    x: array_like
+        Values of x used in H^n (x)
+
+    Returns
+    -------
+    ndarray of floats
+        Hermite polynomial of nth order evaluated at x
+    '''
 
     if n == 0:
         return x * 0 + 1
     elif n == 1:
         return 2 * x
     else:
-        return 2 * x * hermite(n - 1, x) - 2 * n * hermite(n - 2, x)
+        return 2 * x * hermite(n - 1, x) - 2 * (n-1) * hermite(n - 2, x)
 
 
 def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
@@ -50,7 +91,7 @@ def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
     k : float
         Force constant (N/m)
     m : float
-        Reduced mass (g mol-1)
+        Reduced mass (kg)
     max_n : int
         maximum value of n used for Harmonic states
     Returns
@@ -65,24 +106,21 @@ def calc_harmonic_energies(k: float, m: float, max_n: int) -> tuple[
         Zero point displacement in metres
     '''
 
-    # Convert mass to kg
-    m *= 1.6605E-27  # kg (g mol^-1)
-
     # Angular frequency
-    omega = np.sqrt(k / m)  # s^-1
+    omega = np.sqrt(k / m) / (2*np.pi)  # rad s^-1
 
-    hbar = 1.0545718E-34  # m2 kg / s
-    state_E = np.array([hbar * omega * (n + 0.5) for n in range(0, max_n + 1)]) # noqa
+    # Harmonic state energies
+    state_E = np.array([HBAR * omega * (n + 0.5) for n in range(0, max_n + 1)])
 
     # Harmonic potential
     # E = 1/2 kx^2
-    max_x = np.sqrt((max_n + 0.5) * 2 * hbar * omega / k)
+    max_x = np.sqrt((max_n + 0.5) * 2 * HBAR * omega / k)
 
-    displacement = np.linspace(-max_x, max_x, 100)  # m
+    displacement = np.linspace(-max_x*1.2, max_x*1.2, 100)  # m
     harmonic_E = 0.5 * k * displacement**2  # J
 
     # Find zero point displacement
-    zpd = np.sqrt(hbar * omega / k)  # m
+    zpd = np.sqrt(HBAR * omega / k)  # m
 
     return state_E, harmonic_E, displacement, zpd
 
@@ -105,6 +143,7 @@ def calculate_mu(w, k):
     '''
 
     mu = k / w**2
+    # Convert mass to kg
     mu /= 1.6605E-27
 
     return mu
@@ -127,13 +166,14 @@ def calculate_k(w, mu):
         Force constant k (N m^-1)
     '''
 
+    # Convert mass to kg
     mu *= 1.6605E-27
     k = mu * w**2
 
     return k
 
 
-def harmonic_wf(n: int, x: ArrayLike):
+def harmonic_wf(n: int, x: ArrayLike, mu: float, ang: float):
     '''
     Calculates normalised harmonic wavefunction for nth state over x
 
@@ -142,7 +182,7 @@ def harmonic_wf(n: int, x: ArrayLike):
     n : int
         Harmonic oscillator quantum number
     x : array_like
-        Displacement
+        Displacement (m)
 
     Returns
     -------
@@ -152,11 +192,17 @@ def harmonic_wf(n: int, x: ArrayLike):
 
     x = np.asarray(x)
 
-    h = hermite(n, x)
+    beta = np.sqrt(mu*ang / HBAR)
 
-    N = 1. / (2**n * factorial(n) * np.sqrt(np.pi)**0.5)
+    # Compute hermite polynomial
+    h = hermite(n, beta * x)
 
-    wf = h * N * np.exp(-x**2 * 0.5)
+    # Normalisation factor
+    N = 1. / np.sqrt(2**n * factorial(n)) * ((mu * ang)/(np.pi * HBAR))**0.25
+
+    # Wavefunction
+    wf = h * N * np.exp(-beta**2 * x**2 * 0.5)
+    print(n, h)
 
     return wf
 
@@ -182,7 +228,7 @@ class OptionsDiv(com.Div):
         )
         self.lin_wn_ig = self.make_input_group(
             [
-                dbc.InputGroupText(u'\u03BD'),
+                dbc.InputGroupText(u'v\u0334'),
                 self.lin_wn_input,
                 dbc.InputGroupText(r'cm⁻¹'),
                 dbc.InputGroupText(
@@ -207,7 +253,7 @@ class OptionsDiv(com.Div):
         )
         self.ang_wn_ig = self.make_input_group(
             [
-                dbc.InputGroupText(u'ω'),
+                dbc.InputGroupText(u'ῶ'),
                 self.ang_wn_input,
                 dbc.InputGroupText(r'cm⁻¹'),
                 dbc.InputGroupText(
@@ -755,34 +801,49 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
     callback(outputs, inputs)(update_inputs)
 
     # Calculate data and store
-    outputs = [
-        Output(plot_div.store, 'data'),
-    ]
     inputs = [
         Input(options.var_store, 'data'),
         Input(options.max_n_input, 'value')
     ]
-    callback(outputs, inputs)(calc_data)
+    callback(
+        Output(plot_div.store, 'data'),
+        inputs
+    )(calc_data)
 
     # Plot data
-    outputs = [
-        Output(plot_div.plot, 'figure')
-    ]
-    inputs = [
-        Input(plot_div.store, 'data')
-    ]
-    callback(outputs, inputs, prevent_initial_callback=True)(update_plot)
+    callback(
+        Output(plot_div.plot, 'figure', allow_duplicate=True),
+        Input(plot_div.store, 'data'),
+        prevent_initial_call='initial_duplicate'
+    )(update_plot)
 
     # Open with WF, PE, and state modals
 
 
     # Interaction with WF, PE, and state modals
 
-
     # Save data to file
+    inputs = [
+        Input(options.download_button, 'n_clicks')
+    ]
+    states = [
+        State(plot_div.store, 'data')
+    ]
+    callback(
+        Output(options.download_trigger, 'data'),
+        inputs, states, prevent_initial_call=True
+    )(download_data)
 
-
-    # Uodate plot save format
+    # Update plot save format
+    outputs = [
+        Output(plot_div.plot, 'figure', allow_duplicate=True),
+        Output(plot_div.plot, 'config')
+    ]
+    callback(
+        outputs,
+        Input(options.image_format_select, 'value'),
+        prevent_initial_call=True
+    )(update_save_format)
 
     return
 
@@ -849,12 +910,29 @@ def update_inputs(lin_wn: float, ang_wn: float, fc: float, mu: float,
         lin_wn_disable, ang_wn_disable, fc_disable, mu_disable
     ]
 
-    return {'fc': fc, 'mu': mu}, *rounded, *on_off
+    return {'fc': fc, 'mu': mu * 1.6605E-27, 'ang_wn': ang_wn, 'lin_wn': lin_wn}, *rounded, *on_off # noqa
 
 
-def calc_data(vars, max_n):
+def calc_data(vars: dict[str, float], max_n: int):
     '''
     Calculates harmonic potential, states, and wavefunctions
+
+    Parameters
+    ----------
+    vars: dict[str: float]
+        Input data for harmonic oscillator
+        keys are 'mu', 'fc', 'ang_wn', 'lin_wn'
+    max_n: int
+        Maximum number of harmonic states to compute
+
+    Returns
+    -------
+    data : dict[str: list]
+        Keys and values:\n
+        'x': list[float] Displacement (x) in metres
+        'wf': list[list[float]] Harmonic wavefunction(s) at x
+        'states': list[float] Harmonic state energies
+        'potential': list[float] Harmonic potential at x
     '''
 
     if None in vars.values():
@@ -876,91 +954,124 @@ def calc_data(vars, max_n):
     harmonic_e /= 1.98630E-23
 
     wf = [
-        harmonic_wf(n, displacement * 10E10)
-        for n in range(max_n)
+        harmonic_wf(n, displacement, vars['mu'], vars['ang_wn'])
+        for n in range(max_n + 1)
     ]
 
-    final = [
-        wf,
-        state_e.tolist(),
-        harmonic_e.tolist(),
-        (displacement * 10E10).tolist()
-    ]
+    final = {
+        'x': (displacement * 10E10).tolist(),
+        'wf': wf,
+        'states': state_e.tolist(),
+        'potential': harmonic_e.tolist()
+    }
 
-    return [final]
+    return final
 
+# , toggle_pe: bool, toggle_wf: bool,
+#                 toggle_states: bool, colour_pbe: str, colour_wf: str,
+#                 colour_states: str
 
-def update_plot(data):
+def update_plot(data: dict[str, list]) -> Patch:
+    '''
+    Plots harmonic state energies and wavefunctions, and harmonic potential
+
+    Parameters
+    ----------
+    data : dict[str: list]
+        Keys and values:\n
+        'x': list[float] Displacement (x) in metres
+        'wf': list[list[float]] Harmonic wavefunction(s) at x
+        'states': list[float] Harmonic state energies
+        'potential': list[float] Harmonic potential at x
+    Returns
+    -------
+    Patch
+        Patch graph figure
+    '''
+    toggle_pe, toggle_wf, toggle_states = False, True, False
 
     fig = Patch()
 
     traces = []
 
-    # Harmonic potential
-    traces.append(
-        go.Scatter(
-            x=data[-1],
-            y=data[2]
-        )
-    )
+    if toggle_pe:
 
-    _x = [
-        min(data[-1]), max(data[-1])
-    ]
+        # Harmonic potential
+        traces.append(
+            go.Scatter(
+                x=data['x'],
+                y=data['potential']
+            )
+        )
+
     _states = [
         [da, da]
-        for da in data[1]
+        for da in data['states']
     ]
 
-    # States
-    for state in _states:
-        traces.append(
-            go.Scatter(
-                x=_x,
-                y=state,
-                line={
-                    'color': 'black'
-                },
-                mode='lines'
+    if toggle_states:
+        _x = [
+            min(data['x']), max(data['x'])
+        ]
+        # States
+        for state in _states:
+            traces.append(
+                go.Scatter(
+                    x=_x,
+                    y=state,
+                    line={
+                        'color': 'black'
+                    },
+                    mode='lines'
+                )
             )
-        )
 
-    # WF
-    # TODO subplots
-    for wf, state in zip(data[0], _states):
-        traces.append(
-            go.Scatter(
-                x=data[-1],
-                y=[val + state[0] for val in wf]
+    # Plot harmonic wavefunction
+    if toggle_wf:
+
+        # WF
+        for n, (wf, state) in enumerate(zip(data['wf'], _states)):
+            traces.append(
+                go.Scatter(
+                    x=data['x'],
+                    y=[val + state[0] for val in wf]
+                )
             )
-        )
+
+    # Find nmax + 1 th state and use this energy as y limit
+    upen = 2*data['states'][-1] - data['states'][-2]
+    lowen = data['states'][0] - (data['states'][-1] - data['states'][-2]) / 2
+
+    fig['layout']['yaxis']['range'] = [lowen, upen]
 
     fig['data'] = traces
 
-    return [fig]
+    return fig
 
 
-def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
+def download_data(_nc: int, data: dict) -> dict:
     '''
     Creates output file for harmonic potential energies, state energies,
     and wavefunctions
 
     Parameters
     ----------
-    displacement : np.ndarray
-        Displacements used for classical oscillator in metres
-    state_e : np.ndarray
-        Harmonic state energies for quantum oscillator in wavenumbers
-    harmonic_e : np.ndarray
-        Harmonic energies for classical oscillator in wavenumbers
-    harmonic_wf : np.ndarray
-        Harmonic wavefunction for each state as a function of displacement
-        2D array = [n_states, displacement.size]
+    _nc: int
+        Number of clicks on download button. Used only to trigger callback
+    data : dict[str: list]
+        Keys and values:\n
+        'x': list[float] Displacement (x) in metres
+        'wf': list[list[float]] Harmonic wavefunction(s) at x
+        'states': list[float] Harmonic state energies
+        'potential': list[float] Harmonic potential at x
     Returns
     -------
-    str
-        string containing output file
+    dict
+        Output dictionary used by dcc.Download
     '''
+
+    if not len(data):
+        return no_update
 
     oc = io.StringIO()
 
@@ -972,79 +1083,60 @@ def create_output_file(displacement, state_e, harmonic_e, harmonic_wf):
     oc.write(header)
 
     oc.write('\nState energies (cm-1)\n')
-    for se in state_e:
+    for se in data['states']:
         oc.write('{:.6f}\n'.format(se))
 
     oc.write(
         '\nDisplacement (A), Harmonic potential (cm-1)\n'
     )
-    for di, se in zip(displacement * 10E10, harmonic_e):
-        oc.write('{:.6f} {:.6f}\n'.format(di, se))
+    for di, se in zip(data['x'], data['potential']):
+        oc.write('{:.6f}, {:.6f}\n'.format(di * 10E10, se))
 
     oc.write(
         '\nDisplacement (A), Harmonic Wavefunction for n=0, n=1, ...\n'
     )
 
-    # transpose so rows are displacement
-    harmonic_wf = harmonic_wf.T
-
-    for di, row in zip(displacement * 10E10, harmonic_wf):
-        oc.write('{:.8f} '.format(di))
+    for di, row in zip(data['x'], data['wf']):
+        oc.write('{:.8f}, '.format(di * 10E10))
         for state_wf in row:
-            oc.write('{:.8f} '.format(state_wf))
+            oc.write('{:.8f}, '.format(state_wf))
         oc.write('\n')
 
-    return oc.getvalue()
+    output = {
+        'content': oc.getvalue(),
+        'filename': 'waveplot_harmonic_data.dat'
+    }
 
-# @callback(
-#     Output(id('download_data_trigger'), 'data'),
-#     [
-#         Input(id('download_data'), 'n_clicks'),
-#         Input(id('data_store'), 'data')
-#     ],
-#     prevent_initial_call=True,
-# )
-# def func(n_clicks, data_str):
-#     if callback_context.triggered_id == id('data_store'):
-#         return
-#     else:
-#         return dict(content=data_str, filename='waveplot_vibrational_data.dat')
+    return output
 
-# @callback(
-#     [
-#         Output(id('main_plot'), 'figure'),
-#         Output(id('main_plot'), 'config'),
-#         Output(id('data_store'), 'data'),
-#         Output(id('lin_wn'), 'value'),
-#         Output(id('ang_wn'), 'value'),
-#         Output(id('fc'), 'value'),
-#         Output(id('mu'), 'value'),
-#         Output(id('lin_wn'), 'disabled'),
-#         Output(id('ang_wn'), 'disabled'),
-#         Output(id('fc'), 'disabled'),
-#         Output(id('mu'), 'disabled'),
-#     ],
-#     [
-#         Input(id('lin_wn'), 'value'),
-#         Input(id('ang_wn'), 'value'),
-#         Input(id('fc'), 'value'),
-#         Input(id('mu'), 'value'),
-#         Input(id('max_n'), 'value'),
-#         Input(id('lin_wn_fix'), 'value'),
-#         Input(id('ang_wn_fix'), 'value'),
-#         Input(id('fc_fix'), 'value'),
-#         Input(id('mu_fix'), 'value'),
-#         Input(id('wf_scale'), 'value'),
-#         Input(id('text_size'), 'value'),
-#         Input(id('wf_linewidth'), 'value'),
-#         Input(id('pe_linewidth'), 'value'),
-#         Input(id('state_linewidth'), 'value'),
-#         Input(id('wf_colour'), 'value'),
-#         Input(id('pe_colour'), 'value'),
-#         Input(id('state_colour'), 'value'),
-#         Input(id('toggle_wf'), 'value'),
-#         Input(id('toggle_pe'), 'value'),
-#         Input(id('toggle_states'), 'value')
-#     ]
-# )
 
+def update_save_format(fmt: str):
+    '''
+    Updates save format of plot.
+
+    Parameters
+    ----------
+    fmt: str {png, svg, jpeg}
+        Image format to use
+
+    Returns
+    -------
+    Patch
+        Patched graph figure
+    Patch
+        Patched graph config
+    '''
+
+    # Figures
+    # resetting their layout attr redraws the plot
+    # which is necessary because editing the config attr (below) does not...
+    fig = Patch()
+    fig['layout'] = VIB_LAYOUT
+
+    # Config
+    config = Patch()
+
+    # Update plot format in config dict
+    config['toImageButtonOptions']['format'] = fmt
+
+    return fig, config

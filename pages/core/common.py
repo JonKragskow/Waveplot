@@ -26,6 +26,7 @@ BASIC_LAYOUT = go.Layout(
         'minor_ticks': 'outside',
         'tickformat': 'digit'
     },
+    yaxis2={'title': ''},
     showlegend=True,
     margin=dict(l=90, r=30, t=30, b=60),
     legend={
@@ -153,7 +154,7 @@ class PlotDiv(Div):
 
         self.store = dcc.Store(
             id=self.prefix('store'),
-            data=[]
+            data={}
         )
 
         self.make_div_contents()

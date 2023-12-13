@@ -713,7 +713,30 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     return
 
 
-def compute_radials(func, orbs, low_x, up_x, unit):
+def compute_radials(func: str, orbs: list[str], low_x: float, up_x: float,
+                    unit: str) -> NDArray:
+    '''
+    Computes radial wavefunction or radial distribution function
+
+    Parameters
+    ----------
+    func : str {'Radial Wavefunction', 'Radial Distribution Function'}
+        Name of function
+    orbs: list[str]
+        Orbitals to include
+    low_x: float
+        Lower x value in either Angstrom or Bohr radii (depends on `unit`)
+    up_x: float
+        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
+    unit: str {'Angstrom', 'Bohr Radii'}
+        Distance unit
+
+    Returns
+    -------
+    ndarray of floats
+        First column is x, remaining columns are orbital data with\n
+        same order as `orbs`
+    '''
 
     unit_conv = {
         'bohr': 1.,
@@ -742,7 +765,31 @@ def compute_radials(func, orbs, low_x, up_x, unit):
     return full_data
 
 
-def download_data(_nc: int, func, orbs, low_x, up_x, unit):
+def download_data(_nc: int, func: str, orbs: list[str], low_x: float,
+                  up_x: float, unit: str) -> dict:
+    '''
+    Creates output file for Radial wavefunction/distribution function
+
+    Parameters
+    ----------
+    _nc: int
+        Number of clicks on download button. Used only to trigger callback
+    func : str {'Radial Wavefunction', 'Radial Distribution Function'}
+        Name of function
+    orbs: list[str]
+        Orbitals to include
+    low_x: float
+        Lower x value in either Angstrom or Bohr radii (depends on `unit`)
+    up_x: float
+        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
+    unit: str {'Angstrom', 'Bohr Radii'}
+        Distance unit
+
+    Returns
+    -------
+    dict
+        Output dictionary used by dcc.Download
+    '''
 
     if None in [low_x, up_x, unit, func, orbs]:
         return no_update
@@ -763,10 +810,41 @@ def download_data(_nc: int, func, orbs, low_x, up_x, unit):
     np.savetxt(data_str, data, header=data_header)
     output_str = data_str.getvalue()
 
-    return dict(content=output_str, filename='waveplot_orbital_data.dat')
+    output = {
+        'content': output_str.getvalue(),
+        'filename': 'waveplot_orbital_data.dat'
+    }
+
+    return output
 
 
-def plot_data(func, orbs, low_x, up_x, unit, colour_scheme):
+def plot_data(func: str, orbs: list[str], low_x: float, up_x: float,
+              unit: str, colour_scheme: str) -> tuple[Patch, Patch]:
+    '''
+    Plots Radial wavefunction/distribution function data
+
+    Parameters
+    ----------
+    func : str {'Radial Wavefunction', 'Radial Distribution Function'}
+        Name of function
+    orbs: list[str]
+        Orbitals to include
+    low_x: float
+        Lower x value in either Angstrom or Bohr radii (depends on `unit`)
+    up_x: float
+        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
+    unit: str {'Angstrom', 'Bohr Radii'}
+        Distance unit
+    colour_scheme: str ['tol', 'wong', 'standard']
+        Colour scheme to use for plots
+
+    Returns
+    -------
+    Patch
+        Patched graph figure
+    Patch
+        Patched graph config
+    '''
 
     fig = Patch()
 
@@ -844,8 +922,14 @@ def update_save_format(fmt: str, func: str, unit: str):
         Type of function being plotted
     unit: str {'bohr', 'angstrom'}
         x unit used for data
-    '''
 
+    Returns
+    -------
+    Patch
+        Patched graph figure
+    Patch
+        Patched graph config
+    '''
     # Figures
     # resetting their layout attr redraws the plot
     # which is necessary because editing the config attr (below) does not...
