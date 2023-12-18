@@ -86,7 +86,7 @@ BASIC_CONFIG = {
 }
 
 
-def dash_id(page: str):
+def dash_id(page: str) -> callable:
     def func(_id: str):
         return f"{page}_{_id}"
     return func
@@ -136,7 +136,9 @@ class Div():
 
 
 class PlotDiv(Div):
-    def __init__(self, prefix, layout, config, loading=False, store_data='', **kwargs):
+    def __init__(self, prefix: callable, layout: go.Layout, config: dict,
+                 plot_loading: bool = False, store_loading: bool = False,
+                 store_data: str | list | dict = '', **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
@@ -165,7 +167,12 @@ class PlotDiv(Div):
             data=store_data
         )
 
-        if loading:
+        if store_loading:
+            self.storewrapper = [dcc.Loading(self.store, fullscreen=False)]
+        else:
+            self.storewrapper = [self.store]
+
+        if plot_loading:
             self.plotwrapper = [dcc.Loading(self.plot)]
         else:
             self.plotwrapper = [self.plot]
@@ -184,7 +191,7 @@ class PlotDiv(Div):
                         [
                             self.error_alert,
                             *self.plotwrapper,
-                            self.store
+                            *self.storewrapper
                         ]
                     )
                 ]

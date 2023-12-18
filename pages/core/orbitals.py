@@ -17,7 +17,7 @@
 '''
 import numpy as np
 from dash import html, Input, Output, callback, no_update, \
-    Patch, State, ctx
+    Patch, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from skimage import measure
@@ -874,7 +874,7 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
 
     if None in [cutaway, isoval, colour_1, colour_2, x_col, y_col, z_col]:
         return no_update
-    
+
     wav = np.load(f'assets/{wav_name}.npy')
 
     # Calculate each ±isosurface and smooth it

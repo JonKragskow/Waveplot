@@ -64,7 +64,12 @@ def reshape(lst, shape):
     if len(shape) == 1:
         return lst
     n = reduce(mul, shape[1:])
-    return [reshape(lst[i*n:(i+1)*n], shape[1:]) for i in range(len(lst)//n)]
+
+    out = [
+        reshape(lst[i * n:(i + 1) * n], shape[1:])
+        for i in range(len(lst) // n)
+    ]
+    return out
 
 
 grid = reshape(grid, [2, 2])

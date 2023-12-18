@@ -1133,6 +1133,9 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
     ]
     x_vals = np.array(data['x'])
 
+    if wf_prob == 'psi2':
+        wf_scale *= 2
+
     for nit, (wf, state) in enumerate(zip(np.asarray(data['wf']), _states)):
         traces.append(
             go.Scatter(

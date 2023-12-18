@@ -38,7 +38,13 @@ register_page(
     description=PAGE_DESCRIPTION
 )
 
-plot_div = com.PlotDiv(ID_PREFIX, vib.VIB_LAYOUT, com.BASIC_CONFIG, loading=True)
+plot_div = com.PlotDiv(
+    ID_PREFIX,
+    layout=vib.VIB_LAYOUT,
+    config=com.BASIC_CONFIG,
+    plot_loading=True,
+    store_loading=True
+)
 
 # Make AC options tab and all callbacks
 options = vib.OptionsDiv(ID_PREFIX)

@@ -45,7 +45,7 @@ plot_div = com.PlotDiv(
     ID_PREFIX,
     layout=oc.ORB_LAYOUT,
     config=oc.ORB_CONFIG,
-    loading=True,
+    plot_loading=True,
     store_data=default_orb
 )
 
