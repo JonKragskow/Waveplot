@@ -940,7 +940,7 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
     # Add axes
     if axes_check:
         trace_3 = go.Scatter3d(
-            x=[-4. * np.max(x1), 4. * np.max(x1)],
+            x=[-2. * np.max(x1), 2. * np.max(x1)],
             y=[0, 0],
             z=[0, 0],
             line={
@@ -951,7 +951,7 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
             name='x'
         )
         trace_4 = go.Scatter3d(
-            y=[-4. * np.max(x1), 4. * np.max(x1)],
+            y=[-2. * np.max(x1), 2. * np.max(x1)],
             x=[0, 0],
             z=[0, 0],
             line={
@@ -962,7 +962,7 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
             name='y'
         )
         trace_5 = go.Scatter3d(
-            z=[-4. * np.max(x1), 4. * np.max(x1)],
+            z=[-2. * np.max(x1), 2. * np.max(x1)],
             x=[0, 0],
             y=[0, 0],
             line={
