@@ -45,6 +45,7 @@ RADIAL_LAYOUT.yaxis.title = {
         'color': 'black'
     }
 }
+RADIAL_LAYOUT.yaxis.zeroline = True
 RADIAL_LAYOUT.yaxis.tickformat = '.2f'
 
 RADIAL_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
