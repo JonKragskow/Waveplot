@@ -17,7 +17,7 @@
 '''
 import numpy as np
 from dash import html, Input, Output, callback, no_update, \
-    Patch, State
+    Patch, State, ctx
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from skimage import measure
@@ -520,12 +520,12 @@ def fyz2_3d(n: int):
 
 
 class OptionsDiv(com.Div):
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, default_orb='3dz2', **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
         self.orb_select = dbc.Select(
-            id=str(uuid.uuid1()),
+            id=self.prefix('orbital_select'),
             style={
                 'textAlign': 'center',
                 'width': '50%',
@@ -564,7 +564,7 @@ class OptionsDiv(com.Div):
                 {'label': 'sp2', 'value': 'sp2'},
                 {'label': 'sp3', 'value': 'sp3'}
             ],
-            value='3dz2',
+            value=default_orb,
             placeholder='Select an orbital'
         )
 
@@ -768,18 +768,15 @@ class OptionsDiv(com.Div):
 
 def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
 
-    # callback(
-    #     [
-    #         Output(plot_div.store, 'data'),
-    #         Output(
-    #             options_div.isoval_input,
-    #             'value',
-    #             allow_duplicate=True
-    #         )
-    #     ],
-    #     Input(options_div.orb_select, 'value'),
-    #     prevent_initial_call='initial_duplicate'
-    # )(calc_wav)
+    # Catch orbital name and update isovalue display
+    callback(
+        [
+            Output(options_div.isoval_input, 'value', allow_duplicate=True),
+            Output(plot_div.store, 'data')
+        ],
+        Input(options_div.orb_select, 'value'),
+        prevent_initial_call=True
+    )(lambda x: (DEFAULT_ISO[x], x))
 
     # Suggest new isovalue from list of "good" values
     callback(
@@ -801,8 +798,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
-            # Input(plot_div.store, 'data'),
-            Input(options_div.orb_select, 'value'),
+            Input(plot_div.store, 'data'),
             Input(options_div.cutaway_select, 'value'),
             Input(options_div.axes_check, 'value'),
             Input(options_div.isoval_input, 'value')
@@ -832,10 +828,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
 
 def calc_wav(orbital_name):
     '''
-    Calculates given wavefunction's 3d data
+    Calculates given wavefunction's 3d data and saves to assets folder
     '''
-    if not orbital_name:
-        return no_update
 
     # Get orbital n value and name
     orb_func_dict = {
@@ -863,13 +857,12 @@ def calc_wav(orbital_name):
     else:
         wav = orb_func_dict[orbital_name]()
 
-    # Lists are Json serialisable
-    wav = [wa.tolist() for wa in wav]
+    np.save(f'assets/{orbital_name}', wav)
 
-    return wav, DEFAULT_ISO[orbital_name]
+    return
 
 
-def plot_data(wav: str, cutaway: str, axes_check: bool, isoval: float,
+def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
               x_col: str, y_col: str, z_col: str, colour_1: str,
               colour_2: str):
     '''
@@ -877,15 +870,12 @@ def plot_data(wav: str, cutaway: str, axes_check: bool, isoval: float,
     then smooths the surface and plots as mesh
     '''
 
-    # if not len(wav):
-    #     return no_update
-
     fig = Patch()
 
     if None in [cutaway, isoval, colour_1, colour_2, x_col, y_col, z_col]:
         return no_update
-
-    wav = np.load('assets/3dz2.npy')
+    
+    wav = np.load(f'assets/{wav_name}.npy')
 
     # Calculate each ±isosurface and smooth it
     rounds = 3

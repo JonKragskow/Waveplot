@@ -39,15 +39,18 @@ register_page(
     description=PAGE_DESCRIPTION
 )
 
+default_orb = '3dz2'
+
 plot_div = com.PlotDiv(
     ID_PREFIX,
     layout=oc.ORB_LAYOUT,
     config=oc.ORB_CONFIG,
-    loading=True
+    loading=True,
+    store_data=default_orb
 )
 
 # Make AC options tab and all callbacks
-options = oc.OptionsDiv(ID_PREFIX)
+options = oc.OptionsDiv(ID_PREFIX, default_orb=default_orb)
 # Connect callbacks for plots and options
 oc.assemble_callbacks(plot_div, options)
 

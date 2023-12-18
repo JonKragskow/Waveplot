@@ -136,7 +136,7 @@ class Div():
 
 
 class PlotDiv(Div):
-    def __init__(self, prefix, layout, config, loading=False, **kwargs):
+    def __init__(self, prefix, layout, config, loading=False, store_data='', **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
@@ -162,7 +162,7 @@ class PlotDiv(Div):
 
         self.store = dcc.Store(
             id=self.prefix('store'),
-            data={}
+            data=store_data
         )
 
         if loading:
