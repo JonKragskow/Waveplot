@@ -23,9 +23,29 @@ import plotly.graph_objects as go
 from skimage import measure
 import pandas as pd
 import uuid
+import copy
 
 from . import common as com
 from . import radial as rc
+
+
+ORB_CONFIG = copy.copy(com.BASIC_CONFIG)
+ORB_CONFIG['toImageButtonOptions']['format'] = 'png'
+ORB_CONFIG['toImageButtonOptions']['scale'] = 2
+ORB_CONFIG['toImageButtonOptions']['filename'] = 'orbital'
+
+ORB_LAYOUT = copy.copy(com.BASIC_LAYOUT)
+ORB_LAYOUT['xaxis']['showline'] = False
+ORB_LAYOUT['xaxis']['ticks'] = ''
+ORB_LAYOUT['xaxis']['showticklabels'] = False
+ORB_LAYOUT['xaxis']['minor_ticks'] = ''
+ORB_LAYOUT['yaxis']['showline'] = False
+ORB_LAYOUT['yaxis']['ticks'] = ''
+ORB_LAYOUT['yaxis']['showticklabels'] = False
+ORB_LAYOUT['yaxis']['minor_ticks'] = ''
+ORB_LAYOUT['scene'] = copy.copy(com.BASIC_SCENE)
+ORB_LAYOUT['margin'] = dict(r=20, b=10, l=10, t=10)
+ORB_LAYOUT['showlegend'] = False
 
 
 DEFAULT_ISO = {
@@ -499,66 +519,6 @@ def fyz2_3d(n: int):
     return wav
 
 
-class PlotDiv(com.Div):
-    def __init__(self, prefix, **kwargs):
-        # Initialise base class attributes
-        super().__init__(prefix=prefix, **kwargs)
-
-        config = com.BASIC_CONFIG
-        config['toImageButtonOptions']['format'] = 'png'
-        config['toImageButtonOptions']['scale'] = 2
-        config['toImageButtonOptions']['filename'] = 'orbital.png'
-
-        layout = com.BASIC_LAYOUT
-        layout['xaxis']['showline'] = False
-        layout['xaxis']['ticks'] = ''
-        layout['xaxis']['showticklabels'] = False
-        layout['xaxis']['minor_ticks'] = ''
-        layout['yaxis']['showline'] = False
-        layout['yaxis']['ticks'] = ''
-        layout['yaxis']['showticklabels'] = False
-        layout['yaxis']['minor_ticks'] = ''
-        layout['scene'] = com.BASIC_SCENE
-        layout['margin'] = dict(r=20, b=10, l=10, t=10)
-        layout['showlegend'] = False
-
-        self.plot = dcc.Graph(
-            id=str(uuid.uuid1()),
-            className='plot_area',
-            mathjax=True,
-            figure={
-                'data': [],
-                'layout': layout
-            },
-            config=config
-        )
-
-        self.orb_store = dcc.Store(
-            id=str(uuid.uuid1()),
-            data=[]
-        )
-        self.make_div_contents()
-
-    def make_div_contents(self):
-        '''
-        Assembles div children in rows and columns
-        '''
-
-        contents = [
-            dbc.Row(
-                [
-                    dbc.Col([
-                        dcc.Loading(self.plot)
-                    ]),
-                    self.orb_store
-                ]
-            )
-        ]
-
-        self.div.children = contents
-        return
-
-
 class OptionsDiv(com.Div):
     def __init__(self, prefix, **kwargs):
         # Initialise base class attributes
@@ -806,11 +766,11 @@ class OptionsDiv(com.Div):
         return
 
 
-def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
+def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
 
     callback(
         [
-            Output(plot_div.orb_store, 'data'),
+            Output(plot_div.store, 'data'),
             Output(
                 options_div.isoval_input,
                 'value',
@@ -841,7 +801,7 @@ def assemble_callbacks(plot_div: PlotDiv, options_div: OptionsDiv):
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
-            Input(plot_div.orb_store, 'data'),
+            Input(plot_div.store, 'data'),
             Input(options_div.cutaway_select, 'value'),
             Input(options_div.axes_check, 'value'),
             Input(options_div.isoval_input, 'value')

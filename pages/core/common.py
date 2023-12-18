@@ -18,15 +18,14 @@ BASIC_LAYOUT = go.Layout(
         'autorange': True,
         'showgrid': False,
         'zeroline': False,
-        'title_standoff': 20,
         'showline': True,
+        'title_standoff': 20,
         'ticks': 'outside',
         'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
         'showticklabels': True,
         'minor_ticks': 'outside',
         'tickformat': 'digit'
     },
-    yaxis2={'title': ''},
     showlegend=True,
     margin=dict(l=90, r=30, t=30, b=60),
     legend={
@@ -137,7 +136,7 @@ class Div():
 
 
 class PlotDiv(Div):
-    def __init__(self, prefix, layout, config, **kwargs):
+    def __init__(self, prefix, layout, config, loading=False, **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
@@ -166,6 +165,11 @@ class PlotDiv(Div):
             data={}
         )
 
+        if loading:
+            self.plotwrapper = [dcc.Loading(self.plot)]
+        else:
+            self.plotwrapper = [self.plot]
+
         self.make_div_contents()
 
     def make_div_contents(self):
@@ -179,7 +183,7 @@ class PlotDiv(Div):
                     dbc.Col(
                         [
                             self.error_alert,
-                            self.plot,
+                            *self.plotwrapper,
                             self.store
                         ]
                     )

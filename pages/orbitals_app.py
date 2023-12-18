@@ -19,10 +19,10 @@
 from dash import register_page
 
 from .core import orbitals as oc
-from .core import common
+from .core import common as com
 
 ID_PREFIX = 'orb'
-dash_id = common.dash_id(ID_PREFIX)
+dash_id = com.dash_id(ID_PREFIX)
 
 PAGE_NAME = 'Atomic Orbitals'
 PAGE_PATH = '/orbitals'
@@ -39,7 +39,12 @@ register_page(
     description=PAGE_DESCRIPTION
 )
 
-plot_div = oc.PlotDiv(ID_PREFIX)
+plot_div = com.PlotDiv(
+    ID_PREFIX,
+    layout=oc.ORB_LAYOUT,
+    config=oc.ORB_CONFIG,
+    loading=True
+)
 
 # Make AC options tab and all callbacks
 options = oc.OptionsDiv(ID_PREFIX)
@@ -47,4 +52,4 @@ options = oc.OptionsDiv(ID_PREFIX)
 oc.assemble_callbacks(plot_div, options)
 
 # Layout of webpage
-layout = common.make_layout(plot_div.div, options.div)
+layout = com.make_layout(plot_div.div, options.div)
