@@ -41,7 +41,7 @@ register_page(
 
 prefix = utils.dash_id('orb3')
 
-plot_div = com.PlotDiv(ID_PREFIX, rc.RADIAL_LAYOUT, com.BASIC_CONFIG)
+plot_div = com.PlotDiv(ID_PREFIX, rc.RADIAL_LAYOUT, rc.RADIAL_CONFIG)
 
 # Make AC options tab and all callbacks
 options = rc.OptionsDiv(ID_PREFIX)

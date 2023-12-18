@@ -28,7 +28,7 @@ from . import common as com
 from . import utils as ut
 
 
-RADIAL_LAYOUT = copy.copy(com.BASIC_LAYOUT)
+RADIAL_LAYOUT = copy.deepcopy(com.BASIC_LAYOUT)
 RADIAL_LAYOUT.xaxis.title = {
     'text': 'r (a<sub>0</sup>)',
     'font': {
@@ -46,6 +46,8 @@ RADIAL_LAYOUT.yaxis.title = {
     }
 }
 RADIAL_LAYOUT.yaxis.tickformat = '.2f'
+
+RADIAL_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
 
 
 def s_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:

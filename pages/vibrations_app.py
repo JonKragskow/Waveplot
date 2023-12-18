@@ -41,7 +41,7 @@ register_page(
 plot_div = com.PlotDiv(
     ID_PREFIX,
     layout=vib.VIB_LAYOUT,
-    config=com.BASIC_CONFIG,
+    config=vib.VIB_CONFIG,
     plot_loading=True,
     store_loading=True
 )

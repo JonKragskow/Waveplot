@@ -32,7 +32,7 @@ LIGHT = con.speed_of_light * 100
 HBAR = con.hbar
 H = con.Planck
 
-VIB_LAYOUT = copy.copy(com.BASIC_LAYOUT)
+VIB_LAYOUT = copy.deepcopy(com.BASIC_LAYOUT)
 VIB_LAYOUT.xaxis.title = {
     'text': 'x (Å)',
     'font': {
@@ -50,6 +50,11 @@ VIB_LAYOUT.yaxis.title = {
     }
 }
 VIB_LAYOUT.showlegend = False
+
+VIB_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
+VIB_CONFIG['toImageButtonOptions']['format'] = 'png'
+VIB_CONFIG['toImageButtonOptions']['scale'] = 2
+VIB_CONFIG['toImageButtonOptions']['filename'] = 'harmonic_oscillator'
 
 
 def hermite(n: int, x: ArrayLike) -> NDArray:
@@ -1117,8 +1122,6 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
     if None in [lw_wf, lw_pe, lw_states, wf_scale]:
         return no_update
 
-    fig = Patch()
-
     traces = []
 
     # Plot harmonic wavefunction and states
@@ -1237,6 +1240,7 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
             )
         )
 
+    fig = Patch()
     fig['data'] = traces
 
     return fig

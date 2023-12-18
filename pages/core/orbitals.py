@@ -29,12 +29,14 @@ from . import common as com
 from . import radial as rc
 
 
-ORB_CONFIG = copy.copy(com.BASIC_CONFIG)
+ORB_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
 ORB_CONFIG['toImageButtonOptions']['format'] = 'png'
 ORB_CONFIG['toImageButtonOptions']['scale'] = 2
 ORB_CONFIG['toImageButtonOptions']['filename'] = 'orbital'
+ORB_CONFIG['toImageButtonOptions']['width'] = None
+ORB_CONFIG['toImageButtonOptions']['height'] = None
 
-ORB_LAYOUT = copy.copy(com.BASIC_LAYOUT)
+ORB_LAYOUT = copy.deepcopy(com.BASIC_LAYOUT)
 ORB_LAYOUT['xaxis']['showline'] = False
 ORB_LAYOUT['xaxis']['ticks'] = ''
 ORB_LAYOUT['xaxis']['showticklabels'] = False
@@ -43,10 +45,11 @@ ORB_LAYOUT['yaxis']['showline'] = False
 ORB_LAYOUT['yaxis']['ticks'] = ''
 ORB_LAYOUT['yaxis']['showticklabels'] = False
 ORB_LAYOUT['yaxis']['minor_ticks'] = ''
-ORB_LAYOUT['scene'] = copy.copy(com.BASIC_SCENE)
+ORB_LAYOUT['scene'] = copy.deepcopy(com.BASIC_SCENE)
 ORB_LAYOUT['margin'] = dict(r=20, b=10, l=10, t=10)
 ORB_LAYOUT['showlegend'] = False
-
+ORB_LAYOUT['uirevision'] = 'same'
+ORB_LAYOUT['scene']['uirevision'] = 'same'
 
 DEFAULT_ISO = {
     '1s': 0.1,
@@ -83,7 +86,7 @@ DEFAULT_ISO = {
 }
 
 
-def s_3d(n: int):
+def s_3d(n: int, half: str = ''):
     '''
     Calculates s orbital wavefunction on a grid
 
@@ -91,6 +94,8 @@ def s_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -102,28 +107,39 @@ def s_3d(n: int):
     '''
 
     if n == 1:
-        zbound = 5.
+        bound = 5.
         step = 0.1
     elif n == 2:
-        zbound = 30.
+        bound = 30.
         step = 1.
     elif n == 3:
-        zbound = 40.
+        bound = 40.
         step = 2.
     elif n == 4:
-        zbound = 40.
+        bound = 40.
         step = 2.
     elif n == 5:
-        zbound = 60.
+        bound = 60.
         step = 2.
     elif n == 6:
-        zbound = 80.
+        bound = 80.
         step = 2.
 
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -138,7 +154,7 @@ def s_3d(n: int):
     return wav
 
 
-def p_3d(n: int):
+def p_3d(n: int, half: str = ''):
     '''
     Calculates p orbital wavefunction on a grid
 
@@ -146,6 +162,8 @@ def p_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -154,25 +172,36 @@ def p_3d(n: int):
     '''
 
     if n == 2:
-        zbound = 20
+        bound = 20
         step = 0.5
     elif n == 3:
-        zbound = 30
+        bound = 30
         step = 0.5
     elif n == 4:
-        zbound = 60
+        bound = 60
         step = 1.
     elif n == 5:
-        zbound = 60
+        bound = 60
         step = 1.
     elif n == 6:
-        zbound = 80
+        bound = 80
         step = 1.
 
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-0.75 * bound, 0.75 * bound, step)
+    z = np.arange(-0.75 * bound, 0.75 * bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, 0.75 * bound, step)
+    elif half == 'z':
+        z = np.arange(0, 0.75 * bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-0.75 * zbound, 0.75 * zbound, step),
-        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -190,7 +219,7 @@ def p_3d(n: int):
     return wav
 
 
-def dz_3d(n: int):
+def dz_3d(n: int, half: str = ''):
     '''
     Calculates dz2 orbital wavefunction on a grid
 
@@ -198,6 +227,8 @@ def dz_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -209,22 +240,33 @@ def dz_3d(n: int):
     '''
 
     if n == 3:
-        zbound = 70.
+        bound = 70.
         step = 1.
     elif n == 4:
-        zbound = 90.
+        bound = 90.
         step = 2.
     elif n == 5:
-        zbound = 110.
+        bound = 110.
         step = 2.
     elif n == 6:
-        zbound = 140.
+        bound = 140.
         step = 2.
 
+    x = np.arange(-0.95 * bound, 0.95 * bound, step)
+    y = np.arange(-0.95 * bound, 0.95 * bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, 0.95 * bound, step)
+    elif half == 'y':
+        y = np.arange(0, 0.95 * bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-0.95 * zbound, 0.95 * zbound, step),
-        np.arange(-0.95 * zbound, 0.95 * zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -239,7 +281,7 @@ def dz_3d(n: int):
     return wav
 
 
-def dxy_3d(n: int):
+def dxy_3d(n: int, half: str = ''):
     '''
     Calculates dxy orbital wavefunction on a grid
 
@@ -247,6 +289,8 @@ def dxy_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -258,22 +302,33 @@ def dxy_3d(n: int):
     '''
 
     if n == 3:
-        zbound = 45.
+        bound = 45.
         step = 1.
     elif n == 4:
-        zbound = 70.
+        bound = 70.
         step = 1.
     elif n == 5:
-        zbound = 98.
+        bound = 98.
         step = 2.
     elif n == 6:
-        zbound = 135.
+        bound = 135.
         step = 2.
 
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
     r = np.sqrt(x**2 + y**2 + z**2)
@@ -287,7 +342,7 @@ def dxy_3d(n: int):
     return wav
 
 
-def fz_3d(n: int):
+def fz_3d(n: int, half: str = ''):
     '''
     Calculates fz3 orbital wavefunction on a grid
 
@@ -295,6 +350,8 @@ def fz_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -306,22 +363,32 @@ def fz_3d(n: int):
     '''
 
     if n == 4:
-        zbound = 100.
+        bound = 100.
         step = 2.
     elif n == 5:
-        zbound = 100.
+        bound = 100.
         step = 2.
     elif n == 6:
-        zbound = 130.
+        bound = 130.
         step = 2.
 
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
-
     r = np.sqrt(x**2 + y**2 + z**2)
 
     rad = rc.radial_f(n, 2 * r / n)
@@ -333,14 +400,26 @@ def fz_3d(n: int):
     return wav
 
 
-def sp_3d():
+def sp_3d(half: str):
 
-    zbound = 20
+    bound = 20
     step = 0.5
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -363,14 +442,26 @@ def sp_3d():
     return wav
 
 
-def sp3_3d():
+def sp3_3d(half: str):
 
-    zbound = 20
+    bound = 20
     step = 0.5
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -393,14 +484,26 @@ def sp3_3d():
     return wav
 
 
-def sp2_3d():
+def sp2_3d(half: str):
 
-    zbound = 20
+    bound = 20
     step = 0.5
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-0.75 * zbound, 0.75 * zbound, step),
-        np.arange(-0.75 * zbound, 0.75 * zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -426,7 +529,7 @@ def sp2_3d():
     return wav
 
 
-def fxyz_3d(n: int):
+def fxyz_3d(n: int, half: str = ''):
     '''
     Calculates fxyz orbital wavefunction on a grid
 
@@ -434,6 +537,8 @@ def fxyz_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -445,19 +550,30 @@ def fxyz_3d(n: int):
     '''
 
     if n == 4:
-        zbound = 60.
+        bound = 60.
         step = 1.
     elif n == 5:
-        zbound = 90.
+        bound = 90.
         step = 2.
     elif n == 6:
-        zbound = 115.
+        bound = 115.
         step = 2.
 
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -473,7 +589,7 @@ def fxyz_3d(n: int):
     return wav
 
 
-def fyz2_3d(n: int):
+def fyz2_3d(n: int, half: str = ''):
     '''
     Calculates fyz2 orbital wavefunction on a grid
 
@@ -481,6 +597,8 @@ def fyz2_3d(n: int):
     ----------
     n: int
         prinipal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        If non-empty, specified axis will go from 0 tobound
 
     Returns
     -------
@@ -492,19 +610,30 @@ def fyz2_3d(n: int):
     '''
 
     if n == 4:
-        zbound = 65.
+        bound = 65.
         step = 1.
     elif n == 5:
-        zbound = 90.
+        bound = 90.
         step = 2
     elif n == 6:
-        zbound = 125.
+        bound = 125.
         step = 2
 
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
     x, y, z = np.meshgrid(
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
-        np.arange(-zbound, zbound, step),
+        x,
+        y,
+        z,
         copy=True
     )
 
@@ -575,7 +704,7 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.cutaway_select = dbc.Select(
+        self.half_select = dbc.Select(
             id=str(uuid.uuid1()),
             style={
                 'textAlign': 'center',
@@ -585,7 +714,7 @@ class OptionsDiv(com.Div):
             options=[
                 {
                     'label': 'None',
-                    'value': 'none'
+                    'value': 'full'
                 },
                 {
                     'label': 'yz plane',
@@ -600,12 +729,12 @@ class OptionsDiv(com.Div):
                     'value': 'z'
                 }
             ],
-            value=1.
+            value='full'
         )
-        self.cutaway_ig = self.make_input_group(
+        self.half_ig = self.make_input_group(
             [
                 dbc.InputGroupText('Cut through'),
-                self.cutaway_select
+                self.half_select
             ]
         )
 
@@ -754,11 +883,11 @@ class OptionsDiv(com.Div):
             ),
             dbc.Row([
                 dbc.Col([
-                    self.cutaway_ig
+                    self.half_ig
                 ]),
                 dbc.Col(
                     self.isoval_ig
-                ),
+                )
             ])
         ]
 
@@ -799,9 +928,9 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
             Input(plot_div.store, 'data'),
-            Input(options_div.cutaway_select, 'value'),
             Input(options_div.axes_check, 'value'),
-            Input(options_div.isoval_input, 'value')
+            Input(options_div.isoval_input, 'value'),
+            Input(options_div.half_select, 'value')
         ],
         [
             State(options_div.x_axis_col_input, 'value'),
@@ -825,8 +954,10 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
         prevent_initial_call=True
     )(update_iso_colour)
 
+    return
 
-def calc_wav(orbital_name):
+
+def calc_wav(orbital_name, half=''):
     '''
     Calculates given wavefunction's 3d data and saves to assets folder
     '''
@@ -852,17 +983,18 @@ def calc_wav(orbital_name):
         n = int(orbital_name[0])
         name = orbital_name[1:]
         wav = orb_func_dict[name](
-            n
+            n, half
         )
     else:
-        wav = orb_func_dict[orbital_name]()
+        wav = orb_func_dict[orbital_name](half)
 
-    np.save(f'assets/{orbital_name}', wav)
+    name = f'assets/{half}{orbital_name}'
+    np.save(name, wav)
 
     return
 
 
-def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
+def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
               x_col: str, y_col: str, z_col: str, colour_1: str,
               colour_2: str):
     '''
@@ -870,14 +1002,15 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
     then smooths the surface and plots as mesh
     '''
 
-    fig = Patch()
-
-    if None in [cutaway, isoval, colour_1, colour_2, x_col, y_col, z_col]:
+    if None in [isoval, colour_1, colour_2, x_col, y_col, z_col]:
         return no_update
 
-    wav = np.load(f'assets/{wav_name}.npy')
+    if half == 'full':
+        half = ''
 
-    # Calculate each ±isosurface and smooth it
+    wav = np.load(f'assets/{half}{orb_name}.npy')
+
+    # Calculate each isosurface and smooth it
     rounds = 3
     try:
         verts1, faces1, _, _ = measure.marching_cubes(
@@ -896,9 +1029,9 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
             -isoval
         )
     except ValueError:
-        if wav_name == '1s':
-            verts2 = copy.copy(verts1)
-            faces2 = copy.copy(faces1)
+        if orb_name == '1s':
+            verts2 = copy.deepcopy(verts1)
+            faces2 = copy.deepcopy(faces1)
         else:
             return no_update
     verts2 = laplacian_smooth(verts2, faces2, rounds=rounds)
@@ -928,7 +1061,7 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
         name='',
         showscale=False
     )
-    if wav_name != '1s':
+    if orb_name != '1s':
         trace2 = go.Mesh3d(
             x=x2,
             y=y2,
@@ -945,93 +1078,46 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
         traces = [trace1]
 
     # Add axes
+    lim = 1.5 * np.max(np.concatenate([x1, x2, y1, y2, z1, z2]))
+    trace_3 = go.Scatter3d(
+        x=[-lim, lim],
+        y=[0, 0],
+        z=[0, 0],
+        line={
+            'color': x_col,
+            'width': 8
+        },
+        mode='lines',
+        name='x'
+    )
+    trace_4 = go.Scatter3d(
+        y=[-lim, lim],
+        x=[0, 0],
+        z=[0, 0],
+        line={
+            'color': y_col,
+            'width': 8
+        },
+        mode='lines',
+        name='y'
+    )
+    trace_5 = go.Scatter3d(
+        z=[-lim, lim],
+        x=[0, 0],
+        y=[0, 0],
+        line={
+            'color': z_col,
+            'width': 8
+        },
+        mode='lines',
+        name='z'
+    )
     if axes_check:
-        lim = 1.5 * np.max(np.concatenate([x1, x2, y1, y2, z1, z2]))
-        trace_3 = go.Scatter3d(
-            x=[-lim, lim],
-            y=[0, 0],
-            z=[0, 0],
-            line={
-                'color': x_col,
-                'width': 8
-            },
-            mode='lines',
-            name='x'
-        )
-        trace_4 = go.Scatter3d(
-            y=[-lim, lim],
-            x=[0, 0],
-            z=[0, 0],
-            line={
-                'color': y_col,
-                'width': 8
-            },
-            mode='lines',
-            name='y'
-        )
-        trace_5 = go.Scatter3d(
-            z=[-lim, lim],
-            x=[0, 0],
-            y=[0, 0],
-            line={
-                'color': z_col,
-                'width': 8
-            },
-            mode='lines',
-            name='z'
-        )
         traces += [trace_3, trace_4, trace_5]
 
-    # Update patched figure's data
+    fig = Patch()
+
     fig['data'] = traces
-
-    if cutaway in ['x', 'y', 'z']:
-        minlim = np.min(
-            np.concatenate(
-                [
-                    np.concatenate([trace.x, trace.y, trace.z])
-                    for trace in traces
-                ]
-            )
-        )
-        maxlim = np.max(
-            np.concatenate(
-                [
-                    np.concatenate([trace.x, trace.y, trace.z])
-                    for trace in traces
-                ]
-            )
-        )
-
-    # update perspective if cutaway selected
-    if cutaway == 'x':
-        fig['layout']['scene']['yaxis']['range'] = [minlim, maxlim]
-        fig['layout']['scene']['zaxis']['range'] = [minlim, maxlim]
-        fig['layout']['scene']['xaxis']['range'] = [0., maxlim]
-        fig['layout']['scene']['aspectratio'] = {
-            'x': 0.5, 'y': 1., 'z': 1.
-        }
-    elif cutaway == 'y':
-        fig['layout']['scene']['zaxis']['range'] = [minlim, maxlim]
-        fig['layout']['scene']['xaxis']['range'] = [minlim, maxlim]
-        fig['layout']['scene']['yaxis']['range'] = [0, maxlim]
-        fig['layout']['scene']['aspectratio'] = {
-            'x': 1., 'y': 0.5, 'z': 1.
-        }
-    elif cutaway == 'z':
-        fig['layout']['scene']['yaxis']['range'] = [minlim, maxlim]
-        fig['layout']['scene']['xaxis']['range'] = [minlim, maxlim]
-        fig['layout']['scene']['zaxis']['range'] = [0, maxlim]
-        fig['layout']['scene']['aspectratio'] = {
-            'x': 1., 'y': 1., 'z': 0.5
-        }
-    else:
-        fig['layout']['scene']['xaxis']['range'] = 'auto'
-        fig['layout']['scene']['yaxis']['range'] = 'auto'
-        fig['layout']['scene']['zaxis']['range'] = 'auto'
-        fig['layout']['scene']['aspectratio'] = {
-            'x': 1., 'y': 1., 'z': 1.
-        }
 
     return fig
 

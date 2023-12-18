@@ -79,7 +79,6 @@ BASIC_CONFIG = {
         'pan3d',
         'autoScale2d',
         'tableRotation',
-        'orbitRotation',
         'resetCameraLastSave3d'
     ],
     'displaylogo': False
