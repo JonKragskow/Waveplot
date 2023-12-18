@@ -977,34 +977,43 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
     # Update patched figure's data
     fig['data'] = traces
 
+    if cutaway in ['x', 'y', 'z']:
+        minlim = np.min(
+            np.concatenate(
+                [
+                    np.concatenate([trace.x, trace.y, trace.z])
+                    for trace in traces
+                ]
+            )
+        )
+        maxlim = np.max(
+            np.concatenate(
+                [
+                    np.concatenate([trace.x, trace.y, trace.z])
+                    for trace in traces
+                ]
+            )
+        )
+
     # update perspective if cutaway selected
     if cutaway == 'x':
-        fig['layout']['scene']['yaxis']['range'] = 'auto'
-        fig['layout']['scene']['zaxis']['range'] = 'auto'
-        fig['layout']['scene']['xaxis']['range'] = [
-            np.min(np.concatenate([x1, x2])),
-            0
-        ]
+        fig['layout']['scene']['yaxis']['range'] = [minlim, maxlim]
+        fig['layout']['scene']['zaxis']['range'] = [minlim, maxlim]
+        fig['layout']['scene']['xaxis']['range'] = [0., maxlim]
         fig['layout']['scene']['aspectratio'] = {
             'x': 0.5, 'y': 1., 'z': 1.
         }
     elif cutaway == 'y':
-        fig['layout']['scene']['zaxis']['range'] = 'auto'
-        fig['layout']['scene']['xaxis']['range'] = 'auto'
-        fig['layout']['scene']['yaxis']['range'] = [
-            np.min(np.concatenate([y1, y2])),
-            0
-        ]
+        fig['layout']['scene']['zaxis']['range'] = [minlim, maxlim]
+        fig['layout']['scene']['xaxis']['range'] = [minlim, maxlim]
+        fig['layout']['scene']['yaxis']['range'] = [0, maxlim]
         fig['layout']['scene']['aspectratio'] = {
             'x': 1., 'y': 0.5, 'z': 1.
         }
     elif cutaway == 'z':
-        fig['layout']['scene']['yaxis']['range'] = 'auto'
-        fig['layout']['scene']['xaxis']['range'] = 'auto'
-        fig['layout']['scene']['zaxis']['range'] = [
-            np.min(np.concatenate([z1, z2])),
-            0
-        ]
+        fig['layout']['scene']['yaxis']['range'] = [minlim, maxlim]
+        fig['layout']['scene']['xaxis']['range'] = [minlim, maxlim]
+        fig['layout']['scene']['zaxis']['range'] = [0, maxlim]
         fig['layout']['scene']['aspectratio'] = {
             'x': 1., 'y': 1., 'z': 0.5
         }
