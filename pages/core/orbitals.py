@@ -896,7 +896,11 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
             -isoval
         )
     except ValueError:
-        return no_update
+        if wav_name == '1s':
+            verts2 = copy.copy(verts1)
+            faces2 = copy.copy(faces1)
+        else:
+            return no_update
     verts2 = laplacian_smooth(verts2, faces2, rounds=rounds)
     x2, y2, z2 = verts2.T
     I2, J2, K2 = faces2.T
@@ -924,18 +928,21 @@ def plot_data(wav_name: str, cutaway: str, axes_check: bool, isoval: float,
         name='',
         showscale=False
     )
-    trace2 = go.Mesh3d(
-        x=x2,
-        y=y2,
-        z=z2,
-        color=colour_2,
-        i=I2,
-        j=J2,
-        k=K2,
-        name='',
-        showscale=False
-    )
-    traces = [trace1, trace2]
+    if wav_name != '1s':
+        trace2 = go.Mesh3d(
+            x=x2,
+            y=y2,
+            z=z2,
+            color=colour_2,
+            i=I2,
+            j=J2,
+            k=K2,
+            name='',
+            showscale=False
+        )
+        traces = [trace1, trace2]
+    else:
+        traces = [trace1]
 
     # Add axes
     if axes_check:
