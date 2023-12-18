@@ -635,7 +635,7 @@ class OptionsDiv(com.Div):
         self.colour_input_a = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#491688',
+            value='#0000ff',
             style={
                 'height': '40px'
             }
@@ -644,7 +644,7 @@ class OptionsDiv(com.Div):
         self.colour_input_b = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#ffeb0a',
+            value='#ffff00',
             style={
                 'height': '40px'
             }
@@ -659,7 +659,7 @@ class OptionsDiv(com.Div):
         )
 
         self.axes_check = dbc.Checkbox(
-            value=False,
+            value=True,
             id=str(uuid.uuid1()),
             style={'margin-left': '5%'}
         )
@@ -667,7 +667,7 @@ class OptionsDiv(com.Div):
         self.x_axis_col_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#ff0000',
+            value='#000000',
             style={
                 'height': '40px'
             }
@@ -676,7 +676,7 @@ class OptionsDiv(com.Div):
         self.y_axis_col_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#00ff00',
+            value='#000000',
             style={
                 'height': '40px'
             }
@@ -685,7 +685,7 @@ class OptionsDiv(com.Div):
         self.z_axis_col_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#0000ff',
+            value='#000000',
             style={
                 'height': '40px'
             }
