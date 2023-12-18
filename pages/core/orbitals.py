@@ -561,8 +561,8 @@ class OptionsDiv(com.Div):
                 {'label': '5fyz²', 'value': '5fyz2'},
                 {'label': '6fyz²', 'value': '6fyz2'},
                 {'label': 'sp', 'value': 'sp'},
-                {'label': 'sp2', 'value': 'sp2'},
-                {'label': 'sp3', 'value': 'sp3'}
+                {'label': 'sp²', 'value': 'sp2'},
+                {'label': 'sp³', 'value': 'sp3'}
             ],
             value=default_orb,
             placeholder='Select an orbital'
