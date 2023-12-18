@@ -39,7 +39,7 @@ register_page(
     description=PAGE_DESCRIPTION
 )
 
-default_orb = '1s'
+default_orb = '3dz2'
 
 plot_div = com.PlotDiv(
     ID_PREFIX,
