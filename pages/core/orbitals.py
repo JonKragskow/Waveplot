@@ -717,11 +717,11 @@ class OptionsDiv(com.Div):
                     'value': 'full'
                 },
                 {
-                    'label': 'yz plane',
+                    'label': 'xz plane',
                     'value': 'x'
                 },
                 {
-                    'label': 'xz plane',
+                    'label': 'yz plane',
                     'value': 'y'
                 },
                 {
@@ -1039,15 +1039,20 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
     I2, J2, K2 = faces2.T
 
     # Shift surface origin to zero
-    xzero = np.concatenate([x1, x2])
-    yzero = np.concatenate([y1, y2])
-    zzero = np.concatenate([z1, z2])
-    x1 -= np.mean(xzero)
-    x2 -= np.mean(xzero)
-    y1 -= np.mean(yzero)
-    y2 -= np.mean(yzero)
-    z1 -= np.mean(zzero)
-    z2 -= np.mean(zzero)
+    if half != 'y':
+        xzero = np.concatenate([x1, x2])
+        x1 -= np.mean(xzero)
+        x2 -= np.mean(xzero)
+
+    if half != 'x':
+        yzero = np.concatenate([y1, y2])
+        y1 -= np.mean(yzero)
+        y2 -= np.mean(yzero)
+
+    if half != 'z':
+        zzero = np.concatenate([z1, z2])
+        z1 -= np.mean(zzero)
+        z2 -= np.mean(zzero)
 
     # Make mesh of each isosurface
     trace1 = go.Mesh3d(
@@ -1088,7 +1093,8 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             'width': 8
         },
         mode='lines',
-        name='x'
+        hoverinfo='text',
+        hovertext='x'
     )
     trace_4 = go.Scatter3d(
         y=[-lim, lim],
@@ -1099,7 +1105,8 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             'width': 8
         },
         mode='lines',
-        name='y'
+        hoverinfo='text',
+        hovertext='y'
     )
     trace_5 = go.Scatter3d(
         z=[-lim, lim],
@@ -1110,7 +1117,8 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             'width': 8
         },
         mode='lines',
-        name='z'
+        hoverinfo='text',
+        hovertext='z'
     )
     if axes_check:
         traces += [trace_3, trace_4, trace_5]
