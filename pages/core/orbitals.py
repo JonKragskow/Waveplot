@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import numpy as np
-from dash import dcc, html, Input, Output, callback, no_update, \
+from dash import html, Input, Output, callback, no_update, \
     Patch, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
@@ -768,18 +768,18 @@ class OptionsDiv(com.Div):
 
 def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
 
-    callback(
-        [
-            Output(plot_div.store, 'data'),
-            Output(
-                options_div.isoval_input,
-                'value',
-                allow_duplicate=True
-            )
-        ],
-        Input(options_div.orb_select, 'value'),
-        prevent_initial_call='initial_duplicate'
-    )(calc_wav)
+    # callback(
+    #     [
+    #         Output(plot_div.store, 'data'),
+    #         Output(
+    #             options_div.isoval_input,
+    #             'value',
+    #             allow_duplicate=True
+    #         )
+    #     ],
+    #     Input(options_div.orb_select, 'value'),
+    #     prevent_initial_call='initial_duplicate'
+    # )(calc_wav)
 
     # Suggest new isovalue from list of "good" values
     callback(
@@ -801,7 +801,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
-            Input(plot_div.store, 'data'),
+            # Input(plot_div.store, 'data'),
+            Input(options_div.orb_select, 'value'),
             Input(options_div.cutaway_select, 'value'),
             Input(options_div.axes_check, 'value'),
             Input(options_div.isoval_input, 'value')
@@ -868,7 +869,7 @@ def calc_wav(orbital_name):
     return wav, DEFAULT_ISO[orbital_name]
 
 
-def plot_data(wav: list[float], cutaway: str, axes_check: bool, isoval: float,
+def plot_data(wav: str, cutaway: str, axes_check: bool, isoval: float,
               x_col: str, y_col: str, z_col: str, colour_1: str,
               colour_2: str):
     '''
@@ -876,13 +877,15 @@ def plot_data(wav: list[float], cutaway: str, axes_check: bool, isoval: float,
     then smooths the surface and plots as mesh
     '''
 
-    if not len(wav):
-        return no_update
+    # if not len(wav):
+    #     return no_update
 
     fig = Patch()
 
     if None in [cutaway, isoval, colour_1, colour_2, x_col, y_col, z_col]:
         return no_update
+
+    wav = np.load('assets/3dz2.npy')
 
     # Calculate each ±isosurface and smooth it
     rounds = 3
