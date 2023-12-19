@@ -866,12 +866,6 @@ class OptionsDiv(com.Div):
                         self.orb_ig,
                         className='4 d-flex justify-content-center mb-3',
                         style={'align': 'center'}
-                    ),
-                    dbc.Col([
-                        self.half_ig
-                    ]),
-                    dbc.Col(
-                        self.isoval_ig
                     )
                 ]
             ),
@@ -884,6 +878,16 @@ class OptionsDiv(com.Div):
                     dbc.Col(
                         self.axes_ig,
                         className='mb-3'
+                    )
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col([
+                        self.half_ig
+                    ]),
+                    dbc.Col(
+                        self.isoval_ig
                     )
                 ]
             )
