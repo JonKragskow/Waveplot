@@ -36,3 +36,6 @@ orbs = [
 
 for orb in orbs:
     calc_wav(orb)
+    calc_wav(orb, 'x')
+    calc_wav(orb, 'y')
+    calc_wav(orb, 'z')
