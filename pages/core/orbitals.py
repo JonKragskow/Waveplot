@@ -655,11 +655,6 @@ class OptionsDiv(com.Div):
 
         self.orb_select = dbc.Select(
             id=self.prefix('orbital_select'),
-            style={
-                'textAlign': 'center',
-                'width': '50%',
-                'align': 'center'
-            },
             options=[
                 {'label': '1s', 'value': '1s'},
                 {'label': '2s', 'value': '2s'},
@@ -703,6 +698,11 @@ class OptionsDiv(com.Div):
                 self.orb_select
             ]
         )
+
+        self.orb_ig.style = {
+            'width': '50%',
+            'align': 'center'
+        }
 
         self.half_select = dbc.Select(
             id=str(uuid.uuid1()),
