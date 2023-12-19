@@ -866,6 +866,12 @@ class OptionsDiv(com.Div):
                         self.orb_ig,
                         className='4 d-flex justify-content-center mb-3',
                         style={'align': 'center'}
+                    ),
+                    dbc.Col([
+                        self.half_ig
+                    ]),
+                    dbc.Col(
+                        self.isoval_ig
                     )
                 ]
             ),
@@ -880,15 +886,7 @@ class OptionsDiv(com.Div):
                         className='mb-3'
                     )
                 ]
-            ),
-            dbc.Row([
-                dbc.Col([
-                    self.half_ig
-                ]),
-                dbc.Col(
-                    self.isoval_ig
-                )
-            ])
+            )
         ]
 
         self.div.children = contents
@@ -1084,6 +1082,22 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
 
     # Add axes
     lim = 1.5 * np.max(np.concatenate([x1, x2, y1, y2, z1, z2]))
+
+    # Add invisible scatter plot to preserve aspect ratio
+    # since Patching layout.scene breaks the save button's orientation...
+    if not axes_check:
+        traces.append(
+            go.Scatter3d(
+                x=[-lim, lim, 0, 0, 0, 0,],
+                y=[0, 0, -lim, lim, 0, 0],
+                z=[0, 0, 0, 0, -lim, lim],
+                mode='markers',
+                marker={
+                    'color': 'rgba(255, 255, 255, 0.)'
+                },
+                hoverinfo='skip'
+            )
+        )
     trace_3 = go.Scatter3d(
         x=[-lim, lim],
         y=[0, 0],
