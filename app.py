@@ -21,7 +21,6 @@ import flask
 # external scripts
 external_scripts = [
     "https://code.jquery.com/jquery-3.6.3.min.js",
-    "https://3Dmol.org/build/3Dmol-min.js",
     "https://kit.fontawesome.com/aec084d2c4.js"
 ]
 
