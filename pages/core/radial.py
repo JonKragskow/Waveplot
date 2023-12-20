@@ -687,7 +687,7 @@ def compute_radials(func: str, orbs: list[str], low_x: float, up_x: float,
     low_x /= unit_conv[unit]
     up_x /= unit_conv[unit]
 
-    x = np.linspace(low_x, up_x, 10000)
+    x = np.linspace(low_x, up_x, 5000)
 
     # Dictionary of orbital functions
     orb_funcs = {
