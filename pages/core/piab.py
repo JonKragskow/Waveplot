@@ -46,8 +46,39 @@ PIAB_LAYOUT.xaxis.range = [-0.125, 1.125]
 PIAB_LAYOUT.xaxis.tickmode = 'array'
 PIAB_LAYOUT.xaxis.tickvals = [0, 0.25, 0.5, 0.75, 1]
 PIAB_LAYOUT.xaxis.ticktext = ['0', 'L/4', 'L/2', '3L/4', 'L']
-
 PIAB_LAYOUT.showlegend = False
+PIAB_LAYOUT.shapes = [
+    dict(
+        type='line',
+        xref='x',
+        yref='paper',
+        x0=1, y0=0, x1=1, y1=1,
+        line_color='black',
+    ),
+    dict(
+        type='rect',
+        xref='x',
+        yref='paper',
+        x0=1, y0=0, x1=1.125, y1=1,
+        fillcolor='gray',
+        line_color='gray'
+    ),
+    dict(
+        type='line',
+        xref='x',
+        yref='paper',
+        x0=0, y0=0, x1=0, y1=1,
+        line_color='black',
+    ),
+    dict(
+        type='rect',
+        xref='x',
+        yref='paper',
+        x0=-0.125, y0=0, x1=0, y1=1,
+        fillcolor='gray',
+        line_color='gray'
+    ),
+]
 
 PIAB_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
 PIAB_CONFIG['toImageButtonOptions']['format'] = 'png'
@@ -687,42 +718,8 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
             )
         )
 
-    shapes = [
-        dict(
-            type='line',
-            xref='x',
-            yref='paper',
-            x0=1, y0=0, x1=1, y1=1,
-            linecolor='black',
-        ),
-        dict(
-            type='rect',
-            xref='x',
-            yref='paper',
-            x0=1, y0=0, x1=1.125, y1=1,
-            fillcolor='gray',
-            line_color='gray'
-        ),
-        dict(
-            type='line',
-            xref='x',
-            yref='paper',
-            x0=0, y0=0, x1=0, y1=1,
-            linecolor='black',
-        ),
-        dict(
-            type='rect',
-            xref='x',
-            yref='paper',
-            x0=-0.125, y0=0, x1=0, y1=1,
-            fillcolor='gray',
-            line_color='gray'
-        ),
-    ]
-
     fig = Patch()
     fig['data'] = traces
-    fig['layout']['shapes'] = shapes
 
     return fig
 
