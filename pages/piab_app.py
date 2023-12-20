@@ -24,7 +24,7 @@ from .core import common as com
 ID_PREFIX = 'piab'
 dash_id = com.dash_id(ID_PREFIX)
 
-PAGE_NAME = 'Particle in a box'
+PAGE_NAME = 'Particle in a Box'
 PAGE_PATH = '/piab'
 PAGE_IMAGE = 'assets/piab.png'
 PAGE_DESCRIPTION = 'Interactive Particle in a Box'

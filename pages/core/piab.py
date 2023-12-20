@@ -720,7 +720,6 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
         ),
     ]
 
-
     fig = Patch()
     fig['data'] = traces
     fig['layout']['shapes'] = shapes

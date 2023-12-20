@@ -764,7 +764,7 @@ class OptionsDiv(com.Div):
         self.colour_input_a = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#0000ff',
+            value='#8fbbd9',
             style={
                 'height': '40px'
             }
@@ -773,7 +773,7 @@ class OptionsDiv(com.Div):
         self.colour_input_b = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
-            value='#ffff00',
+            value='#eb9393',
             style={
                 'height': '40px'
             }

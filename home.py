@@ -41,8 +41,8 @@ for name, item in page_registry.items():
                         html.Img(
                             src=item['image'],
                             style={
-                                "width": "500px",
-                                "height": "500px"
+                                "width": "350px",
+                                "height": "350px"
                             }
                         )
                     ],
