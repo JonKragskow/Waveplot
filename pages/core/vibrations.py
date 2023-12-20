@@ -53,7 +53,7 @@ VIB_LAYOUT.yaxis.title = {
 VIB_LAYOUT.showlegend = False
 
 VIB_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
-VIB_CONFIG['toImageButtonOptions']['format'] = 'png'
+VIB_CONFIG['toImageButtonOptions']['format'] = 'svg'
 VIB_CONFIG['toImageButtonOptions']['scale'] = 2
 VIB_CONFIG['toImageButtonOptions']['filename'] = 'harmonic_oscillator'
 
