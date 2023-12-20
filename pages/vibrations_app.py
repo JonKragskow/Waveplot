@@ -30,7 +30,7 @@ PAGE_DESCRIPTION = 'Interactive harmonic oscillator wavefunctions and energy lev
 
 register_page(
     __name__,
-    order=2,
+    order=1,
     path=PAGE_PATH,
     name=PAGE_NAME,
     title=PAGE_NAME,

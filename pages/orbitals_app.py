@@ -31,7 +31,7 @@ PAGE_DESCRIPTION = 'Interactive atomic orbitals'
 
 register_page(
     __name__,
-    order=1,
+    order=4,
     path=PAGE_PATH,
     name=PAGE_NAME,
     title=PAGE_NAME,

@@ -30,7 +30,7 @@ PAGE_DESCRIPTION = 'Interactive Radial Functions'
 
 register_page(
     __name__,
-    order=1,
+    order=3,
     path=PAGE_PATH,
     name=PAGE_NAME,
     title=PAGE_NAME,

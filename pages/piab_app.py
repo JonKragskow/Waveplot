@@ -31,7 +31,7 @@ PAGE_DESCRIPTION = 'Interactive Particle in a Box'
 
 register_page(
     __name__,
-    order=1,
+    order=0,
     path=PAGE_PATH,
     name=PAGE_NAME,
     title=PAGE_NAME,
