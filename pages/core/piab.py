@@ -83,7 +83,7 @@ PIAB_LAYOUT.shapes = [
 PIAB_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
 PIAB_CONFIG['toImageButtonOptions']['format'] = 'png'
 PIAB_CONFIG['toImageButtonOptions']['scale'] = 2
-PIAB_CONFIG['toImageButtonOptions']['filename'] = 'harmonic_oscillator'
+PIAB_CONFIG['toImageButtonOptions']['filename'] = 'particle_in_a_box'
 
 
 def calc_piab_energies(length: float, mass: float, max_n: int) -> NDArray:
