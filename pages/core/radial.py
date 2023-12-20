@@ -761,7 +761,7 @@ def download_data(_nc: int, func: str, orbs: list[str],
     # Create output dictionary for dcc.Download
     output = {
         'content': data_str.getvalue(),
-        'filename': 'waveplot_orbital_data.csv'
+        'filename': 'radial_wavefunction_data.csv'
     }
 
     return output

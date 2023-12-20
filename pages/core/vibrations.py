@@ -17,7 +17,8 @@
 '''
 import numpy as np
 from numpy.typing import NDArray, ArrayLike
-from dash import dcc, html, Input, Output, State, callback, no_update, Patch
+from dash import dcc, html, Input, Output, State, callback, no_update, \
+    Patch
 import dash_bootstrap_components as dbc
 from . import common as com
 from scipy.special import factorial
@@ -361,20 +362,6 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.text_size_input = dbc.Input(
-            id=str(uuid.uuid1()),
-            placeholder=18,
-            type='number',
-            min=10,
-            max=25,
-            value=15,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
         self.wf_pos_colour_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
@@ -443,7 +430,7 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.tog_wf_check = dbc.Checkbox(
+        self.wf_toggle_check = dbc.Checkbox(
             value=True,
             id=str(uuid.uuid1()),
         )
@@ -451,7 +438,7 @@ class OptionsDiv(com.Div):
             [
                 dbc.InputGroupText('On/Off'),
                 dbc.InputGroupText(
-                    self.tog_wf_check
+                    self.wf_toggle_check
                 )
             ]
         )
@@ -520,7 +507,7 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.tog_pe_check = dbc.Checkbox(
+        self.pe_toggle_check = dbc.Checkbox(
             value=True,
             id=str(uuid.uuid1()),
         )
@@ -528,7 +515,7 @@ class OptionsDiv(com.Div):
             [
                 dbc.InputGroupText('On/Off'),
                 dbc.InputGroupText(
-                    self.tog_pe_check
+                    self.pe_toggle_check
                 )
             ]
         )
@@ -595,7 +582,7 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.tog_state_check = dbc.Checkbox(
+        self.state_toggle_check = dbc.Checkbox(
             value=True,
             id=str(uuid.uuid1()),
         )
@@ -603,7 +590,7 @@ class OptionsDiv(com.Div):
             [
                 dbc.InputGroupText('On/Off'),
                 dbc.InputGroupText(
-                    self.tog_state_check
+                    self.state_toggle_check
                 )
             ]
         )
@@ -633,14 +620,7 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.text_size_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Text size'),
-                self.text_size_input
-            ]
-        )
-
-        self.download_button = dbc.Button(
+        self.download_data_btn = dbc.Button(
             'Download Data',
             id=str(uuid.uuid1()),
             style={
@@ -648,7 +628,7 @@ class OptionsDiv(com.Div):
                 'width': '100%'
             }
         )
-        self.download_trigger = dcc.Download(
+        self.download_data_tr = dcc.Download(
             id=str(uuid.uuid1()),
         )
 
@@ -715,8 +695,8 @@ class OptionsDiv(com.Div):
                         id=self.prefix('parameters_header'),
                         style={
                             'textAlign': 'center',
-                            'margin-bottom': '5%',
-                            'margin-top': '5%'
+                            'marginBottom': '5%',
+                            'marginTop': '5%'
                         },
                         children='Configuration'
                     )
@@ -818,8 +798,8 @@ class OptionsDiv(com.Div):
                     html.H4(
                         style={
                             'textAlign': 'center',
-                            'margin-bottom': '5%',
-                            'margin-top': '5%'
+                            'marginBottom': '5%',
+                            'marginTop': '5%'
                         },
                         children='Output'
                     )
@@ -839,8 +819,8 @@ class OptionsDiv(com.Div):
                     ),
                     dbc.Col(
                         [
-                            self.download_button,
-                            self.download_trigger
+                            self.download_data_btn,
+                            self.download_data_tr
                         ],
                         class_name='mb-3'
                     )
@@ -895,9 +875,9 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
 
     inputs = [
         Input(plot_div.store, 'data'),
-        Input(options.tog_pe_check, 'value'),
-        Input(options.tog_wf_check, 'value'),
-        Input(options.tog_state_check, 'value'),
+        Input(options.pe_toggle_check, 'value'),
+        Input(options.wf_toggle_check, 'value'),
+        Input(options.state_toggle_check, 'value'),
         Input(options.pe_colour_input, 'value'),
         Input(options.wf_pos_colour_input, 'value'),
         Input(options.wf_neg_colour_input, 'value'),
@@ -946,13 +926,13 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
 
     # Save data to file
     inputs = [
-        Input(options.download_button, 'n_clicks')
+        Input(options.download_data_btn, 'n_clicks')
     ]
     states = [
         State(plot_div.store, 'data')
     ]
     callback(
-        Output(options.download_trigger, 'data'),
+        Output(options.download_data_tr, 'data'),
         inputs, states, prevent_initial_call=True
     )(download_data)
 
@@ -1301,7 +1281,7 @@ def download_data(_nc: int, data: dict) -> dict:
 
     output = {
         'content': oc.getvalue(),
-        'filename': 'waveplot_harmonic_data.dat'
+        'filename': 'harmonic_data.dat'
     }
 
     return output

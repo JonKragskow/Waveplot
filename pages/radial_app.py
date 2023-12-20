@@ -18,7 +18,6 @@
 
 from dash import register_page
 from .core import radial as rc
-from .core import utils
 from .core import common as com
 
 ID_PREFIX = 'rad'
@@ -38,8 +37,6 @@ register_page(
     image=PAGE_IMAGE,
     description=PAGE_DESCRIPTION
 )
-
-prefix = utils.dash_id('orb3')
 
 plot_div = com.PlotDiv(
     ID_PREFIX,
