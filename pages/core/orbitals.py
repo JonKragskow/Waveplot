@@ -111,19 +111,19 @@ def s_3d(n: int, half: str = ''):
         step = 0.1
     elif n == 2:
         bound = 30.
-        step = 1.
+        step = 0.5
     elif n == 3:
         bound = 40.
-        step = 2.
+        step = 0.5
     elif n == 4:
         bound = 40.
-        step = 2.
+        step = 0.5
     elif n == 5:
         bound = 60.
-        step = 2.
+        step = 1.
     elif n == 6:
         bound = 80.
-        step = 2.
+        step = 1.
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -1013,7 +1013,10 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
     wav = np.load(f'assets/{half}{orb_name}.npy')
 
     # Calculate each isosurface and smooth it
-    rounds = 3
+    if 's' in orb_name:
+        rounds = 1
+    else:
+        rounds = 3
     try:
         verts1, faces1, _, _ = measure.marching_cubes(
             np.array(wav),
