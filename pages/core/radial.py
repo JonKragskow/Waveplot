@@ -356,7 +356,7 @@ class OptionsDiv(com.Div):
             placeholder=0,
             type='number',
             min=0,
-            max=120,
+            max=150,
             value=20,
             style={
                 'textAlign': 'center',
