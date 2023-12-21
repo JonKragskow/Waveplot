@@ -1267,16 +1267,16 @@ def download_data(_nc: int, data: dict) -> dict:
         '\nDisplacement (Å), Harmonic potential (cm-1)\n'
     )
     for di, se in zip(data['x'], data['potential']):
-        oc.write('{:.6f}, {:.6f}\n'.format(di, se))
+        oc.write('{:.8e}, {:.6e}\n'.format(di, se))
 
     oc.write(
         '\nDisplacement (Å), Harmonic Wavefunction for n=0, n=1, ...\n'
     )
 
     for it, x in enumerate(data['x']):
-        oc.write('{:.8f}, '.format(x))
+        oc.write('{:.8e}, '.format(x))
         for state_wf in data['wf']:
-            oc.write('{:.8f}, '.format(state_wf[it]))
+            oc.write('{:.8e}, '.format(state_wf[it]))
         oc.write('\n')
 
     output = {
