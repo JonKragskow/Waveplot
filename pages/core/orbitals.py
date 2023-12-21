@@ -1013,8 +1013,8 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
     wav = np.load(f'assets/{half}{orb_name}.npy')
 
     # Calculate each isosurface and smooth it
-    if 's' in orb_name:
-        rounds = 1
+    if 's' in orb_name and 'p' not in orb_name:
+        rounds = 0
     else:
         rounds = 3
     try:
