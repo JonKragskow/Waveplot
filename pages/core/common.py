@@ -12,7 +12,7 @@ BASIC_LAYOUT = go.Layout(
         'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
         'showticklabels': True,
         'minor_ticks': 'outside',
-        'tickformat': 'digit'
+        'tickformat': '%f'
     },
     yaxis={
         'autorange': True,
@@ -24,7 +24,7 @@ BASIC_LAYOUT = go.Layout(
         'tickfont': {'family': 'Arial', 'size': 14, 'color': 'black'},
         'showticklabels': True,
         'minor_ticks': 'outside',
-        'tickformat': 'digit'
+        'tickformat': '%f'
     },
     showlegend=True,
     margin=dict(l=90, r=30, t=30, b=60),
@@ -75,7 +75,6 @@ BASIC_CONFIG = {
         'sendDataToCloud',
         'select2d',
         'lasso',
-        'zoom3d',
         'pan3d',
         'autoScale2d',
         'tableRotation',
