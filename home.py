@@ -50,7 +50,8 @@ for name, item in page_registry.items():
                 ),
                 html.H4(item['name'])
             ],
-            class_name='col-6',
+            sm=12,
+            md=6,
             style={
                 "textAlign": "center"
             }
