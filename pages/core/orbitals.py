@@ -741,7 +741,7 @@ class OptionsDiv(com.Div):
         self.isoval_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='number',
-            value=0.01,
+            value=DEFAULT_ISO[default_orb],
             style={
                 'text-align': 'center'
             },
@@ -865,7 +865,8 @@ class OptionsDiv(com.Div):
                     dbc.Col(
                         self.orb_ig,
                         className='4 d-flex justify-content-center mb-3',
-                        style={'align': 'center'}
+                        style={'align': 'center'},
+                        sm=12
                     )
                 ]
             ),
@@ -873,21 +874,29 @@ class OptionsDiv(com.Div):
                 children=[
                     dbc.Col(
                         self.colours_ig,
-                        className='mb-3'
+                        className='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         self.axes_ig,
-                        className='mb-3'
+                        className='mb-3',
+                        sm=12,
+                        md=6
                     )
                 ]
             ),
             dbc.Row(
                 [
-                    dbc.Col([
-                        self.half_ig
-                    ]),
                     dbc.Col(
-                        self.isoval_ig
+                        self.half_ig,
+                        sm=12,
+                        md=6
+                    ),
+                    dbc.Col(
+                        self.isoval_ig,
+                        sm=12,
+                        md=6
                     )
                 ]
             )

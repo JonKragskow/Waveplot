@@ -188,7 +188,7 @@ class OptionsDiv(com.Div):
         )
         self.length_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Box Length'),
+                dbc.InputGroupText('Box Length (L)'),
                 self.length_input,
                 dbc.InputGroupText(r'nm')
             ]
@@ -279,7 +279,7 @@ class OptionsDiv(com.Div):
 
         self.wf_ftype_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Plot:'),
+                dbc.InputGroupText('Plot'),
                 self.wf_ftype_select
             ]
         )
@@ -397,7 +397,9 @@ class OptionsDiv(com.Div):
                                 target=self.mass_ig.id
                             )
                         ],
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
@@ -407,51 +409,71 @@ class OptionsDiv(com.Div):
                                 target=self.length_ig.id
                             )
                         ],
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
+                    )
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.wf_ftype_ig
+                        ],
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
                             self.max_n_ig
                         ],
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     )
                 ]
             ),
-            dbc.Row([
-                dbc.Col(
-                    [
-                        self.wf_colour_ig,
-                    ],
-                    class_name='mb-3'
-                ),
-                dbc.Col(
-                    [
-                        self.linewidth_ig,
-                    ],
-                    class_name='mb-3'
-                )
-            ]),
-            dbc.Row([
-                dbc.Col(
-                    [
-                        self.wf_ftype_ig
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        self.wf_scale_ig,
-                        dbc.Tooltip(
-                            children='Scale wavefunction size (cosmetic)',
-                            target=self.wf_scale_ig.id
-                        )
-                    ]
-                ),
-                dbc.Col(
-                    [
-                        self.wf_toggle_ig
-                    ]
-                )
-            ]),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.wf_colour_ig,
+                        ],
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
+                    ),
+                    dbc.Col(
+                        [
+                            self.linewidth_ig,
+                        ],
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
+                    )
+                ]
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.wf_scale_ig,
+                            dbc.Tooltip(
+                                children='Scale wavefunction size (cosmetic)',
+                                target=self.wf_scale_ig.id
+                            )
+                        ],
+                        sm=8
+                    ),
+                    dbc.Col(
+                        [
+                            self.wf_toggle_ig
+                        ],
+                        sm=4
+                    )
+                ]
+            ),
             dbc.Row([
                 dbc.Col([
                     html.H4(
@@ -474,14 +496,18 @@ class OptionsDiv(com.Div):
                                 target=self.image_format_ig.id
                             )
                         ],
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
                             self.download_data_btn,
                             self.download_data_tr
                         ],
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     )
                 ]
             )

@@ -396,7 +396,7 @@ class OptionsDiv(com.Div):
 
         self.wf_ftype_ig = self.make_input_group(
             [
-                dbc.InputGroupText('Plot:'),
+                dbc.InputGroupText('Plot'),
                 self.wf_ftype_select
             ]
         )
@@ -430,13 +430,26 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.state_toggle_check = dbc.Checkbox(
+            value=True,
+            id=str(uuid.uuid1()),
+        )
+        self.state_toggle_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('State energies On/Off'),
+                dbc.InputGroupText(
+                    self.state_toggle_check
+                )
+            ]
+        )
+
         self.wf_toggle_check = dbc.Checkbox(
             value=True,
             id=str(uuid.uuid1()),
         )
         self.wf_toggle_ig = self.make_input_group(
             [
-                dbc.InputGroupText('On/Off'),
+                dbc.InputGroupText('Wavefunctions On/Off'),
                 dbc.InputGroupText(
                     self.wf_toggle_check
                 )
@@ -451,7 +464,7 @@ class OptionsDiv(com.Div):
             n_clicks=0,
             style={
                 'textAlign': 'center',
-                'width': '100%'
+                'min-width': '80%'
             }
         )
 
@@ -463,6 +476,7 @@ class OptionsDiv(com.Div):
                         self.wf_colour_ig,
                         self.wf_linewidth_ig,
                         self.wf_toggle_ig,
+                        self.state_toggle_ig,
                         self.wf_ftype_ig,
                         self.wf_scale_ig,
                         self.max_n_ig
@@ -528,7 +542,7 @@ class OptionsDiv(com.Div):
             n_clicks=0,
             style={
                 'textAlign': 'center',
-                'width': '100%'
+                'min-width': '80%'
             }
         )
 
@@ -545,87 +559,11 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.state_colour_input = dbc.Input(
-            id=str(uuid.uuid1()),
-            type='color',
-            value='#000000',
-            style={
-                'height': '40px'
-            }
-        )
-
-        self.state_colour_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Colour'),
-                self.state_colour_input
-            ]
-        )
-
-        self.state_linewidth_input = dbc.Input(
-            id=str(uuid.uuid1()),
-            placeholder=2.,
-            type='number',
-            min=1,
-            max=10,
-            value=2.,
-            style={
-                'textAlign': 'center',
-                'verticalAlign': 'middle',
-                'horizontalAlign': 'middle'
-            }
-        )
-
-        self.state_linewidth_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('Linewidth'),
-                self.state_linewidth_input
-            ]
-        )
-
-        self.state_toggle_check = dbc.Checkbox(
-            value=True,
-            id=str(uuid.uuid1()),
-        )
-        self.state_toggle_ig = self.make_input_group(
-            [
-                dbc.InputGroupText('On/Off'),
-                dbc.InputGroupText(
-                    self.state_toggle_check
-                )
-            ]
-        )
-
-        self.open_state_modal_btn = dbc.Button(
-            'States',
-            id=str(uuid.uuid1()),
-            color='primary',
-            className='me-1',
-            n_clicks=0,
-            style={
-                'textAlign': 'center',
-                'width': '100%'
-            }
-        )
-
-        self.state_modal = self.make_modal(
-            [
-                dbc.ModalHeader('State plot options'),
-                dbc.ModalBody(
-                    [
-                        self.state_colour_ig,
-                        self.state_linewidth_ig,
-                        self.state_toggle_ig
-                    ]
-                )
-            ]
-        )
-
         self.download_data_btn = dbc.Button(
             'Download Data',
             id=str(uuid.uuid1()),
             style={
-                'boxShadow': 'none',
-                'width': '100%'
+                'min-width': '80%'
             }
         )
         self.download_data_tr = dcc.Download(
@@ -698,6 +636,7 @@ class OptionsDiv(com.Div):
                             'marginBottom': '5%',
                             'marginTop': '5%'
                         },
+                        className='text-center',
                         children='Configuration'
                     )
                 ),
@@ -722,7 +661,10 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        class_name='mb-3'
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
@@ -735,9 +677,13 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        class_name='mb-3'
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 [
@@ -752,7 +698,10 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        class_name='mb-3'
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
@@ -765,34 +714,38 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        class_name='mb-3'
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
                     ),
                     self.var_store
-                ]
+                ],
+                justify='center'
             ),
-            dbc.Row([
-                dbc.Col(
-                    [
-                        self.open_wf_modal_btn,
-                        self.wf_modal
-                    ],
-                    class_name='mb-3'
-                ),
-                dbc.Col(
-                    [
-                        self.open_pe_modal_btn,
-                        self.pe_modal
-                    ],
-                    class_name='mb-3'
-                ),
-                dbc.Col(
-                    [
-                        self.open_state_modal_btn,
-                        self.state_modal
-                    ],
-                    class_name='mb-3'
-                ),
-            ]),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.open_wf_modal_btn,
+                            self.wf_modal
+                        ],
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
+                    ),
+                    dbc.Col(
+                        [
+                            self.open_pe_modal_btn,
+                            self.pe_modal
+                        ],
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
+                    )
+                ],
+                justify='center'
+            ),
             dbc.Row([
                 dbc.Col([
                     html.H4(
@@ -815,16 +768,23 @@ class OptionsDiv(com.Div):
                                 target=self.image_format_ig.id
                             )
                         ],
-                        class_name='mb-3'
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
                             self.download_data_btn,
                             self.download_data_tr
                         ],
-                        class_name='mb-3'
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=6
                     )
-                ]
+                ],
+                justify='center'
             )
         ]
 
@@ -881,10 +841,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Input(options.pe_colour_input, 'value'),
         Input(options.wf_pos_colour_input, 'value'),
         Input(options.wf_neg_colour_input, 'value'),
-        Input(options.state_colour_input, 'value'),
         Input(options.pe_linewidth_input, 'value'),
         Input(options.wf_linewidth_input, 'value'),
-        Input(options.state_linewidth_input, 'value'),
         Input(options.wf_scale_input, 'value'),
         Input(options.wf_ftype_select, 'value')
     ]
@@ -909,15 +867,6 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Output(options.pe_modal, 'is_open'),
         [
             Input(options.open_pe_modal_btn, 'n_clicks')
-        ],
-        prevent_initial_call=True
-    )(lambda x: True)
-
-    # Open WF, PE, and state modals
-    callback(
-        Output(options.state_modal, 'is_open'),
-        [
-            Input(options.open_state_modal_btn, 'n_clicks')
         ],
         prevent_initial_call=True
     )(lambda x: True)
@@ -1079,8 +1028,7 @@ def calc_data(vars: dict[str, float], max_n: int):
 
 def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
                 toggle_states: bool, colour_pe: str, pcolour_wf: str,
-                ncolour_wf: str, colour_states: str, lw_pe: float,
-                lw_wf: float, lw_states: float, wf_scale: float,
+                ncolour_wf: str, lw_pe: float, lw_wf: float, wf_scale: float,
                 wf_prob: str) -> Patch:
     '''
     Plots harmonic state energies and wavefunctions, and harmonic potential
@@ -1099,7 +1047,7 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
         Patch graph figure
     '''
 
-    if None in [lw_wf, lw_pe, lw_states, wf_scale]:
+    if None in [lw_wf, lw_pe, wf_scale]:
         return no_update
 
     traces = []
@@ -1155,35 +1103,36 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
                     hoverinfo='skip'
                 )
             )
-            # Add invisible traces for next tonexty fill
-            traces.append(
-                go.Scatter(
-                    x=_x,
-                    y=state,
-                    line={
-                        'color': 'rgba(0,0,0,0)'
-                    },
-                    mode='lines',
-                    hoverinfo='skip'
+            if wf_prob != 'psi2':
+                # Add invisible traces for next tonexty fill
+                traces.append(
+                    go.Scatter(
+                        x=_x,
+                        y=state,
+                        line={
+                            'color': 'rgba(0,0,0,0)'
+                        },
+                        mode='lines',
+                        hoverinfo='skip'
+                    )
                 )
-            )
-            # Plot negative values
-            # Set positive values to 0 to avoid plotly fill bug
-            negwf = copy.copy(wf)
-            negwf[wf_posi] = 0.
-            traces.append(
-                go.Scatter(
-                    x=x_vals,
-                    y=negwf * wf_scale + state[0],
-                    line={
-                        'color': ncolour_wf,
-                        'width': lw_wf
-                    },
-                    connectgaps=False,
-                    fill='tonexty',
-                    hoverinfo='skip'
+                # Plot negative values
+                # Set positive values to 0 to avoid plotly fill bug
+                negwf = copy.copy(wf)
+                negwf[wf_posi] = 0.
+                traces.append(
+                    go.Scatter(
+                        x=x_vals,
+                        y=negwf * wf_scale + state[0],
+                        line={
+                            'color': ncolour_wf,
+                            'width': lw_wf
+                        },
+                        connectgaps=False,
+                        fill='tonexty',
+                        hoverinfo='skip'
+                    )
                 )
-            )
         # Plot states on top to cover red and blue zero lines
         if toggle_states:
             traces.append(
@@ -1191,8 +1140,8 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
                     x=x_vals,
                     y=[state[0]] * len(x_vals),
                     line={
-                        'color': colour_states,
-                        'width': lw_states
+                        'color': 'black',
+                        'width': lw_wf
                     },
                     mode='lines',
                     hoverinfo='text',

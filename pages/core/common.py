@@ -102,35 +102,78 @@ class Div():
 
     @property
     def value(self) -> str:
-        return self.tab.value
+        return self.div.value
 
     @value.setter
     def value(self, value: str):
-        self.tab.value = self.prefix(value)
+        self.div.value = self.prefix(value)
 
     @property
     def id(self) -> str:
-        return self.tab.id
+        return self.div.id
 
     @id.setter
     def id(self, value: str):
-        self.tab.id = self.prefix(value)
+        self.div.id = self.prefix(value)
 
     @property
     def label(self) -> str:
-        return self.tab.label
+        return self.div.label
 
     @label.setter
     def label(self, value: str):
-        self.tab.label = value
+        self.div.label = value
 
     @property
     def children(self) -> str:
-        return self.tab.children
+        return self.div.children
 
     @children.setter
     def children(self, value: list):
-        self.tab.children = value
+        self.div.children = value
+
+
+class Container():
+    def __init__(self, prefix, **kwargs):
+        self.prefix = dash_id(prefix)
+
+        self.container = dbc.Container(
+            children=[],
+            **kwargs
+        )
+        return
+
+    @property
+    def value(self) -> str:
+        return self.container.value
+
+    @value.setter
+    def value(self, value: str):
+        self.container.value = self.prefix(value)
+
+    @property
+    def id(self) -> str:
+        return self.container.id
+
+    @id.setter
+    def id(self, value: str):
+        self.container.id = self.prefix(value)
+
+    @property
+    def label(self) -> str:
+        return self.container.label
+
+    @label.setter
+    def label(self, value: str):
+        self.container.label = value
+
+    @property
+    def children(self) -> str:
+        return self.container.children
+
+    @children.setter
+    def children(self, value: list):
+        self.container.children = value
 
 
 class PlotDiv(Div):
@@ -202,37 +245,27 @@ class PlotDiv(Div):
 
 def make_layout(left_divs: html.Div, right_divs: html.Div) -> html.Div:
 
-    layout = html.Div(
+    layout = dbc.Container(
         children=[
-            html.Div(
-                children=[
-                    html.Div(
-                        children=[
-                            dbc.Row([
-                                dbc.Col(
-                                    children=[left_divs],
-                                    className="col-6"
-                                ),
-                                dbc.Col(
-                                    children=[right_divs], # noqa
-                                    className="col-6"
-                                )
-                            ])
-                        ],
-                        style={
-                            "marginTop": "10px",
-                            "width": "95vw",
-                            "marginLeft": "2.5vw",
-                            "marginRight": "2.5vw"
-                        }
-                    ),
-                ],
-                className="main_wrapper"
-            ),
+            dbc.Row([
+                dbc.Col(
+                    children=[left_divs],
+                    sm=12,
+                    lg=6
+                ),
+                dbc.Col(
+                    children=[right_divs],
+                    sm=12,
+                    lg=6
+                )
+            ]),
             make_footer()
-        ]
+        ],
+        fluid=True,
+        style={
+            'padding-bottom': '50px'
+        }
     )
-
     return layout
 
 

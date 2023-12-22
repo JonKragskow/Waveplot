@@ -27,6 +27,27 @@ import uuid
 from . import common as com
 from . import utils as ut
 
+FUNC_TO_LABEL = {
+    'rdf': '4πr<sup>2</sup>R(r)<sup>2</sup>',
+    'rwf': 'R(r)'
+}
+
+UNIT_TO_LABEL = {
+    'bohr': 'a<sub>0</sub>',
+    'angstrom': 'Å'
+}
+
+UNIT_VALUE = {
+    'bohr': 1.,
+    'angstrom': 0.529177
+}
+
+LABEL_TO_L = {
+    's': 0,
+    'p': 1,
+    'd': 2,
+    'f': 3,
+}
 
 RADIAL_LAYOUT = copy.deepcopy(com.BASIC_LAYOUT)
 RADIAL_LAYOUT.xaxis.title = {
@@ -47,6 +68,7 @@ RADIAL_LAYOUT.yaxis.title = {
 }
 RADIAL_LAYOUT.yaxis.zeroline = True
 RADIAL_LAYOUT.yaxis.tickformat = '.2f'
+RADIAL_LAYOUT.xaxis.autorange = False
 
 RADIAL_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
 
@@ -189,6 +211,10 @@ def radial_s(n: int, rho: ArrayLike):
         rad = (1. / (17640. * np.sqrt(7)))*(5040. - 15120. * rho + 12600. * rho**2. - 4200. * rho**3. + 630. * rho**4. -42* rho**5. + rho**6) * np.exp(-rho / 2.) # noqa
 
     return rad
+
+
+def avg_r(n: int, l: int):
+    return n ** 2 * (1 + 0.5 * (1 - (l**2 + l)/(n**2)))
 
 
 def radial_p(n: int, rho: ArrayLike) -> NDArray:
@@ -427,8 +453,8 @@ class OptionsDiv(com.Div):
             value=True,
             id=str(uuid.uuid1()),
         )
-        self.legend_ig = dbc.InputGroup(
-            children=[
+        self.legend_ig = self.make_input_group(
+            [
                 dbc.InputGroupText('Legend'),
                 dbc.InputGroupText(
                     self.legend_toggle
@@ -436,6 +462,19 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        # Average r toggle checkbox
+        self.avg_distance_toggle = dbc.Checkbox(
+            value=True,
+            id=str(uuid.uuid1())
+        )
+        self.avg_distance_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('⟨r⟩'),
+                dbc.InputGroupText(
+                    self.avg_distance_toggle
+                )
+            ]
+        )
         self.download_button = dbc.Button(
             'Download Data',
             id=str(uuid.uuid1()),
@@ -513,11 +552,15 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.orb_select,
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         self.func_ig,
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     )
                 ]
             ),
@@ -525,11 +568,15 @@ class OptionsDiv(com.Div):
                 children=[
                     dbc.Col(
                         self.upper_x_ig,
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         self.distance_ig,
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     )
                 ]
             ),
@@ -537,11 +584,24 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.colour_ig,
-                        class_name='mb-3'
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         self.legend_ig,
-                        class_name='mb-3'
+                        sm=6,
+                        md=3
+                    ),
+                    dbc.Col(
+                        [
+                            self.avg_distance_ig,
+                            dbc.Tooltip(
+                                target=self.avg_distance_ig.id,
+                                children='Add marker with average electron distance' # noqa
+                            )
+                        ],
+                        sm=6,
+                        md=3
                     )
                 ]
             ),
@@ -561,14 +621,18 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.image_format_ig,
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
                             self.download_button,
                             self.download_trigger
                         ],
-                        class_name='mb-3'
+                        class_name='mb-3',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Tooltip(
                         children='Use the camera button in the top right of \
@@ -607,7 +671,6 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     states = [
         State(options_div.func_select, 'value'),
         State(options_div.orb_select, 'value'),
-        State(options_div.upper_x_input, 'value'),
         State(options_div.distance_select, 'value')
     ]
     callback(
@@ -624,7 +687,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         Input(options_div.upper_x_input, 'value'),
         Input(options_div.distance_select, 'value'),
         Input(options_div.colour_select, 'value'),
-        Input(options_div.legend_toggle, 'value')
+        Input(options_div.legend_toggle, 'value'),
+        Input(options_div.avg_distance_toggle, 'value')
     ]
     callback(
         [
@@ -654,8 +718,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     return
 
 
-def compute_radials(func: str, orbs: list[str], low_x: float, up_x: float,
-                    unit: str) -> NDArray:
+def compute_radials(func: str, orbs: list[str], r: ArrayLike) -> NDArray:
     '''
     Computes radial wavefunction or radial distribution function
 
@@ -665,29 +728,17 @@ def compute_radials(func: str, orbs: list[str], low_x: float, up_x: float,
         Name of function
     orbs: list[str]
         Orbitals to include
-    low_x: float
-        Lower x value in either Angstrom or Bohr radii (depends on `unit`)
-    up_x: float
-        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
-    unit: str {'Angstrom', 'Bohr Radii'}
-        Distance unit
+    r: ArrayLike
+        r values in Bohr radii
 
     Returns
     -------
     ndarray of floats
-        First column is x, remaining columns are orbital data with\n
-        same order as `orbs`
+        orbital functions at each r, with same order as `orbs`
     '''
 
-    unit_conv = {
-        'bohr': 1.,
-        'angstrom': 0.529177
-    }
-
-    low_x /= unit_conv[unit]
-    up_x /= unit_conv[unit]
-
-    x = np.linspace(low_x, up_x, 5000)
+    if isinstance(orbs, str):
+        orbs = [orbs]
 
     # Dictionary of orbital functions
     orb_funcs = {
@@ -697,17 +748,15 @@ def compute_radials(func: str, orbs: list[str], low_x: float, up_x: float,
         'f': f_2d,
     }
 
-    full_data = np.zeros([x.size, len(orbs) + 1])
-    full_data[:, 0] = x * unit_conv[unit]
-
-    for it, orb in enumerate(orbs):
-        full_data[:, it + 1] = orb_funcs[orb[1]](int(orb[0]), x, func)
+    full_data = [
+        orb_funcs[orb[1]](int(orb[0]), r, func)
+        for orb in orbs
+    ]
 
     return full_data
 
 
-def download_data(_nc: int, func: str, orbs: list[str],
-                  up_x: float, unit: str) -> dict:
+def download_data(_nc: int, func: str, orbs: list[str], unit: str) -> dict:
     '''
     Creates output file for Radial wavefunction/distribution function
 
@@ -719,8 +768,6 @@ def download_data(_nc: int, func: str, orbs: list[str],
         Name of function
     orbs: list[str]
         Orbitals to include
-    up_x: float
-        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
     unit: str {'Angstrom', 'Bohr Radii'}
         Distance unit
 
@@ -730,14 +777,17 @@ def download_data(_nc: int, func: str, orbs: list[str],
         Output dictionary used by dcc.Download
     '''
 
-    if None in [up_x, unit, func, orbs]:
+    if None in [unit, func, orbs]:
         return no_update
 
     if not len(orbs):
         return no_update
 
-    # Recompute the data
-    data = compute_radials(func, orbs, 0., up_x, unit)
+    # r in Bohr radii
+    r = np.linspace(0, 150, 5000)
+
+    # R(r) or RDF where r has units of Bohr radii
+    radial = np.array(compute_radials(func, orbs, r))
 
     func_to_name = {
         'rdf': 'Radial Distribution Function',
@@ -750,12 +800,13 @@ def download_data(_nc: int, func: str, orbs: list[str],
     comment += 'an app by Jon Kragskow \n '
 
     # Column headers
-    header = f'x ({unit}),'
+    header = f'r ({unit}),'
     for orb in orbs:
         header += '{}, '.format(orb)
 
     # Create iostring and save data to it
     data_str = io.StringIO()
+    data = np.vstack([r * UNIT_VALUE[unit], radial]).T
     np.savetxt(data_str, data, comments=comment, header=header, delimiter=',')
 
     # Create output dictionary for dcc.Download
@@ -767,9 +818,9 @@ def download_data(_nc: int, func: str, orbs: list[str],
     return output
 
 
-def plot_data(func: str, orbs: list[str], up_x: float,
+def plot_data(func: str, orbs: list[str], x_max: float,
               unit: str, colour_scheme: str,
-              legend: bool) -> tuple[Patch, Patch]:
+              legend: bool, avg_distance: bool) -> tuple[Patch, Patch]:
     '''
     Plots Radial wavefunction/distribution function data
 
@@ -786,7 +837,9 @@ def plot_data(func: str, orbs: list[str], up_x: float,
     colour_scheme: str ['tol', 'wong', 'standard']
         Colour scheme to use for plots
     legend: bool
-        Display legend (on=True, off=False)
+        If True, displays legend
+    avg_distance: bool
+        If True, plots line for average radial distance
 
     Returns
     -------
@@ -798,7 +851,7 @@ def plot_data(func: str, orbs: list[str], up_x: float,
 
     fig = Patch()
 
-    if None in [up_x, unit, func, orbs]:
+    if None in [x_max, unit, func, orbs]:
         return no_update
 
     if not len(orbs):
@@ -807,46 +860,76 @@ def plot_data(func: str, orbs: list[str], up_x: float,
     # Create colour list in correct order
     # i.e. selected colour is first
     if colour_scheme == 'tol':
-        cols = ut.tol_cols + ut.wong_cols + ut.def_cols
+        colours = ut.tol_cols + ut.wong_cols + ut.def_cols
     elif colour_scheme == 'wong':
-        cols = ut.wong_cols + ut.def_cols + ut.tol_cols
+        colours = ut.wong_cols + ut.def_cols + ut.tol_cols
     else:
-        cols = ut.def_cols + ut.tol_cols + ut.wong_cols
+        colours = ut.def_cols + ut.tol_cols + ut.wong_cols
 
-    data = compute_radials(func, orbs, 0., up_x, unit)
+    # r in Bohr radii
+    r = np.linspace(0, 150, 5000)
 
-    # Create plotly trace
+    # R(r) or RDF where r has units of Bohr radii
+    radial = compute_radials(func, orbs, r)
+
+    # Average distance in Bohr radii
+    average_r = [
+        avg_r(int(orb[0]), LABEL_TO_L[orb[1]])
+        for orb in orbs
+    ]
+
+    # R(r) or RDF at average distances where r has units of Bohr radii
+    radial_at_average_r = [
+        compute_radials(func, orb, avr)
+        for orb, avr in zip(orbs, average_r)
+    ]
+
+    # Plot R(r) or RDF
     traces = [
         go.Scatter(
-            x=data[:, 0],
-            y=data[:, it + 1],
+            x=r * UNIT_VALUE[unit],
+            y=rad,
             line={
                 'width': 5
             },
             name=orb,
-            hoverinfo='none',
-            marker={'color': cols[it]}
+            legendgroup=orb,
+            hoverinfo='skip',
+            marker={'color': col}
         )
-        for it, orb in enumerate(orbs)
+        for rad, orb, col in zip(radial, orbs, colours)
     ]
+
+    if avg_distance:
+        avg_traces = [
+            go.Scatter(
+                x=[avgr * UNIT_VALUE[unit]] * 100,
+                y=np.linspace(0, np.max(radial), 100),
+                mode='lines',
+                legendgroup=orb,
+                showlegend=False,
+                hovertext=f'{orb} ⟨r⟩ = {avgr * UNIT_VALUE[unit]:.2f} {UNIT_TO_LABEL[unit]}', # noqa
+                hoverinfo='text',
+                name=orb,
+                line={'color': col, 'dash': 'dash'}
+            )
+            for avgr, col, orb in zip(average_r, colours, orbs)
+        ]
+
+        print(average_r)
+        print(radial_at_average_r)
+        print(orbs)
+
+        traces += avg_traces
 
     fig['data'] = traces
 
-    unit_to_label = {
-        'bohr': 'r (a<sub>0</sub>)',
-        'angstrom': 'r (Å)'
-    }
-
-    func_to_label = {
-        'rdf': '4πr<sup>2</sup>R(r)<sup>2</sup>',
-        'rwf': 'R(r)'
-    }
-
     # Update x axis with correct unit
-    fig['layout']['xaxis']['title']['text'] = unit_to_label[unit]
+    fig['layout']['xaxis']['title']['text'] = f'r ({UNIT_TO_LABEL[unit]})'
+    fig['layout']['xaxis']['range'] = [0, x_max]
 
     # Update y axis with correct label
-    fig['layout']['yaxis']['title']['text'] = func_to_label[func]
+    fig['layout']['yaxis']['title']['text'] = FUNC_TO_LABEL[func]
 
     fig['layout']['showlegend'] = legend
 
@@ -888,21 +971,11 @@ def update_save_format(fmt: str, func: str, unit: str):
     fig = Patch()
     fig['layout'] = RADIAL_LAYOUT
 
-    func_to_label = {
-        'rdf': '4πr<sup>2</sup>R(r)<sup>2</sup>',
-        'rwf': 'R(r)'
-    }
-
-    unit_to_label = {
-        'bohr': 'r (a<sub>0</sub>)',
-        'angstrom': 'r (Å)'
-    }
-
     # Update x axis with correct unit
-    fig['layout']['xaxis']['title']['text'] = unit_to_label[unit]
+    fig['layout']['xaxis']['title']['text'] = f'r ({UNIT_TO_LABEL[unit]})'
 
     # Update y axis with correct label
-    fig['layout']['yaxis']['title']['text'] = func_to_label[func]
+    fig['layout']['yaxis']['title']['text'] = FUNC_TO_LABEL[func]
 
     # Config
     config = Patch()

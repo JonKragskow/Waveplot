@@ -1,79 +1,6 @@
-.col-1 {
-    width: 8.33%;
-}
-
-.col-2 {
-    width: 16.66%;
-}
-
-.col-3 {
-    width: 25%;
-}
-
-.col-4 {
-    width: 33.33%;
-}
-
-.col-5 {
-    width: 41.66%;
-}
-
-.col-6 {
-    width: 50%;
-    float: left;
-    max-height: 95vh;
-}
-
-.col-6-options {
-    width: 50%;
-    float: right;
-    /* max-height: 95vh; */
-    overflow: hidden;
-}
-
-.col-6-viewer {
-    width: 50%;
-    float: left;
-    max-height: 95vh;
-    max-width: 47vw;
-}
-
-.col-6-checkbox {
-    max-width: 25%;
-}
-
-.col-7 {
-    width: 58.33%;
-}
-
-.col-8 {
-    width: 66.66%;
-}
-
-.col-9 {
-    width: 75%;
-}
-
-.col-10 {
-    width: 83.33%;
-}
-
-.col-11 {
-    width: 91.66%;
-}
-
-.col-12 {
-    width: 100%;
-}
-
 .plot_area {
     width: 100%;
     aspect-ratio: 7/6
-}
-
-.molecule_div {
-    height: 80vh;
-    width: 100%;
 }
 
 .footer_custom {
@@ -97,39 +24,6 @@
 
 @media only screen and (max-width: 1100px) {
     /* For mobile phones: */
-    [class*="col-"] {
-        width: 100%;
-        height: 50%;
-        float: none;
-    }
-    [class*="molecule_div"] {
-        width: 100%;
-        height: 50vh;
-    }
-    [class*="col-6-viewer"] {
-        width: 100%;
-        max-width: 100%;
-        height: 50%;
-        float: none;
-    }
-    [class*="col-6-checkbox"] {
-        width: 50%;
-    }
-    [class*="col-6-options"] {
-        width: 100%;
-    }
-}
-
-@media only screen and (max-width: 1100px) {
-    /* For mobile phones: */
-    [class*="plot_area"] {
-        width: 100%;
-        aspect-ratio: 1/1;
-    }
-}
-
-@media only screen and (max-width: 1100px) {
-    /* For mobile phones: */
     [class*="footer_custom"] {
         background-color: #307cff;
         color: white;
@@ -143,19 +37,7 @@
     }
 }
 
-.main_wrapper {
-    margin: 0 auto -80px;
-    /* footer height + space */
-    min-height: 100%;
-    padding: 0 0 100px;
-    /* footer height + space */
-    overflow: hidden;
-}
 
-.textentry {
-    text-align: center;
-    vertical-align: middle;
-}
 
 html {
     font-size: 14px;
