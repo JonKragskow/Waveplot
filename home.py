@@ -1,4 +1,4 @@
-"""
+'''
                     Waveplot: An online wavefunction viewer
                     Copyright (C) 2023  Jon G. C. Kragskow
 
@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
+'''
 
 from dash import html, page_registry
 import dash_bootstrap_components as dbc
@@ -41,8 +41,8 @@ for name, item in page_registry.items():
                         html.Img(
                             src=item['image'],
                             style={
-                                "width": "350px",
-                                "height": "350px"
+                                'width': '350px',
+                                'height': '350px'
                             }
                         )
                     ],
@@ -53,7 +53,7 @@ for name, item in page_registry.items():
             sm=12,
             md=6,
             style={
-                "textAlign": "center"
+                'textAlign': 'center'
             }
         )
     )
@@ -75,12 +75,14 @@ def reshape(lst, shape):
 
 grid = reshape(grid, [2, 2])
 
-layout = html.Div(
+layout = dbc.Container(
     [
         dbc.Row(
             gr
         ) for gr in grid
     ] + [utils.footer()],
-    className="main_wrapper",
-    style={"marginTop": "20px"}
+    style={
+        'marginTop': '20px',
+        'padding-bottom': '50px'
+    }
 )
