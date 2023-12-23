@@ -397,7 +397,8 @@ class OptionsDiv(com.Div):
                                 target=self.mass_ig.id
                             )
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
@@ -409,11 +410,13 @@ class OptionsDiv(com.Div):
                                 target=self.length_ig.id
                             )
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 [
@@ -421,6 +424,8 @@ class OptionsDiv(com.Div):
                         [
                             self.wf_ftype_ig
                         ],
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
@@ -428,11 +433,13 @@ class OptionsDiv(com.Div):
                         [
                             self.max_n_ig
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 [
@@ -440,7 +447,8 @@ class OptionsDiv(com.Div):
                         [
                             self.wf_colour_ig,
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
@@ -448,11 +456,13 @@ class OptionsDiv(com.Div):
                         [
                             self.linewidth_ig,
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 [
@@ -464,15 +474,20 @@ class OptionsDiv(com.Div):
                                 target=self.wf_scale_ig.id
                             )
                         ],
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=8
                     ),
                     dbc.Col(
                         [
                             self.wf_toggle_ig
                         ],
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=4
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row([
                 dbc.Col([
@@ -496,7 +511,8 @@ class OptionsDiv(com.Div):
                                 target=self.image_format_ig.id
                             )
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
@@ -505,11 +521,13 @@ class OptionsDiv(com.Div):
                             self.download_data_btn,
                             self.download_data_tr
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     )
-                ]
+                ],
+                justify='center'
             )
         ]
 

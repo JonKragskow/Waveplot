@@ -699,11 +699,6 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.orb_ig.style = {
-            'width': '50%',
-            'align': 'center'
-        }
-
         self.half_select = dbc.Select(
             id=str(uuid.uuid1()),
             style={
@@ -864,41 +859,50 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.orb_ig,
-                        className='4 d-flex justify-content-center mb-3',
-                        style={'align': 'center'},
+                        style={'max-width': '80%'},
+                        className='mb-3 text-center',
                         sm=12
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 children=[
                     dbc.Col(
                         self.colours_ig,
-                        className='mb-3',
-                        sm=12,
-                        md=6
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=6,
+                        md=3
                     ),
                     dbc.Col(
                         self.axes_ig,
-                        className='mb-3',
-                        sm=12,
-                        md=6
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=6,
+                        md=3
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 [
                     dbc.Col(
                         self.half_ig,
-                        sm=12,
-                        md=6
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=6,
+                        md=3
                     ),
                     dbc.Col(
                         self.isoval_ig,
-                        sm=12,
-                        md=6
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
+                        sm=6,
+                        md=3
                     )
-                ]
+                ],
+                justify='center'
             )
         ]
 

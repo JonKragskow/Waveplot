@@ -778,7 +778,6 @@ class OptionsDiv(com.Div):
                             self.download_data_btn,
                             self.download_data_tr
                         ],
-                        style={'max-width': '80%'},
                         class_name='mb-3 text-center',
                         sm=12,
                         md=6
