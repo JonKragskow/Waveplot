@@ -397,8 +397,7 @@ class OptionsDiv(com.Div):
                                 target=self.mass_ig.id
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -410,8 +409,7 @@ class OptionsDiv(com.Div):
                                 target=self.length_ig.id
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )
@@ -424,8 +422,7 @@ class OptionsDiv(com.Div):
                         [
                             self.wf_ftype_ig
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -433,8 +430,7 @@ class OptionsDiv(com.Div):
                         [
                             self.max_n_ig
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )
@@ -447,8 +443,7 @@ class OptionsDiv(com.Div):
                         [
                             self.wf_colour_ig,
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -456,8 +451,7 @@ class OptionsDiv(com.Div):
                         [
                             self.linewidth_ig,
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )
@@ -474,16 +468,14 @@ class OptionsDiv(com.Div):
                                 target=self.wf_scale_ig.id
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=8
                     ),
                     dbc.Col(
                         [
                             self.wf_toggle_ig
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=4
                     )
                 ],
@@ -511,8 +503,7 @@ class OptionsDiv(com.Div):
                                 target=self.image_format_ig.id
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -521,8 +512,7 @@ class OptionsDiv(com.Div):
                             self.download_data_btn,
                             self.download_data_tr
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )

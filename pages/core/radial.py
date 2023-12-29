@@ -552,15 +552,13 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.orb_select,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
                         self.func_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )
@@ -571,15 +569,13 @@ class OptionsDiv(com.Div):
                 children=[
                     dbc.Col(
                         self.upper_x_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
                         self.distance_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )
@@ -590,15 +586,13 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.colour_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
                         self.legend_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=6,
                         md=3
                     ),
@@ -610,8 +604,7 @@ class OptionsDiv(com.Div):
                                 children='Add line for average electron distance' # noqa
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=6,
                         md=3
                     )
@@ -634,8 +627,7 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.image_format_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -644,8 +636,7 @@ class OptionsDiv(com.Div):
                             self.download_button,
                             self.download_trigger
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),

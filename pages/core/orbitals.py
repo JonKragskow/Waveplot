@@ -859,8 +859,7 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.orb_ig,
-                        style={'max-width': '80%'},
-                        className='mb-3 text-center',
+                        className='mb-3 text-center mwmob',
                         sm=12
                     )
                 ],
@@ -870,17 +869,15 @@ class OptionsDiv(com.Div):
                 children=[
                     dbc.Col(
                         self.colours_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
-                        sm=6,
-                        md=3
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         self.axes_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
-                        sm=6,
-                        md=3
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     )
                 ],
                 justify='center'
@@ -889,17 +886,15 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.half_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
-                        sm=6,
-                        md=3
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         self.isoval_ig,
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
-                        sm=6,
-                        md=3
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     )
                 ],
                 justify='center'

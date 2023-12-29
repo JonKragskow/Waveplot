@@ -661,8 +661,7 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -677,8 +676,7 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     )
@@ -698,8 +696,7 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -714,8 +711,7 @@ class OptionsDiv(com.Div):
                                 }
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
@@ -768,8 +764,7 @@ class OptionsDiv(com.Div):
                                 target=self.image_format_ig.id
                             )
                         ],
-                        style={'max-width': '80%'},
-                        class_name='mb-3 text-center',
+                        class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),

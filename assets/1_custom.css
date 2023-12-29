@@ -37,6 +37,13 @@
     }
 }
 
+@media only screen and (max-width: 1100px) {
+    /* For mobile phones: */
+    [class*="mwmob"] {
+        max-width: 80%;
+    }
+}
+
 html {
     font-size: 14px;
 }
