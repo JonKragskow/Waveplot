@@ -895,12 +895,6 @@ def plot_data(func: str, orbs: list[str], x_max: float,
         for orb in orbs
     ]
 
-    # R(r) or RDF at average distances where r has units of Bohr radii
-    radial_at_average_r = [
-        compute_radials(func, orb, avr)
-        for orb, avr in zip(orbs, average_r)
-    ]
-
     # Plot R(r) or RDF
     traces = [
         go.Scatter(
