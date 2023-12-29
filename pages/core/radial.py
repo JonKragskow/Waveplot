@@ -817,7 +817,7 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str) -> dict:
     comment += 'an app by Jon Kragskow \n '
 
     # Column headers
-    header = f'r ({unit}),'
+    header = f'r ({unit.capitalize()}),'
     for orb in orbs:
         header += '{}, '.format(orb)
 
