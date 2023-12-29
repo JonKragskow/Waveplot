@@ -28,7 +28,7 @@ from . import common as com
 from . import utils as ut
 
 FUNC_TO_LABEL = {
-    'rdf': '4πr<sup>2</sup>R(r)<sup>2</sup>',
+    'rdf': 'r<sup>2</sup>R(r)<sup>2</sup>',
     'rwf': 'R(r)'
 }
 
@@ -59,7 +59,7 @@ RADIAL_LAYOUT.xaxis.title = {
     }
 }
 RADIAL_LAYOUT.yaxis.title = {
-    'text': '4πr<sup>2</sup>R(r)<sup>2</sup>',
+    'text': 'r<sup>2</sup>R(r)<sup>2</sup>',
     'font': {
         'family': 'Arial',
         'size': 14,
@@ -552,43 +552,53 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.orb_select,
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
                         self.func_ig,
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 children=[
                     dbc.Col(
                         self.upper_x_ig,
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
                         self.distance_ig,
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row(
                 [
                     dbc.Col(
                         self.colour_ig,
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
                         self.legend_ig,
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=6,
                         md=3
                     ),
@@ -600,10 +610,13 @@ class OptionsDiv(com.Div):
                                 children='Add marker with average electron distance' # noqa
                             )
                         ],
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=6,
                         md=3
                     )
-                ]
+                ],
+                justify='center'
             ),
             dbc.Row([
                 dbc.Col([
@@ -621,7 +634,8 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         self.image_format_ig,
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
@@ -630,7 +644,8 @@ class OptionsDiv(com.Div):
                             self.download_button,
                             self.download_trigger
                         ],
-                        class_name='mb-3',
+                        style={'max-width': '80%'},
+                        class_name='mb-3 text-center',
                         sm=12,
                         md=6
                     ),
@@ -642,7 +657,8 @@ class OptionsDiv(com.Div):
                             'textAlign': 'center',
                         },
                     )
-                ]
+                ],
+                justify='center'
             )
         ]
 
@@ -710,7 +726,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         ],
         [
             State(options_div.func_select, 'value'),
-            State(options_div.distance_select, 'value')
+            State(options_div.distance_select, 'value'),
+            State(options_div.upper_x_input, 'value')
         ],
         prevent_initial_call=True
     )(update_save_format)
@@ -830,7 +847,7 @@ def plot_data(func: str, orbs: list[str], x_max: float,
         Name of function
     orbs: list[str]
         Orbitals to include
-    up_x: float
+    x_max: float
         Upper x value in either Angstrom or Bohr radii (depends on `unit`)
     unit: str {'Angstrom', 'Bohr Radii'}
         Distance unit
@@ -916,10 +933,6 @@ def plot_data(func: str, orbs: list[str], x_max: float,
             for avgr, col, orb in zip(average_r, colours, orbs)
         ]
 
-        print(average_r)
-        print(radial_at_average_r)
-        print(orbs)
-
         traces += avg_traces
 
     fig['data'] = traces
@@ -945,7 +958,7 @@ def plot_data(func: str, orbs: list[str], x_max: float,
     return fig, config
 
 
-def update_save_format(fmt: str, func: str, unit: str):
+def update_save_format(fmt: str, func: str, unit: str, x_max: int):
     '''
     Updates save format of plot.
 
@@ -957,6 +970,8 @@ def update_save_format(fmt: str, func: str, unit: str):
         Type of function being plotted
     unit: str {'bohr', 'angstrom'}
         x unit used for data
+    x_max: float
+        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
 
     Returns
     -------
@@ -976,6 +991,7 @@ def update_save_format(fmt: str, func: str, unit: str):
 
     # Update y axis with correct label
     fig['layout']['yaxis']['title']['text'] = FUNC_TO_LABEL[func]
+    fig['layout']['xaxis']['range'] = [0, x_max]
 
     # Config
     config = Patch()
