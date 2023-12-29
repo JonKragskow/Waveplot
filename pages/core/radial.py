@@ -607,7 +607,7 @@ class OptionsDiv(com.Div):
                             self.avg_distance_ig,
                             dbc.Tooltip(
                                 target=self.avg_distance_ig.id,
-                                children='Add marker with average electron distance' # noqa
+                                children='Add line for average electron distance' # noqa
                             )
                         ],
                         style={'max-width': '80%'},
