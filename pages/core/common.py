@@ -86,7 +86,7 @@ BASIC_CONFIG = {
 
 def dash_id(page: str) -> callable:
     def func(_id: str):
-        return f"{page}_{_id}"
+        return f'{page}_{_id}'
     return func
 
 
@@ -272,7 +272,7 @@ def make_layout(left_divs: html.Div, right_divs: html.Div) -> html.Div:
 def make_footer():
 
     footer = html.Footer(
-        className="footer_custom",
+        className='footer_custom',
         children=[
             html.Div(
                 [
@@ -280,7 +280,7 @@ def make_footer():
                         'Jon Kragskow',
                         href='https://www.kragskow.dev',
                         style={
-                            "color": "",
+                            'color': '',
                             'backgroundColor': 'transparent',
                             'borderColor': 'transparent',
                             'boxShadow': 'none',

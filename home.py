@@ -18,71 +18,62 @@
 
 from dash import html, page_registry
 import dash_bootstrap_components as dbc
-from functools import reduce
-from operator import mul
 
-from pages.core import utils
+from pages.core import common as com
 
 PAGE_NAME = 'Home'
 PAGE_PATH = '/'
 PAGE_DESCRIPTION = 'An interactive wavefunction viewer by Jon Kragskow'
 
 
-grid = []
-
-for name, item in page_registry.items():
-    if item['name'] == PAGE_NAME:
-        continue
-    grid.append(
-        dbc.Col(
-            children=[
-                html.A(
-                    children=[
-                        html.Img(
-                            src=item['image'],
-                            style={
-                                'width': '350px',
-                                'height': '350px'
-                            }
-                        )
-                    ],
-                    href=item['path']
-                ),
-                html.H4(item['name'])
-            ],
-            sm=12,
-            md=6,
-            style={
-                'textAlign': 'center'
-            }
-        )
+cols = [
+    dbc.Col(
+        children=[
+            html.A(
+                children=[
+                    html.Img(
+                        src=item['image'],
+                        style={
+                            'aspect-ratio': '1 / 1',
+                            'max-height': '40vh'
+                        }
+                    )
+                ],
+                href=item['path']
+            ),
+            html.H4(
+                item['name']
+            )
+        ],
+        sm=12,
+        lg=3,
+        style={
+            'textAlign': 'center'
+        },
+        class_name='mb-3'
     )
-if len(grid) % 2:
-    grid.append(dbc.Col([]))
-
-
-def reshape(lst, shape):
-    if len(shape) == 1:
-        return lst
-    n = reduce(mul, shape[1:])
-
-    out = [
-        reshape(lst[i * n:(i + 1) * n], shape[1:])
-        for i in range(len(lst) // n)
-    ]
-    return out
-
-
-grid = reshape(grid, [2, 2])
+    for name, item in page_registry.items()
+    if name != PAGE_NAME
+]
 
 layout = dbc.Container(
-    [
+    children=[
+        html.Div(style={'height': '10%'}),
         dbc.Row(
-            gr
-        ) for gr in grid
-    ] + [utils.footer()],
+            cols,
+            align='center',
+            style={
+                'height': '80%',
+                'padding-bottom': '100px'
+            }
+        ),
+        html.Div(style={'height': '10%'}),
+        com.make_footer()
+    ],
+    fluid=True,
     style={
-        'marginTop': '20px',
-        'padding-bottom': '50px'
+        'margin-top': '20px',
+        'height': '90vh',
+        'overflow': 'scroll'
     }
 )
