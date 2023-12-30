@@ -34,8 +34,8 @@ grid = [
                     html.Img(
                         src=item['image'],
                         style={
-                            'width': '350px',
-                            'height': '350px'
+                            'width': '200px',
+                            'height': '200px'
                         }
                     )
                 ],
