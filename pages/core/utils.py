@@ -18,77 +18,6 @@
 import plotly.colors as pc
 import dash_bootstrap_components as dbc
 from dash import html, page_registry
-import io
-import base64
-from dash.exceptions import PreventUpdate
-import numpy as np
-import numpy.linalg as la
-import sys
-from ase import neighborlist, Atoms
-from ase.geometry.analysis import Analysis
-import xyz_py as xyzp
-import xyz_py.atomic as atomic
-
-
-atom_colours = {
-    "H": "#999999",
-    "Li": "#9932CC",
-    "Na": "#9932CC",
-    "K": "#9932CC",
-    "Rb": "#9932CC",
-    "Cs": "#9932CC",
-    "Fr": "#9932CC",
-    "Be": "#4E7566",
-    "Mg": "#4E7566",
-    "Ca": "#4E7566",
-    "Sr": "#4E7566",
-    "Ba": "#4E7566",
-    "Ra": "#4E7566",
-    "Sc": "#4E7566",
-    "Y": "#4E7566",
-    "La": "#4E7566",
-    "Ac": "#4E7566",
-    "Ti": "#301934",
-    "V": "#301934",
-    "Cr": "#301934",
-    "Mn": "#301934",
-    "Fe": "#301934",
-    "Ni": "#301934",
-    "Co": "#301934",
-    "Cu": "#301934",
-    "Zn": "#301934",
-    "Zr": "#301943",
-    "Nb": "#301943",
-    "Mo": "#301943",
-    "Tc": "#301943",
-    "Ru": "#301943",
-    "Rh": "#301943",
-    "Pd": "#301943",
-    "Ag": "#301943",
-    "Cd": "#301943",
-    "Hf": "#301934",
-    "Ta": "#301934",
-    "W": "#301934",
-    "Re": "#301934",
-    "Os": "#301934",
-    "Ir": "#301934",
-    "Pt": "#301934",
-    "Au": "#301934",
-    "Hg": "#301934",
-    "B": "#FFFF00",
-    "C": "#696969",
-    "N": "#0000FF",
-    "O": "#FF0000",
-    "F": "#228B22",
-    "Al": "#800080",
-    "Si": "#FF7F50",
-    "P": "#FF00FF",
-    "S": "#FFFF00",
-    "Cl": "#228B22",
-    "As": "#F75394",
-    "Br": "#4A2600",
-    "other": "#3f3f3f"
-}
 
 tol_cols = [
     "rgb(0  , 0  , 0)",
@@ -224,31 +153,3 @@ def create_navbar(current_path):
         links_left=True,
     )
     return navbar
-
-
-def footer(name="Jon Kragskow", site="https://www.kragskow.dev"):
-
-    footer = html.Footer(
-        className="footer_custom",
-        children=[
-            html.Div(
-                [
-                    dbc.Button(
-                        name,
-                        href=site,
-                        style={
-                            "color": "",
-                            'backgroundColor': 'transparent',
-                            'borderColor': 'transparent',
-                            'boxShadow': 'none',
-                            'textalign': 'top'
-                        }
-                    )
-                ]
-            )
-        ],
-        style={'whiteSpace': 'pre-wrap'}
-    )
-
-    return footer
-
