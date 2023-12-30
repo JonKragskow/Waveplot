@@ -26,7 +26,7 @@ PAGE_PATH = '/'
 PAGE_DESCRIPTION = 'An interactive wavefunction viewer by Jon Kragskow'
 
 
-cols = [
+grid = [
     dbc.Col(
         children=[
             html.A(
@@ -34,46 +34,31 @@ cols = [
                     html.Img(
                         src=item['image'],
                         style={
-                            'aspect-ratio': '1 / 1',
-                            'max-height': '40vh'
+                            'width': '350px',
+                            'height': '350px'
                         }
                     )
                 ],
                 href=item['path']
             ),
-            html.H4(
-                item['name']
-            )
+            html.H4(item['name'])
         ],
         sm=12,
-        lg=3,
+        md=6,
         style={
             'textAlign': 'center'
-        },
-        class_name='mb-3'
+        }
     )
     for name, item in page_registry.items()
     if name != PAGE_NAME
 ]
 
 layout = dbc.Container(
-    children=[
-        html.Div(style={'height': '10%'}),
-        dbc.Row(
-            cols,
-            align='center',
-            style={
-                'height': '80%',
-                'padding-bottom': '100px'
-            }
-        ),
-        html.Div(style={'height': '10%'}),
-        com.make_footer()
-    ],
-    fluid=True,
+    [
+        dbc.Row(grid)
+    ] + [com.make_footer()],
     style={
-        'margin-top': '20px',
-        'height': '90vh',
-        'overflow': 'scroll'
+        'marginTop': '20px',
+        'padding-bottom': '50px'
     }
 )
