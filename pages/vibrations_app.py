@@ -23,7 +23,7 @@ from .core import common as com
 ID_PREFIX = 'vib'
 dash_id = com.dash_id(ID_PREFIX)
 
-PAGE_NAME = 'Harmonic Oscillators'
+PAGE_NAME = 'Harmonic Oscillator'
 PAGE_PATH = '/harmonic'
 PAGE_IMAGE = 'assets/Vibrations.png'
 PAGE_DESCRIPTION = 'Interactive harmonic oscillator wavefunctions and energy levels' # noqa
