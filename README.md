@@ -2,6 +2,9 @@
 <img src="https://img.shields.io/website?down_color=red&down_message=Offline&up_color=green&up_message=Online&url=https%3A%2F%2Fwaveplot.com">
 </a>
 
+<a href="https://zenodo.org/doi/10.5281/zenodo.10454399"><img src="https://zenodo.org/badge/602972600.svg" alt="DOI"></a>
+
+
 # Waveplot
 
 This is the git repository for the [waveplot](https://www.waveplot.com) source-code.
