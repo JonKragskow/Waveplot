@@ -95,15 +95,13 @@ def s_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: np.meshgrid
-    y: np.meshgrid
-    z: np.meshgrid
-    lower: float
-        min value of axes
+    ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
     if n == 1:
@@ -163,11 +161,12 @@ def p_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: ndarray of floats
+    ndarray of floats
         Meshgrid containing wavefunction
     '''
 
@@ -228,15 +227,13 @@ def dz_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: np.meshgrid
-    y: np.meshgrid
-    z: np.meshgrid
-    lower: float
-        min value of axes
+    ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
     if n == 3:
@@ -290,15 +287,13 @@ def dxy_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: np.meshgrid
-    y: np.meshgrid
-    z: np.meshgrid
-    lower: float
-        min value of axes
+    ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
     if n == 3:
@@ -351,15 +346,13 @@ def fz_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: np.meshgrid
-    y: np.meshgrid
-    z: np.meshgrid
-    lower: float
-        min value of axes
+    ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
     if n == 4:
@@ -401,7 +394,20 @@ def fz_3d(n: int, half: str = ''):
 
 
 def sp_3d(half: str):
+    '''
+    Calculates three-dimensional sp orbital on a grid of x, y, and z points\n
 
+    Parameters
+    ----------
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
     bound = 20
     step = 0.5
 
@@ -443,6 +449,20 @@ def sp_3d(half: str):
 
 
 def sp3_3d(half: str):
+    '''
+    Calculates three-dimensional sp3 orbital on a grid of x, y, and z points\n
+
+    Parameters
+    ----------
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
 
     bound = 20
     step = 0.5
@@ -485,7 +505,20 @@ def sp3_3d(half: str):
 
 
 def sp2_3d(half: str):
+    '''
+    Calculates three-dimensional sp2 orbital on a grid of x, y, and z points\n
 
+    Parameters
+    ----------
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
     bound = 20
     step = 0.5
 
@@ -538,15 +571,13 @@ def fxyz_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: np.meshgrid
-    y: np.meshgrid
-    z: np.meshgrid
-    lower: float
-        min value of axes
+    ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
     if n == 4:
@@ -598,15 +629,13 @@ def fyz2_3d(n: int, half: str = ''):
     n: int
         prinipal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
-        If non-empty, specified axis will go from 0 tobound
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
 
     Returns
     -------
-    x: np.meshgrid
-    y: np.meshgrid
-    z: np.meshgrid
-    lower: float
-        min value of axes
+    ndarray of floats
+        Meshgrid containing wavefunction
     '''
 
     if n == 4:
