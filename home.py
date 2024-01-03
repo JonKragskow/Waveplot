@@ -21,7 +21,7 @@ import dash_bootstrap_components as dbc
 
 from pages.core import common as com
 
-PAGE_NAME = 'Home'
+PAGE_NAME = 'Waveplot'
 PAGE_PATH = '/'
 PAGE_DESCRIPTION = 'An interactive wavefunction viewer by Jon Kragskow'
 
