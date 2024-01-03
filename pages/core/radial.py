@@ -213,8 +213,23 @@ def radial_s(n: int, rho: ArrayLike):
     return rad
 
 
-def avg_r(n: int, l: int):
-    return n ** 2 * (1 + 0.5 * (1 - (l**2 + l)/(n**2)))
+def avg_r(n: int, l: int) -> float:
+    '''
+    Computes expectation value of r for a given radial wavefunction
+
+    Parameters
+    ----------
+    n: int
+        n quantum number
+    l: int
+        l quantum number
+
+    Returns
+    -------
+    float
+        <r> for given wavefunction in units of bohr radii
+    '''
+    return n ** 2 * (1 + 0.5 * (1 - (l**2 + l) / (n**2)))
 
 
 def radial_p(n: int, rho: ArrayLike) -> NDArray:
@@ -398,7 +413,7 @@ class OptionsDiv(com.Div):
             ]
         )
 
-        self.distance_select = dbc.Select(
+        self.x_unit_select = dbc.Select(
             id=str(uuid.uuid1()),
             options=[
                 {'value': 'bohr', 'label': 'Bohr Radii'},
@@ -408,10 +423,10 @@ class OptionsDiv(com.Div):
             style={'textAlign': 'center'}
         )
 
-        self.distance_ig = self.make_input_group(
+        self.x_unit_ig = self.make_input_group(
             [
                 dbc.InputGroupText('Distance unit'),
-                self.distance_select
+                self.x_unit_select
             ]
         )
 
@@ -574,7 +589,7 @@ class OptionsDiv(com.Div):
                         md=6
                     ),
                     dbc.Col(
-                        self.distance_ig,
+                        self.x_unit_ig,
                         class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
@@ -678,7 +693,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     states = [
         State(options_div.func_select, 'value'),
         State(options_div.orb_select, 'value'),
-        State(options_div.distance_select, 'value')
+        State(options_div.x_unit_select, 'value'),
+        State(options_div.upper_x_input, 'value')
     ]
     callback(
         Output(options_div.download_trigger, 'data'),
@@ -692,7 +708,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         Input(options_div.func_select, 'value'),
         Input(options_div.orb_select, 'value'),
         Input(options_div.upper_x_input, 'value'),
-        Input(options_div.distance_select, 'value'),
+        Input(options_div.x_unit_select, 'value'),
         Input(options_div.colour_select, 'value'),
         Input(options_div.legend_toggle, 'value'),
         Input(options_div.avg_distance_toggle, 'value')
@@ -717,7 +733,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         ],
         [
             State(options_div.func_select, 'value'),
-            State(options_div.distance_select, 'value'),
+            State(options_div.x_unit_select, 'value'),
             State(options_div.upper_x_input, 'value')
         ],
         prevent_initial_call=True
@@ -764,7 +780,8 @@ def compute_radials(func: str, orbs: list[str], r: ArrayLike) -> NDArray:
     return full_data
 
 
-def download_data(_nc: int, func: str, orbs: list[str], unit: str) -> dict:
+def download_data(_nc: int, func: str, orbs: list[str], unit: str,
+                  x_max: float) -> dict:
     '''
     Creates output file for Radial wavefunction/distribution function
 
@@ -778,7 +795,8 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str) -> dict:
         Orbitals to include
     unit: str {'Angstrom', 'Bohr Radii'}
         Distance unit
-
+    x_max: float
+        Upper x value in either Angstrom or Bohr radii (depends on `unit`)
     Returns
     -------
     dict
@@ -792,7 +810,7 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str) -> dict:
         return no_update
 
     # r in Bohr radii
-    r = np.linspace(0, 150, 5000)
+    r = np.linspace(0, x_max / UNIT_VALUE[unit], 5000)
 
     # R(r) or RDF where r has units of Bohr radii
     radial = np.array(compute_radials(func, orbs, r))
@@ -875,7 +893,7 @@ def plot_data(func: str, orbs: list[str], x_max: float,
         colours = ut.def_cols + ut.tol_cols + ut.wong_cols
 
     # r in Bohr radii
-    r = np.linspace(0, 150, 5000)
+    r = np.linspace(0, x_max / UNIT_VALUE[unit], 5000)
 
     # R(r) or RDF where r has units of Bohr radii
     radial = compute_radials(func, orbs, r)
