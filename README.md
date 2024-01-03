@@ -12,7 +12,7 @@ CITATION
 
 ## Running locally
 
-Each web app is in `apps/name_app.py`, where `name` changes based on the app. Supplemental functions are given in `apps/name.py`. 
+Each web app is in `pages/name_app.py`, where `name` changes based on the app. Supplemental functions are given in `pages/core/name.py`. 
 
 To run the code, first install dependencies via `pip`
 
