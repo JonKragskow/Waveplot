@@ -46,6 +46,11 @@ PIAB_LAYOUT.xaxis.range = [-0.125, 1.125]
 PIAB_LAYOUT.xaxis.tickmode = 'array'
 PIAB_LAYOUT.xaxis.tickvals = [0, 0.25, 0.5, 0.75, 1]
 PIAB_LAYOUT.xaxis.ticktext = ['0', 'L/4', 'L/2', '3L/4', 'L']
+PIAB_LAYOUT.xaxis.minor.tickmode = 'array'
+PIAB_LAYOUT.xaxis.minor.tickvals = [
+    1 / 8, 3 / 8, 5 / 8, 7 / 8,
+    1 / 16, 3 / 16, 5 / 16, 7 / 16, 9 / 16, 11 / 16, 13 / 16, 15 / 16
+]
 PIAB_LAYOUT.showlegend = False
 PIAB_LAYOUT.shapes = [
     dict(
