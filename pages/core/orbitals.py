@@ -1416,7 +1416,7 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             -isoval
         )
     except ValueError:
-        if orb_name == '1s':
+        if orb_name == '1s+0':
             verts2 = copy.deepcopy(verts1)
             faces2 = copy.deepcopy(faces1)
         else:
@@ -1453,7 +1453,7 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
         name='',
         showscale=False
     )
-    if orb_name != '1s':
+    if orb_name != '1s+0':
         trace2 = go.Mesh3d(
             x=x2,
             y=y2,
