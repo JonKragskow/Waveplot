@@ -47,3 +47,23 @@
 html {
     font-size: 14px;
 }
+
+.cards {
+    height: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.card {
+    padding: 1rem;
+    border: 0px;
+    justify-content: center;
+    height: 100%;
+}
+
+#_pages_content {
+    height: 100%;
+}

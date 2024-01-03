@@ -31,12 +31,6 @@ app = dash.Dash(
     ],
     external_scripts=external_scripts,
     suppress_callback_exceptions=False,
-    meta_tags=[
-        {
-            "name": "viewport",
-            "content": "width=device-width, initial-scale=0.75"
-        }
-    ],
     use_pages=True
 )
 

@@ -27,38 +27,34 @@ PAGE_DESCRIPTION = 'An interactive wavefunction viewer by Jon Kragskow'
 
 
 grid = [
-    dbc.Col(
+    html.Div(
         children=[
             html.A(
                 children=[
                     html.Img(
                         src=item['image'],
                         style={
-                            'width': '200px',
-                            'height': '200px'
+                            'width': '100%',
+                            'aspectRatio': '1/1'
                         }
                     )
                 ],
                 href=item['path']
             ),
-            html.H4(item['name'])
+            html.H4(item['name'], style={'textAlign': 'center'})
         ],
-        sm=12,
-        md=6,
-        style={
-            'textAlign': 'center'
-        }
+        className='card'
     )
     for name, item in page_registry.items()
     if name != PAGE_NAME
 ]
 
 layout = dbc.Container(
-    [
-        dbc.Row(grid)
-    ] + [com.make_footer()],
+    [html.Div(grid, className='cards'), com.make_footer()],
     style={
         'marginTop': '20px',
-        'padding-bottom': '50px'
+        'paddingBottom': '50px',
+        'height': '100%',
+        'overflow': 'auto'
     }
 )

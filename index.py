@@ -23,11 +23,18 @@ import home
 
 navbar = utils.create_navbar("/")
 
-app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
-    html.Div(id='navdiv', children=[navbar]),
-    page_container
-])
+page_container.style = {
+    'height': '100%'
+}
+
+app.layout = html.Div(
+    children=[
+        dcc.Location(id='url', refresh=False),
+        html.Div(id='navdiv', children=[navbar]),
+        page_container
+    ],
+    style={'height': '80vh'}
+)
 
 
 # server=app.server
