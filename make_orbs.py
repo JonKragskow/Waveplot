@@ -1,41 +1,21 @@
 from pages.core.orbitals import calc_wav
 
-orbs = [
-    '1s',
-    '2s',
-    '3s',
-    '4s',
-    '5s',
-    '6s',
-    '2p',
-    '3p',
-    '4p',
-    '5p',
-    '6p',
-    '3dz2',
-    '4dz2',
-    '5dz2',
-    '6dz2',
-    '3dxy',
-    '4dxy',
-    '5dxy',
-    '6dxy',
-    '4fz3',
-    '5fz3',
-    '6fz3',
-    '4fxyz',
-    '5fxyz',
-    '6fxyz',
-    '4fyz2',
-    '5fyz2',
-    '6fyz2',
-    'sp',
-    'sp2',
-    'sp3'
-]
-
-for orb in orbs:
-    calc_wav(orb)
-    calc_wav(orb, 'x')
-    calc_wav(orb, 'y')
-    calc_wav(orb, 'z')
+for half in ['', 'x', 'y', 'z']:
+    for n in range(1, 7):
+        calc_wav(f'{n:d}s+0', half=half)
+    for n in range(2, 7):
+        for ml in range(-1, 2):
+            calc_wav(f'{n:d}p{ml:+d}', half=half)
+    for n in range(3, 7):
+        for ml in range(-2, 3):
+            calc_wav(f'{n:d}d{ml:+d}', half=half)
+    for n in range(4, 7):
+        for ml in range(-3, 4):
+            calc_wav(f'{n:d}f{ml:+d}', half=half)
+        calc_wav(f'{n:d}f+3c', half=half)
+        calc_wav(f'{n:d}f-3c', half=half)
+        calc_wav(f'{n:d}f+2c', half=half)
+        calc_wav(f'{n:d}f-2c', half=half)
+    calc_wav('sp', half=half)
+    calc_wav('sp2', half=half)
+    calc_wav('sp3', half=half)

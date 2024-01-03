@@ -52,34 +52,80 @@ ORB_LAYOUT['uirevision'] = 'same'
 ORB_LAYOUT['scene']['uirevision'] = 'same'
 
 DEFAULT_ISO = {
-    '1s': 0.1,
-    '2s': 0.01,
-    '3s': 0.001,
-    '4s': 0.001,
-    '5s': 0.001,
-    '6s': 0.0005,
-    '2p': 0.01,
-    '3p': 0.001,
-    '4p': 0.001,
-    '5p': 0.001,
-    '6p': 0.0006,
-    '3dz2': 0.1,
-    '4dz2': 0.1,
-    '5dz2': 0.1,
-    '6dz2': 0.1,
-    '3dxy': 0.01,
-    '4dxy': 0.01,
-    '5dxy': 0.01,
-    '6dxy': 0.01,
-    '4fz3': 0.0005,
-    '5fz3': 0.0005,
-    '6fz3': 0.0004,
-    '4fxyz': 0.0006,
-    '5fxyz': 0.0006,
-    '6fxyz': 0.0004,
-    '4fyz2': 0.0006,
-    '5fyz2': 0.0006,
-    '6fyz2': 0.0006,
+    '1s+0': 0.1,
+    '2s+0': 0.01,
+    '3s+0': 0.001,
+    '4s+0': 0.001,
+    '5s+0': 0.001,
+    '6s+0': 0.0005,
+    '2p+0': 0.01,
+    '3p+0': 0.001,
+    '4p+0': 0.001,
+    '5p+0': 0.001,
+    '6p+0': 0.0006,
+    '2p-1': 0.01,
+    '3p-1': 0.001,
+    '4p-1': 0.001,
+    '5p-1': 0.001,
+    '6p-1': 0.0006,
+    '2p+1': 0.01,
+    '3p+1': 0.001,
+    '4p+1': 0.001,
+    '5p+1': 0.001,
+    '6p+1': 0.0006,
+    '3d+0': 0.1,
+    '4d+0': 0.1,
+    '5d+0': 0.1,
+    '6d+0': 0.1,
+    '3d+2': 0.01,
+    '4d+2': 0.01,
+    '5d+2': 0.01,
+    '6d+2': 0.01,
+    '3d-2': 0.01,
+    '4d-2': 0.01,
+    '5d-2': 0.01,
+    '6d-2': 0.01,
+    '3d-1': 0.01,
+    '4d-1': 0.01,
+    '5d-1': 0.01,
+    '6d-1': 0.01,
+    '3d+1': 0.01,
+    '4d+1': 0.01,
+    '5d+1': 0.01,
+    '6d+1': 0.01,
+    '4f+0': 0.0005,
+    '4f+2c': 0.0005,
+    '4f-2c': 0.0005,
+    '5f+0': 0.0005,
+    '5f+2c': 0.0005,
+    '5f-2c': 0.0005,
+    '6f+0': 0.0004,
+    '6f+2c': 0.0004,
+    '6f-2c': 0.0004,
+    '4f-2': 0.0006,
+    '5f-2': 0.0006,
+    '6f-2': 0.0004,
+    '4f+2': 0.0006,
+    '5f+2': 0.0006,
+    '6f+2': 0.0004,
+    '4f+3c': 0.0006,
+    '5f+3c': 0.0006,
+    '6f+3c': 0.0004,
+    '4f-3c': 0.0006,
+    '5f-3c': 0.0006,
+    '6f-3c': 0.0004,
+    '4f-3': 0.0006,
+    '5f-3': 0.0006,
+    '6f-3': 0.0004,
+    '4f+3': 0.0006,
+    '5f+3': 0.0006,
+    '6f+3': 0.0004,
+    '4f-1': 0.0006,
+    '4f+1': 0.0006,
+    '5f-1': 0.0006,
+    '5f+1': 0.0006,
+    '6f-1': 0.0006,
+    '6f+1': 0.0006,
     'sp': 0.01,
     'sp2': 0.01,
     'sp3': 0.01
@@ -93,7 +139,7 @@ def s_3d(n: int, half: str = ''):
     Parameters
     ----------
     n: int
-        prinipal quantum number of orbital
+        principal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
@@ -152,14 +198,16 @@ def s_3d(n: int, half: str = ''):
     return wav
 
 
-def p_3d(n: int, half: str = ''):
+def p_3d(n: int, ml: int, half: str = ''):
     '''
     Calculates p orbital wavefunction on a grid
 
     Parameters
     ----------
     n: int
-        prinipal quantum number of orbital
+        principal quantum number of orbital
+    ml: int
+        magnetic quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
@@ -187,15 +235,15 @@ def p_3d(n: int, half: str = ''):
         step = 1.
 
     x = np.arange(-bound, bound, step)
-    y = np.arange(-0.75 * bound, 0.75 * bound, step)
-    z = np.arange(-0.75 * bound, 0.75 * bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
 
     if half == 'x':
         x = np.arange(0, bound, step)
     elif half == 'y':
-        y = np.arange(0, 0.75 * bound, step)
+        y = np.arange(0, bound, step)
     elif half == 'z':
-        z = np.arange(0, 0.75 * bound, step)
+        z = np.arange(0, bound, step)
 
     x, y, z = np.meshgrid(
         x,
@@ -210,22 +258,44 @@ def p_3d(n: int, half: str = ''):
     rad = rc.radial_p(n, 2 * r / n)
 
     # angular wavefunction
-    ang = np.sqrt(3. / (4. * np.pi)) * x / r
+    if ml == 0:
+        ang = np.sqrt(3. / (4. * np.pi)) * z / r
+    elif ml == 1:
+        ang = np.sqrt(3. / (4. * np.pi)) * y / r
+    elif ml == -1:
+        ang = np.sqrt(3. / (4. * np.pi)) * x / r
+    else:
+        raise ValueError('Incorrect ml value in p_3d')
     wav = ang * rad
 
     wav = np.nan_to_num(wav, 0, posinf=0., neginf=0.)
 
     return wav
 
+    # if n == 3:
+    #     bound = 70.
+    #     step = 1.
+    # elif n == 4:
+    #     bound = 90.
+    #     step = 2.
+    # elif n == 5:
+    #     bound = 110.
+    #     step = 2.
+    # elif n == 6:
+    #     bound = 140.
+    #     step = 2.
 
-def dz_3d(n: int, half: str = ''):
+
+def d_3d(n: int, ml: int, half: str = ''):
     '''
-    Calculates dz2 orbital wavefunction on a grid
+    Calculates d orbital wavefunction on a grid
 
     Parameters
     ----------
     n: int
-        prinipal quantum number of orbital
+        principal quantum number of orbital
+    ml: int
+        magnetic quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
@@ -237,76 +307,16 @@ def dz_3d(n: int, half: str = ''):
     '''
 
     if n == 3:
-        bound = 70.
+        bound = 60.
         step = 1.
     elif n == 4:
-        bound = 90.
-        step = 2.
+        bound = 80.
+        step = 1.
     elif n == 5:
         bound = 110.
         step = 2.
     elif n == 6:
-        bound = 140.
-        step = 2.
-
-    x = np.arange(-0.95 * bound, 0.95 * bound, step)
-    y = np.arange(-0.95 * bound, 0.95 * bound, step)
-    z = np.arange(-bound, bound, step)
-
-    if half == 'x':
-        x = np.arange(0, 0.95 * bound, step)
-    elif half == 'y':
-        y = np.arange(0, 0.95 * bound, step)
-    elif half == 'z':
-        z = np.arange(0, bound, step)
-
-    x, y, z = np.meshgrid(
-        x,
-        y,
-        z,
-        copy=True
-    )
-
-    r = np.sqrt(x**2 + y**2 + z**2)
-
-    rad = rc.radial_d(n, 2 * r / n)
-
-    ang = 2 * z**2 - x**2 - y**2
-
-    wav = rad * ang
-
-    return wav
-
-
-def dxy_3d(n: int, half: str = ''):
-    '''
-    Calculates dxy orbital wavefunction on a grid
-
-    Parameters
-    ----------
-    n: int
-        prinipal quantum number of orbital
-    half: str {'', 'x', 'y', 'z'}
-        Truncates x, y, or z at zero to create cross section of orbital data\n
-        If empty then no truncation is performed.
-
-    Returns
-    -------
-    ndarray of floats
-        Meshgrid containing wavefunction
-    '''
-
-    if n == 3:
-        bound = 45.
-        step = 1.
-    elif n == 4:
-        bound = 70.
-        step = 1.
-    elif n == 5:
-        bound = 98.
-        step = 2.
-    elif n == 6:
-        bound = 135.
+        bound = 150.
         step = 2.
 
     x = np.arange(-bound, bound, step)
@@ -330,24 +340,40 @@ def dxy_3d(n: int, half: str = ''):
 
     rad = rc.radial_d(n, 2 * r / n)
 
-    ang = x * y
+    if ml == 0:
+        ang = 3 * z**2 - r**2
+    elif ml == -1:
+        ang = x * z
+    elif ml == 1:
+        ang = y * z
+    elif ml == -2:
+        ang = x * y
+    elif ml == 2:
+        ang = x ** 2 - y ** 2
+    else:
+        raise ValueError('Incorrect ml value in d_3d')
 
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad * ang
 
     return wav
 
 
-def fz_3d(n: int, half: str = ''):
+def f_3d(n: int, ml: int, half: str = '', cubic: bool = False):
     '''
-    Calculates fz3 orbital wavefunction on a grid
+    Calculates f orbital wavefunction on a grid
 
     Parameters
     ----------
     n: int
-        prinipal quantum number of orbital
+        principal quantum number of orbital
+    ml: int
+        magnetic quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
+    cubic: bool, default False
+        If True, then cubic orbitals are calculated
 
     Returns
     -------
@@ -386,7 +412,35 @@ def fz_3d(n: int, half: str = ''):
 
     rad = rc.radial_f(n, 2 * r / n)
 
-    ang = 0.25 * np.sqrt(7 / np.pi) * z * (2 * z**2 - 3 * x**2 - 3 * y**2) / (r**3) # noqa
+    if ml == 0:
+        ang = 0.25 * np.sqrt(7 / np.pi) * (5 * z**3 - 3 * z * r**2) / r ** 3
+    elif ml == -1:
+        ang = 0.25 * np.sqrt(21 / (2 * np.pi)) * x * (5 * z**2 - r**2) / r**3
+    elif ml == 1:
+        ang = 0.25 * np.sqrt(21 / (2 * np.pi)) * y * (5 * z**2 - r**2) / r**3
+    elif ml == -2:
+        if cubic:
+            ang = 0.25 * np.sqrt(105 / np.pi) * (z**2 - y**2) * x / (r**3)
+        else:
+            ang = 0.25 * np.sqrt(105 / np.pi) * x * y * z / (r**3)
+    elif ml == 2:
+        if cubic:
+            ang = 0.25 * np.sqrt(105 / np.pi) * (z**2 - x**2) * y / (r**3)
+        else:
+            ang = 0.25 * np.sqrt(105 / np.pi) * (x**2 - y**2) * z / (r**3)
+    elif ml == -3:
+        if cubic:
+            ang = 0.25 * np.sqrt(7 / np.pi) * (5 * x**3 - 3 * x * r**2) / r ** 3 # noqa
+        else:
+            ang = 0.25 * np.sqrt(35 / (2 * np.pi)) * (x**2 - 3 * y**2) * x / (r**3) # noqa
+    elif ml == 3:
+        if cubic:
+            ang = 0.25 * np.sqrt(7 / np.pi) * (5 * y**3 - 3 * y * r**2) / r ** 3 # noqa
+        else:
+            ang = 0.25 * np.sqrt(35 / (2 * np.pi)) * (3 * x**2 - y**2) * y / (r**3) # noqa
+    else:
+        raise ValueError('Incorrect ml value in f_3d')
+
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
     wav = rad * ang
 
@@ -569,7 +623,7 @@ def fxyz_3d(n: int, half: str = ''):
     Parameters
     ----------
     n: int
-        prinipal quantum number of orbital
+        principal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
@@ -612,7 +666,7 @@ def fxyz_3d(n: int, half: str = ''):
 
     rad = rc.radial_f(n, 2 * r / n)
 
-    ang = 0.5 * np.sqrt(105 / np.pi) * x * y * z / (r**3)
+    ang = 0.25 * np.sqrt(105 / np.pi) * x * y * z / (r**3)
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
 
     wav = rad * ang
@@ -620,14 +674,14 @@ def fxyz_3d(n: int, half: str = ''):
     return wav
 
 
-def fyz2_3d(n: int, half: str = ''):
+def fy3x2my2_3d(n: int, half: str = ''):
     '''
-    Calculates fyz2 orbital wavefunction on a grid
+    Calculates fy(3x2-y2) orbital wavefunction on a grid
 
     Parameters
     ----------
     n: int
-        prinipal quantum number of orbital
+        principal quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
@@ -639,14 +693,14 @@ def fyz2_3d(n: int, half: str = ''):
     '''
 
     if n == 4:
-        bound = 65.
+        bound = 60.
         step = 1.
     elif n == 5:
         bound = 90.
-        step = 2
+        step = 2.
     elif n == 6:
-        bound = 125.
-        step = 2
+        bound = 115.
+        step = 2.
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -670,49 +724,329 @@ def fyz2_3d(n: int, half: str = ''):
 
     rad = rc.radial_f(n, 2 * r / n)
 
-    ang = 0.25 * np.sqrt(35 / (2 * np.pi)) * (3 * x**2 - y**2) * y / r**3
+    ang = 0.25 * np.sqrt(35 / (2 * np.pi)) * (3 * x**2 - y**2) * y / (r**3)
     ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
+
+    wav = rad * ang
+
+    return wav
+
+
+def fxx2m3y2_3d(n: int, half: str = ''):
+    '''
+    Calculates fx(x2-3y2) orbital wavefunction on a grid
+
+    Parameters
+    ----------
+    n: int
+        principal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
+
+    if n == 4:
+        bound = 60.
+        step = 1.
+    elif n == 5:
+        bound = 90.
+        step = 2.
+    elif n == 6:
+        bound = 115.
+        step = 2.
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
+    x, y, z = np.meshgrid(
+        x,
+        y,
+        z,
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    rad = rc.radial_f(n, 2 * r / n)
+
+    ang = 0.25 * np.sqrt(35 / (2 * np.pi)) * (x**2 - 3 * y**2) * x / (r**3)
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
+
+    wav = rad * ang
+
+    return wav
+
+
+def fyz2mx2_3d(n: int, half: str = ''):
+    '''
+    Calculates fy(z2-x2) orbital wavefunction on a grid
+
+    Parameters
+    ----------
+    n: int
+        principal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
+
+    if n == 4:
+        bound = 60.
+        step = 1.
+    elif n == 5:
+        bound = 90.
+        step = 2.
+    elif n == 6:
+        bound = 115.
+        step = 2.
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
+    x, y, z = np.meshgrid(
+        x,
+        y,
+        z,
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    rad = rc.radial_f(n, 2 * r / n)
+
+    ang = 0.25 * np.sqrt(105 / np.pi) * (z**2 - x**2) * y / (r**3)
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
+
+    wav = rad * ang
+
+    return wav
+
+
+def fxz2my2_3d(n: int, half: str = ''):
+    '''
+    Calculates fx(z2-y2) orbital wavefunction on a grid
+
+    Parameters
+    ----------
+    n: int
+        principal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
+
+    if n == 4:
+        bound = 60.
+        step = 1.
+    elif n == 5:
+        bound = 90.
+        step = 2.
+    elif n == 6:
+        bound = 115.
+        step = 2.
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
+    x, y, z = np.meshgrid(
+        x,
+        y,
+        z,
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    rad = rc.radial_f(n, 2 * r / n)
+
+    ang = 0.25 * np.sqrt(105 / np.pi) * (z**2 - y**2) * x / (r**3)
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
+
+    wav = rad * ang
+
+    return wav
+
+
+def fzx2my2_3d(n: int, half: str = ''):
+    '''
+    Calculates fz(x2-y2) orbital wavefunction on a grid
+
+    Parameters
+    ----------
+    n: int
+        principal quantum number of orbital
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    ndarray of floats
+        Meshgrid containing wavefunction
+    '''
+
+    if n == 4:
+        bound = 60.
+        step = 1.
+    elif n == 5:
+        bound = 90.
+        step = 2.
+    elif n == 6:
+        bound = 115.
+        step = 2.
+
+    x = np.arange(-bound, bound, step)
+    y = np.arange(-bound, bound, step)
+    z = np.arange(-bound, bound, step)
+
+    if half == 'x':
+        x = np.arange(0, bound, step)
+    elif half == 'y':
+        y = np.arange(0, bound, step)
+    elif half == 'z':
+        z = np.arange(0, bound, step)
+
+    x, y, z = np.meshgrid(
+        x,
+        y,
+        z,
+        copy=True
+    )
+
+    r = np.sqrt(x**2 + y**2 + z**2)
+
+    rad = rc.radial_f(n, 2 * r / n)
+
+    ang = 0.25 * np.sqrt(105 / np.pi) * (x**2 - y**2) * z / (r**3)
+    ang = np.nan_to_num(ang, 0, posinf=0., neginf=0.)
+
     wav = rad * ang
 
     return wav
 
 
 class OptionsDiv(com.Div):
-    def __init__(self, prefix, default_orb='3dz2', **kwargs):
+    def __init__(self, prefix, default_orb='3d+0', **kwargs):
         # Initialise base class attributes
         super().__init__(prefix=prefix, **kwargs)
 
         self.orb_select = dbc.Select(
             id=self.prefix('orbital_select'),
             options=[
-                {'label': '1s', 'value': '1s'},
-                {'label': '2s', 'value': '2s'},
-                {'label': '3s', 'value': '3s'},
-                {'label': '4s', 'value': '4s'},
-                {'label': '5s', 'value': '5s'},
-                {'label': '6s', 'value': '6s'},
-                {'label': '2p', 'value': '2p'},
-                {'label': '3p', 'value': '3p'},
-                {'label': '4p', 'value': '4p'},
-                {'label': '5p', 'value': '5p'},
-                {'label': '6p', 'value': '6p'},
-                {'label': '3dz²', 'value': '3dz2'},
-                {'label': '4dz²', 'value': '4dz2'},
-                {'label': '5dz²', 'value': '5dz2'},
-                {'label': '6dz²', 'value': '6dz2'},
-                {'label': '3dxy', 'value': '3dxy'},
-                {'label': '4dxy', 'value': '4dxy'},
-                {'label': '5dxy', 'value': '5dxy'},
-                {'label': '6dxy', 'value': '6dxy'},
-                {'label': '4fz³', 'value': '4fz3'},
-                {'label': '5fz³', 'value': '5fz3'},
-                {'label': '6fz³', 'value': '6fz3'},
-                {'label': '4fxyz', 'value': '4fxyz'},
-                {'label': '5fxyz', 'value': '5fxyz'},
-                {'label': '6fxyz', 'value': '6fxyz'},
-                {'label': '4fyz²', 'value': '4fyz2'},
-                {'label': '5fyz²', 'value': '5fyz2'},
-                {'label': '6fyz²', 'value': '6fyz2'},
+                {'label': '1s', 'value': '1s+0'},
+                {'label': '2s', 'value': '2s+0'},
+                {'label': '3s', 'value': '3s+0'},
+                {'label': '4s', 'value': '4s+0'},
+                {'label': '5s', 'value': '5s+0'},
+                {'label': '6s', 'value': '6s+0'},
+                {'label': '2px', 'value': '2p+1'},
+                {'label': '2py', 'value': '2p-1'},
+                {'label': '2pz', 'value': '2p+0'},
+                {'label': '3px', 'value': '3p+1'},
+                {'label': '3py', 'value': '3p-1'},
+                {'label': '3pz', 'value': '3p+0'},
+                {'label': '4px', 'value': '4p+1'},
+                {'label': '4py', 'value': '4p-1'},
+                {'label': '4pz', 'value': '4p+0'},
+                {'label': '5px', 'value': '5p+1'},
+                {'label': '5py', 'value': '5p-1'},
+                {'label': '5pz', 'value': '5p+0'},
+                {'label': '6px', 'value': '6p+1'},
+                {'label': '6py', 'value': '6p-1'},
+                {'label': '6pz', 'value': '6p+0'},
+                {'label': '3dz²', 'value': '3d+0'},
+                {'label': '3dxz', 'value': '3d+1'},
+                {'label': '3dyz', 'value': '3d-1'},
+                {'label': '3dx²-y²', 'value': '3d+2'},
+                {'label': '3dxy', 'value': '3d-2'},
+                {'label': '4dz²', 'value': '4d+0'},
+                {'label': '4dxz', 'value': '4d+1'},
+                {'label': '4dyz', 'value': '4d-1'},
+                {'label': '4dx²-y²', 'value': '4d+2'},
+                {'label': '4dxy', 'value': '4d-2'},
+                {'label': '5dz²', 'value': '5d+0'},
+                {'label': '5dxz', 'value': '5d+1'},
+                {'label': '5dyz', 'value': '5d-1'},
+                {'label': '5dx²-y²', 'value': '5d+2'},
+                {'label': '5dxy', 'value': '5d-2'},
+                {'label': '5dz²', 'value': '5d+0'},
+                {'label': '6dz²', 'value': '6d+0'},
+                {'label': '6dxz', 'value': '6d+1'},
+                {'label': '6dyz', 'value': '6d-1'},
+                {'label': '6dx²-y²', 'value': '6d+2'},
+                {'label': '6dxy', 'value': '6d-2'},
+                {'label': '4fz³', 'value': '4f+0'},
+                {'label': '4fyz²', 'value': '4f-1'},
+                {'label': '4fxz²', 'value': '4f+1'},
+                {'label': '4fxyz', 'value': '4f-2'},
+                {'label': '4fz(x²-y²)', 'value': '4f+2'},
+                {'label': '4fy(3x²-y²)', 'value': '4f-3'},
+                {'label': '4fx(x²-3y²)', 'value': '4f+3'},
+                {'label': '4fx³ (cubic)', 'value': '4f+3c'},
+                {'label': '4fy³ (cubic)', 'value': '4f-3c'},
+                {'label': '4fy(z²-x²) (cubic)', 'value': '4f-2c'},
+                {'label': '4fx(z²-y²) (cubic)', 'value': '4f+2c'},
+                {'label': '5fz³', 'value': '5f+0'},
+                {'label': '5fyz²', 'value': '5f-1'},
+                {'label': '5fxz²', 'value': '5f+1'},
+                {'label': '5fxyz', 'value': '5f-2'},
+                {'label': '5fz(x²-y²)', 'value': '5f+2'},
+                {'label': '5fy(3x²-y²)', 'value': '5f-3'},
+                {'label': '5fx(x²-3y²)', 'value': '5f+3'},
+                {'label': '5fx³ (cubic)', 'value': '5f+3c'},
+                {'label': '5fy³ (cubic)', 'value': '5f-3c'},
+                {'label': '5fy(z²-x²) (cubic)', 'value': '5f-2c'},
+                {'label': '5fx(z²-y²) (cubic)', 'value': '5f+2c'},
+                {'label': '6fz³', 'value': '6f+0'},
+                {'label': '6fyz²', 'value': '6f-1'},
+                {'label': '6fxz²', 'value': '6f+1'},
+                {'label': '6fxyz', 'value': '6f-2'},
+                {'label': '6fz(x²-y²)', 'value': '6f+2'},
+                {'label': '6fy(3x²-y²)', 'value': '6f-3'},
+                {'label': '6fx(x²-3y²)', 'value': '6f+3'},
+                {'label': '6fx³ (cubic)', 'value': '6f+3c'},
+                {'label': '6fy³ (cubic)', 'value': '6f-3c'},
+                {'label': '6fy(z²-x²) (cubic)', 'value': '6f-2c'},
+                {'label': '6fx(z²-y²) (cubic)', 'value': '6f+2c'},
                 {'label': 'sp', 'value': 'sp'},
                 {'label': 'sp²', 'value': 'sp2'},
                 {'label': 'sp³', 'value': 'sp3'}
@@ -1005,11 +1339,8 @@ def calc_wav(orbital_name, half=''):
     orb_func_dict = {
         's': s_3d,
         'p': p_3d,
-        'dxy': dxy_3d,
-        'dz2': dz_3d,
-        'fxyz': fxyz_3d,
-        'fyz2': fyz2_3d,
-        'fz3': fz_3d,
+        'd': d_3d,
+        'f': f_3d,
         'sp': sp_3d,
         'sp2': sp2_3d,
         'sp3': sp3_3d
@@ -1020,10 +1351,24 @@ def calc_wav(orbital_name, half=''):
     if orbital_name not in special:
 
         n = int(orbital_name[0])
-        name = orbital_name[1:]
-        wav = orb_func_dict[name](
-            n, half
-        )
+        name = orbital_name[1]
+        ml = int(orbital_name[2:4])
+
+        # Cubic f
+        if len(orbital_name) == 5:
+            wav = orb_func_dict[name](
+                n, ml, half, True
+            )
+        # s orbitals (ml always zero)
+        elif name == 's':
+            wav = orb_func_dict[name](
+                n, half
+            )
+        # everything else
+        else:
+            wav = orb_func_dict[name](
+                n, ml, half
+            )
     else:
         wav = orb_func_dict[orbital_name](half)
 
