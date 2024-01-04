@@ -41,6 +41,7 @@ PIAB_LAYOUT.yaxis.title = {
         'color': 'black'
     }
 }
+PIAB_LAYOUT.yaxis.visible = False
 PIAB_LAYOUT.xaxis.autorange = False
 PIAB_LAYOUT.xaxis.range = [-0.125, 1.125]
 PIAB_LAYOUT.xaxis.tickmode = 'array'

@@ -42,6 +42,7 @@ VIB_LAYOUT.xaxis.title = {
         'color': 'black'
     }
 }
+VIB_LAYOUT.yaxis.visible = False
 VIB_LAYOUT.yaxis.title = {
     'text': 'Energy (cm<sup>-1</sup>)',
     'font': {
