@@ -474,7 +474,8 @@ class OptionsDiv(com.Div):
                 dbc.InputGroupText(
                     self.legend_toggle
                 )
-            ]
+            ],
+            justify=True
         )
 
         # Average r toggle checkbox
@@ -488,7 +489,8 @@ class OptionsDiv(com.Div):
                 dbc.InputGroupText(
                     self.avg_distance_toggle
                 )
-            ]
+            ],
+            justify=True
         )
         self.download_button = dbc.Button(
             'Download Data',
@@ -536,13 +538,17 @@ class OptionsDiv(com.Div):
         self.make_div_contents()
         return
 
-    def make_input_group(self, elements):
+    def make_input_group(self, elements, justify=False):
 
         group = dbc.InputGroup(
             id=str(uuid.uuid1()),
             children=elements,
-            class_name='mb-3',
+            class_name='mb-3'
         )
+
+        if justify:
+            group.style = {'justify-content': 'center'}
+
         return group
 
     def make_div_contents(self):
