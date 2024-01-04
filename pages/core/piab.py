@@ -237,9 +237,22 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.energy_ax_toggle_check = dbc.Checkbox(
+            value=False,
+            id=str(uuid.uuid1())
+        )
+        self.energy_axis_toggle_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Energy axis On/Off'),
+                dbc.InputGroupText(
+                    self.energy_ax_toggle_check
+                )
+            ]
+        )
+
         self.wf_toggle_check = dbc.Checkbox(
             value=True,
-            id=str(uuid.uuid1()),
+            id=str(uuid.uuid1())
         )
         self.wf_toggle_ig = self.make_input_group(
             [
@@ -474,11 +487,18 @@ class OptionsDiv(com.Div):
                             )
                         ],
                         class_name='mb-3 text-center mwmob',
-                        sm=8
+                        sm=4
                     ),
                     dbc.Col(
                         [
                             self.wf_toggle_ig
+                        ],
+                        class_name='mb-3 text-center mwmob',
+                        sm=4
+                    ),
+                    dbc.Col(
+                        [
+                            self.energy_axis_toggle_ig
                         ],
                         class_name='mb-3 text-center mwmob',
                         sm=4
@@ -551,6 +571,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Input(options.linewidth_input, 'value'),
         Input(options.wf_scale_input, 'value'),
         Input(options.wf_toggle_check, 'value'),
+        Input(options.energy_ax_toggle_check, 'value'),
         Input(options.wf_ftype_select, 'value')
     ]
 
@@ -626,7 +647,7 @@ def calc_data(length: float, mass: float, max_n: int) -> dict[str: list]:
 
 def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
                 lw: float, wf_scale: float, wf_toggle: bool,
-                wf_prob: str) -> Patch:
+                energy_toggle: bool, wf_prob: str) -> Patch:
     '''
     Plots harmonic state energies and wavefunctions, and harmonic potential
 
@@ -646,7 +667,9 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
     wf_scale: float
         Scale factor for wavefunction
     wf_toggle: bool
-        If true, wavefunction is plotted
+        If True, wavefunction is plotted
+    energy_toggle: bool
+        If True, energy axis is shown
     wf_prob: str {'psi', 'psi2'}
         Which function to plot, either wavefunction or wavefunction^2
     Returns
@@ -661,7 +684,6 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
     traces = []
 
     # Plot harmonic wavefunction and states
-
     _states = [
         [
             10**19 * (da),
@@ -759,6 +781,11 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
 
     fig = Patch()
     fig['data'] = traces
+
+    if energy_toggle:
+        fig.layout.yaxis.visible = True
+    else:
+        fig.layout.yaxis.visible = False
 
     return fig
 
