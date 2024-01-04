@@ -844,7 +844,7 @@ def download_data(_nc: int, data: dict) -> dict:
 
     output = {
         'content': oc.getvalue(),
-        'filename': 'particle_in_a_box_data.dat'
+        'filename': 'particle_in_a_box_data.txt'
     }
 
     return output

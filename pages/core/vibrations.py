@@ -1279,7 +1279,7 @@ def download_data(_nc: int, data: dict) -> dict:
 
     output = {
         'content': oc.getvalue(),
-        'filename': 'harmonic_data.dat'
+        'filename': 'harmonic_data.txt'
     }
 
     return output
