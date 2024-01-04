@@ -721,8 +721,8 @@ class OptionsDiv(com.Div):
 
         self.font_size_input = dbc.Input(
             id=str(uuid.uuid1()),
-            placeholder=18,
-            value=18,
+            placeholder=22,
+            value=22,
             min=10,
             type='number',
             style={'textAlign': 'center'}
@@ -1078,7 +1078,7 @@ def calc_wav(orbital_name: str, half: str = '') -> None:
 
 def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
               x_col: str, y_col: str, z_col: str, pos_col: str, neg_col: str,
-              font_size: int):
+              font_size: float):
     '''
     Finds isosurface for given wavefunction data using marching cubes,
     then smooths the surface and plots as mesh

@@ -37,7 +37,7 @@ PIAB_LAYOUT.yaxis.title = {
     'text': 'E (10<sup>-19</sup>J)',
     'font': {
         'family': 'Arial',
-        'size': 14,
+        'size': 18,
         'color': 'black'
     }
 }
@@ -334,6 +334,22 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.font_size_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            placeholder=18,
+            value=18,
+            min=10,
+            type='number',
+            style={'textAlign': 'center'}
+        )
+
+        self.font_size_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Font Size'),
+                self.font_size_input
+            ]
+        )
+
         self.download_data_btn = dbc.Button(
             'Download Data',
             id=str(uuid.uuid1()),
@@ -494,21 +510,35 @@ class OptionsDiv(com.Div):
                             )
                         ],
                         class_name='mb-3 text-center mwmob',
-                        sm=4
+                        sm=6
                     ),
                     dbc.Col(
                         [
                             self.wf_toggle_ig
                         ],
                         class_name='mb-3 text-center mwmob',
-                        sm=4
+                        sm=6
+                    )
+                ],
+                justify='center'
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.font_size_ig,
+                        ],
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     ),
                     dbc.Col(
                         [
                             self.energy_axis_toggle_ig
                         ],
                         class_name='mb-3 text-center mwmob',
-                        sm=4
+                        sm=12,
+                        md=6
                     )
                 ],
                 justify='center'
@@ -579,7 +609,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Input(options.wf_scale_input, 'value'),
         Input(options.wf_toggle_check, 'value'),
         Input(options.energy_ax_toggle_check, 'value'),
-        Input(options.wf_ftype_select, 'value')
+        Input(options.wf_ftype_select, 'value'),
+        Input(options.font_size_input, 'value')
     ]
 
     callback(
@@ -654,7 +685,7 @@ def calc_data(length: float, mass: float, max_n: int) -> dict[str: list]:
 
 def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
                 lw: float, wf_scale: float, wf_toggle: bool,
-                energy_toggle: bool, wf_prob: str) -> Patch:
+                energy_toggle: bool, wf_prob: str, font_size: float) -> Patch:
     '''
     Plots harmonic state energies and wavefunctions, and harmonic potential
 
@@ -679,13 +710,16 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
         If True, energy axis is shown
     wf_prob: str {'psi', 'psi2'}
         Which function to plot, either wavefunction or wavefunction^2
+    font_size: float
+        Font size for axis and tick labels
+
     Returns
     -------
     Patch
         Patch graph figure
     '''
 
-    if None in [lw, wf_scale]:
+    if None in [lw, wf_scale, font_size]:
         return no_update
 
     traces = []
@@ -788,6 +822,11 @@ def update_plot(data: dict[str, list], pcolour_wf: str, ncolour_wf: str,
 
     fig = Patch()
     fig['data'] = traces
+
+    fig.layout.xaxis.tickfont.size = font_size
+    fig.layout.yaxis.tickfont.size = font_size
+    fig.layout.yaxis.title.font.size = font_size
+    fig.layout.xaxis.title.font.size = font_size
 
     if energy_toggle:
         fig.layout.yaxis.visible = True

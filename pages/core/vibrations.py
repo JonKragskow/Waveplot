@@ -500,6 +500,22 @@ class OptionsDiv(com.Div):
             justify=True
         )
 
+        self.font_size_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            placeholder=18,
+            value=18,
+            min=10,
+            type='number',
+            style={'textAlign': 'center'}
+        )
+
+        self.font_size_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Font Size'),
+                self.font_size_input
+            ]
+        )
+
         self.pe_colour_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
@@ -553,7 +569,7 @@ class OptionsDiv(com.Div):
             'Potential Energy',
             id=str(uuid.uuid1()),
             color='primary',
-            className='me-1',
+            className='me-1 mwmob',
             n_clicks=0,
             style={
                 'textAlign': 'center',
@@ -742,12 +758,33 @@ class OptionsDiv(com.Div):
                 [
                     dbc.Col(
                         [
+                            self.font_size_ig,
+                        ],
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
+                    ),
+                    dbc.Col(
+                        [
+                            self.energy_axis_toggle_ig,
+                        ],
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
+                    )
+                ],
+                justify='center'
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
                             self.open_wf_modal_btn,
                             self.wf_modal
                         ],
                         class_name='mb-3 text-center',
                         sm=12,
-                        md=4
+                        md=6
                     ),
                     dbc.Col(
                         [
@@ -756,15 +793,7 @@ class OptionsDiv(com.Div):
                         ],
                         class_name='mb-3 text-center',
                         sm=12,
-                        md=4
-                    ),
-                    dbc.Col(
-                        [
-                            self.energy_axis_toggle_ig,
-                        ],
-                        class_name='mb-3 text-center',
-                        sm=12,
-                        md=4
+                        md=6
                     )
                 ],
                 justify='center'
@@ -867,6 +896,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Input(options.wf_scale_input, 'value'),
         Input(options.wf_ftype_select, 'value'),
         Input(options.energy_ax_toggle_check, 'value'),
+        Input(options.font_size_input, 'value'),
     ]
 
     callback(
@@ -1051,7 +1081,7 @@ def calc_data(vars: dict[str, float], max_n: int):
 def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
                 toggle_states: bool, colour_pe: str, pcolour_wf: str,
                 ncolour_wf: str, lw_pe: float, lw_wf: float, wf_scale: float,
-                wf_prob: str, energy_toggle: bool) -> Patch:
+                wf_prob: str, energy_toggle: bool, font_size: float) -> Patch:
     '''
     Plots harmonic state energies and wavefunctions, and harmonic potential
 
@@ -1085,13 +1115,16 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
         Which function to plot, either wavefunction or wavefunction^2
     energy_toggle: bool
         If True, energy axis is shown
+    font_size: float
+        Font size for axis and tick labels
+
     Returns
     -------
     Patch
         Patch graph figure
     '''
 
-    if None in [lw_wf, lw_pe, wf_scale]:
+    if None in [lw_wf, lw_pe, wf_scale, font_size]:
         return no_update
 
     traces = []
@@ -1215,6 +1248,11 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
 
     fig = Patch()
     fig['data'] = traces
+
+    fig.layout.xaxis.tickfont.size = font_size
+    fig.layout.yaxis.tickfont.size = font_size
+    fig.layout.yaxis.title.font.size = font_size
+    fig.layout.xaxis.title.font.size = font_size
 
     if energy_toggle:
         fig.layout.yaxis.visible = True

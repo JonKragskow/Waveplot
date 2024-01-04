@@ -54,7 +54,7 @@ RADIAL_LAYOUT.xaxis.title = {
     'text': 'r (a<sub>0</sup>)',
     'font': {
         'family': 'Arial',
-        'size': 14,
+        'size': 18,
         'color': 'black'
     }
 }
@@ -62,7 +62,7 @@ RADIAL_LAYOUT.yaxis.title = {
     'text': 'r<sup>2</sup>R(r)<sup>2</sup>',
     'font': {
         'family': 'Arial',
-        'size': 14,
+        'size': 18,
         'color': 'black'
     }
 }
@@ -504,6 +504,43 @@ class OptionsDiv(com.Div):
             id=str(uuid.uuid1()),
         )
 
+        self.font_size_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            placeholder=18,
+            value=18,
+            min=10,
+            type='number',
+            style={'textAlign': 'center'}
+        )
+
+        self.font_size_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Font Size'),
+                self.font_size_input
+            ]
+        )
+
+        self.linewidth_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            placeholder=2.,
+            type='number',
+            min=1,
+            max=15,
+            value=5,
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            }
+        )
+
+        self.linewidth_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Linewidth'),
+                self.linewidth_input
+            ]
+        )
+
         self.image_format_select = dbc.Select(
             id=str(uuid.uuid1()),
             style={
@@ -614,8 +651,7 @@ class OptionsDiv(com.Div):
                     dbc.Col(
                         self.legend_ig,
                         class_name='mb-3 text-center mwmob',
-                        sm=6,
-                        md=3
+                        sm=3,
                     ),
                     dbc.Col(
                         [
@@ -626,8 +662,28 @@ class OptionsDiv(com.Div):
                             )
                         ],
                         class_name='mb-3 text-center mwmob',
-                        sm=6,
-                        md=3
+                        sm=3,
+                    )
+                ],
+                justify='center'
+            ),
+            dbc.Row(
+                [
+                    dbc.Col(
+                        [
+                            self.font_size_ig,
+                        ],
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
+                    ),
+                    dbc.Col(
+                        [
+                            self.linewidth_ig,
+                        ],
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     )
                 ],
                 justify='center'
@@ -678,7 +734,7 @@ class OptionsDiv(com.Div):
         return
 
 
-def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
+def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv) -> None:
     '''
     Creates callbacks between experimental and fitted AC plots and elements in
     AC options tab
@@ -687,7 +743,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
     ----------
     plot_div: Orb2dPlot
         Experimental plot tab object
-    options_div: OptionsDiv
+    options: OptionsDiv
         Options div object
 
     Returns
@@ -697,27 +753,29 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
 
     # Callback for download 2d data button
     states = [
-        State(options_div.func_select, 'value'),
-        State(options_div.orb_select, 'value'),
-        State(options_div.x_unit_select, 'value'),
-        State(options_div.upper_x_input, 'value')
+        State(options.func_select, 'value'),
+        State(options.orb_select, 'value'),
+        State(options.x_unit_select, 'value'),
+        State(options.upper_x_input, 'value')
     ]
     callback(
-        Output(options_div.download_trigger, 'data'),
-        Input(options_div.download_button, 'n_clicks'),
+        Output(options.download_trigger, 'data'),
+        Input(options.download_button, 'n_clicks'),
         states,
         prevent_initial_call=True
     )(download_data)
 
     # Callback for plotting data
     inputs = [
-        Input(options_div.func_select, 'value'),
-        Input(options_div.orb_select, 'value'),
-        Input(options_div.upper_x_input, 'value'),
-        Input(options_div.x_unit_select, 'value'),
-        Input(options_div.colour_select, 'value'),
-        Input(options_div.legend_toggle, 'value'),
-        Input(options_div.avg_distance_toggle, 'value')
+        Input(options.func_select, 'value'),
+        Input(options.orb_select, 'value'),
+        Input(options.upper_x_input, 'value'),
+        Input(options.x_unit_select, 'value'),
+        Input(options.colour_select, 'value'),
+        Input(options.legend_toggle, 'value'),
+        Input(options.avg_distance_toggle, 'value'),
+        Input(options.font_size_input, 'value'),
+        Input(options.linewidth_input, 'value')
     ]
     callback(
         [
@@ -726,7 +784,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
         ],
         inputs,
         prevent_initial_call='initial_duplicate'
-    )(plot_data)
+    )(update_plot)
 
     # Update plot save format
     callback(
@@ -735,12 +793,12 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv) -> None:
             Output(plot_div.plot, 'config', allow_duplicate=True),
         ],
         [
-            Input(options_div.image_format_select, 'value')
+            Input(options.image_format_select, 'value')
         ],
         [
-            State(options_div.func_select, 'value'),
-            State(options_div.x_unit_select, 'value'),
-            State(options_div.upper_x_input, 'value')
+            State(options.func_select, 'value'),
+            State(options.x_unit_select, 'value'),
+            State(options.upper_x_input, 'value')
         ],
         prevent_initial_call=True
     )(update_save_format)
@@ -850,9 +908,10 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str,
     return output
 
 
-def plot_data(func: str, orbs: list[str], x_max: float,
-              unit: str, colour_scheme: str,
-              legend: bool, avg_distance: bool) -> tuple[Patch, Patch]:
+def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
+                colour_scheme: str, legend: bool,
+                avg_distance: bool, font_size: float,
+                lw: float) -> tuple[Patch, Patch]:
     '''
     Plots Radial wavefunction/distribution function data
 
@@ -872,6 +931,10 @@ def plot_data(func: str, orbs: list[str], x_max: float,
         If True, displays legend
     avg_distance: bool
         If True, plots line for average radial distance
+    font_size: float
+        Font size for axis and tick labels
+    lw: float
+        Linewidth of traces
 
     Returns
     -------
@@ -883,7 +946,7 @@ def plot_data(func: str, orbs: list[str], x_max: float,
 
     fig = Patch()
 
-    if None in [x_max, unit, func, orbs]:
+    if None in [x_max, unit, func, orbs, font_size]:
         return no_update
 
     if not len(orbs):
@@ -916,7 +979,7 @@ def plot_data(func: str, orbs: list[str], x_max: float,
             x=r * UNIT_VALUE[unit],
             y=rad,
             line={
-                'width': 5
+                'width': lw
             },
             name=orb,
             legendgroup=orb,
@@ -937,7 +1000,7 @@ def plot_data(func: str, orbs: list[str], x_max: float,
                 hovertext=f'{orb} ⟨r⟩ = {avgr * UNIT_VALUE[unit]:.2f} {UNIT_TO_LABEL[unit]}', # noqa
                 hoverinfo='text',
                 name=orb,
-                line={'color': col, 'dash': 'dash'}
+                line={'color': col, 'dash': 'dash', 'width': lw * 0.5}
             )
             for avgr, col, orb in zip(average_r, colours, orbs)
         ]
@@ -954,6 +1017,12 @@ def plot_data(func: str, orbs: list[str], x_max: float,
     fig['layout']['yaxis']['title']['text'] = FUNC_TO_LABEL[func]
 
     fig['layout']['showlegend'] = legend
+
+    fig.layout.legend.font.size = font_size * 0.75
+    fig.layout.xaxis.tickfont.size = font_size
+    fig.layout.yaxis.tickfont.size = font_size
+    fig.layout.yaxis.title.font.size = font_size
+    fig.layout.xaxis.title.font.size = font_size
 
     func_to_fname = {
         'rdf': 'radial_distribution_function',

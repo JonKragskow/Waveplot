@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 BASIC_LAYOUT = go.Layout(
     xaxis={
         'autorange': True,
+        'automargin': True,
         'showgrid': False,
         'zeroline': False,
         'showline': True,
@@ -16,6 +17,7 @@ BASIC_LAYOUT = go.Layout(
     },
     yaxis={
         'autorange': True,
+        'automargin': True,
         'showgrid': False,
         'zeroline': False,
         'showline': True,
