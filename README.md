@@ -23,12 +23,6 @@ To run the code, first install dependencies via `pip`
 pip install -r requirements.txt
 ```
 
-then generate all orbital files with
-
-```
-python3 make_orbs.py
-```
-
 and then run the `index.py` file
 
 ```
