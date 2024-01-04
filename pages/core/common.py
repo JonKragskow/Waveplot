@@ -77,7 +77,6 @@ BASIC_CONFIG = {
         'lasso',
         'pan3d',
         'autoScale2d',
-        'tableRotation',
         'resetCameraLastSave3d'
     ],
     'displaylogo': False
