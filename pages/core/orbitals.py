@@ -971,6 +971,11 @@ class OptionsDiv(com.Div):
 
         self.orb_select = dbc.Select(
             id=self.prefix('orbital_select'),
+            style={
+                'textAlign': 'center',
+                'verticalAlign': 'middle',
+                'horizontalAlign': 'middle'
+            },
             options=[
                 {'label': '1s', 'value': '1s+0'},
                 {'label': '2s', 'value': '2s+0'},
@@ -1361,9 +1366,19 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
     return
 
 
-def calc_wav(orbital_name, half=''):
+def calc_wav(orbital_name: str, half: str = '') -> None:
     '''
     Calculates given wavefunction's 3d data and saves to assets folder
+
+    Parameters
+    ----------
+    half: str {'', 'x', 'y', 'z'}
+        Truncates x, y, or z at zero to create cross section of orbital data\n
+        If empty then no truncation is performed.
+
+    Returns
+    -------
+    None
     '''
 
     # Get orbital n value and name
@@ -1438,6 +1453,11 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
         Negative isosurface colour as hex
     font_size: float
         Font size for axis labels
+
+    Returns
+    -------
+    Patch
+        Patched figure containing traces
     '''
 
     if None in [isoval, pos_col, neg_col, x_col, y_col, z_col, font_size]:
@@ -1687,16 +1707,18 @@ def laplacian_smooth(vertices, faces, rounds=1):
 
     Parameters
     ----------
-    vertices:
+    vertices: ndarray of floats
         Vertex coordinates shape=(N,3)
-    faces
+    faces:  ndarray of floats
         Face definitions.  shape=(N,3)
         Each row lists 3 vertices (indexes into the vertices array)
-    rounds:
+    rounds: float
         How many passes to take over the data.
         More iterations results in a smoother mesh, but more shrinkage
         (and more CPU time).
-    Returns:
+    Returns
+    -------
+    ndarray of floats
         new vertices
     '''
     vertices = np.asarray(vertices, dtype=np.float32)
