@@ -1062,6 +1062,22 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.font_size_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            placeholder=18,
+            value=18,
+            min=10,
+            type='number',
+            style={'textAlign': 'center'}
+        )
+
+        self.font_size_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Font Size'),
+                self.font_size_input
+            ]
+        )
+
         self.half_select = dbc.Select(
             id=str(uuid.uuid1()),
             style={
@@ -1223,7 +1239,14 @@ class OptionsDiv(com.Div):
                     dbc.Col(
                         self.orb_ig,
                         className='mb-3 text-center mwmob',
-                        sm=12
+                        sm=12,
+                        md=6
+                    ),
+                    dbc.Col(
+                        self.half_ig,
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=6
                     )
                 ],
                 justify='center'
@@ -1247,14 +1270,15 @@ class OptionsDiv(com.Div):
             ),
             dbc.Row(
                 [
+
                     dbc.Col(
-                        self.half_ig,
+                        self.isoval_ig,
                         class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
                     ),
                     dbc.Col(
-                        self.isoval_ig,
+                        self.font_size_ig,
                         class_name='mb-3 text-center mwmob',
                         sm=12,
                         md=6
@@ -1303,14 +1327,15 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
             Input(plot_div.store, 'data'),
             Input(options_div.axes_check, 'value'),
             Input(options_div.isoval_input, 'value'),
-            Input(options_div.half_select, 'value')
+            Input(options_div.half_select, 'value'),
         ],
         [
             State(options_div.x_axis_col_input, 'value'),
             State(options_div.y_axis_col_input, 'value'),
             State(options_div.z_axis_col_input, 'value'),
             State(options_div.colour_input_a, 'value'),
-            State(options_div.colour_input_b, 'value')
+            State(options_div.colour_input_b, 'value'),
+            State(options_div.font_size_input, 'value')
         ],
         prevent_initial_call='initial_duplicate'
     )(plot_data)
@@ -1318,14 +1343,20 @@ def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
-            Input(options_div.colour_input_a, 'value'),
-            Input(options_div.colour_input_b, 'value'),
             Input(options_div.x_axis_col_input, 'value'),
             Input(options_div.y_axis_col_input, 'value'),
-            Input(options_div.z_axis_col_input, 'value')
+            Input(options_div.z_axis_col_input, 'value'),
+            Input(options_div.colour_input_a, 'value'),
+            Input(options_div.colour_input_b, 'value'),
         ],
         prevent_initial_call=True
     )(update_iso_colour)
+
+    callback(
+        Output(plot_div.plot, 'figure', allow_duplicate=True),
+        Input(options_div.font_size_input, 'value'),
+        prevent_initial_call=True
+    )(update_text_size)
 
     return
 
@@ -1379,14 +1410,37 @@ def calc_wav(orbital_name, half=''):
 
 
 def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
-              x_col: str, y_col: str, z_col: str, colour_1: str,
-              colour_2: str):
+              x_col: str, y_col: str, z_col: str, pos_col: str, neg_col: str,
+              font_size: int):
     '''
     Finds isosurface for given wavefunction data using marching cubes,
     then smooths the surface and plots as mesh
+
+    Parameters
+    ----------
+    orb_name: str
+        Name of orbital e.g. 3d-1 or 3d+0
+    axes_check: bool
+        If True, adds axes to plot
+    isoval: float
+        Isovalue for surface
+    half: str
+        Specifies which plane to cut along
+    x_col: str
+        x axis colour as hex
+    y_col: str
+        y axis colour as hex
+    z_col: str
+        z axis colour as hex
+    pos_col: str
+        Positive isosurface colour as hex
+    neg_col: str
+        Negative isosurface colour as hex
+    font_size: float
+        Font size for axis labels
     '''
 
-    if None in [isoval, colour_1, colour_2, x_col, y_col, z_col]:
+    if None in [isoval, pos_col, neg_col, x_col, y_col, z_col, font_size]:
         return no_update
 
     if half == 'full':
@@ -1446,7 +1500,7 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
         x=x1,
         y=y1,
         z=z1,
-        color=colour_1,
+        color=pos_col,
         i=I1,
         j=J1,
         k=K1,
@@ -1458,7 +1512,7 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             x=x2,
             y=y2,
             z=z2,
-            color=colour_2,
+            color=neg_col,
             i=I2,
             j=J2,
             k=K2,
@@ -1487,7 +1541,7 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
                 hoverinfo='skip'
             )
         )
-    trace_3 = go.Scatter3d(
+    x_axis = go.Scatter3d(
         x=[-lim, lim],
         y=[0, 0],
         z=[0, 0],
@@ -1496,10 +1550,18 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             'width': 8
         },
         mode='lines',
-        hoverinfo='text',
-        hovertext='x'
+        hoverinfo='skip'
     )
-    trace_4 = go.Scatter3d(
+    x_label = go.Scatter3d(
+        x=[lim],
+        y=[0],
+        z=[0],
+        text='x',
+        mode='text',
+        textfont={'size': font_size},
+        hoverinfo='skip'
+    )
+    y_axis = go.Scatter3d(
         y=[-lim, lim],
         x=[0, 0],
         z=[0, 0],
@@ -1508,10 +1570,18 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             'width': 8
         },
         mode='lines',
-        hoverinfo='text',
-        hovertext='y'
+        hoverinfo='skip'
     )
-    trace_5 = go.Scatter3d(
+    y_label = go.Scatter3d(
+        x=[0],
+        y=[lim],
+        z=[0],
+        text='y',
+        mode='text',
+        textfont={'size': font_size},
+        hoverinfo='skip'
+    )
+    z_axis = go.Scatter3d(
         z=[-lim, lim],
         x=[0, 0],
         y=[0, 0],
@@ -1520,11 +1590,19 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
             'width': 8
         },
         mode='lines',
-        hoverinfo='text',
-        hovertext='z'
+        hoverinfo='skip'
+    )
+    z_label = go.Scatter3d(
+        x=[0],
+        y=[0],
+        z=[lim],
+        text='z',
+        mode='text',
+        textfont={'size': font_size},
+        hoverinfo='skip',
     )
     if axes_check:
-        traces += [trace_3, trace_4, trace_5]
+        traces += [x_axis, y_axis, z_axis, x_label, y_label, z_label]
 
     fig = Patch()
 
@@ -1533,15 +1611,61 @@ def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
     return fig
 
 
-def update_iso_colour(colour_1, colour_2, x_col, y_col, z_col):
+def update_iso_colour(x_col: str, y_col: str, z_col: str, pos_col: str,
+                      neg_col: str, ):
+    '''
+    Updates isosurface colours using patched figure
+
+    Parameters
+    ----------
+    x_col: str
+        x axis colour as hex
+    y_col: str
+        y axis colour as hex
+    z_col: str
+        z axis colour as hex
+    pos_col: str
+        Positive isosurface colour as hex
+    neg_col: str
+        Negative isosurface colour as hex
+
+    Returns
+    -------
+    Patch
+        Patched figure
+    '''
 
     fig = Patch()
 
-    fig['data'][0]['color'] = colour_1
-    fig['data'][1]['color'] = colour_2
+    fig['data'][0]['color'] = pos_col
+    fig['data'][1]['color'] = neg_col
     fig['data'][2]['line']['color'] = x_col
     fig['data'][3]['line']['color'] = y_col
     fig['data'][4]['line']['color'] = z_col
+
+    return fig
+
+
+def update_text_size(font_size: float):
+    '''
+    Updates font size using patched figure
+
+    Parameters
+    ----------
+    font_size: float
+        Font size for axis labels
+
+    Returns
+    -------
+    Patch
+        Patched figure
+    '''
+
+    fig = Patch()
+
+    fig['data'][5]['textfont']['size'] = font_size
+    fig['data'][6]['textfont']['size'] = font_size
+    fig['data'][7]['textfont']['size'] = font_size
 
     return fig
 
