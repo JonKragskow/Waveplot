@@ -485,6 +485,20 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.energy_ax_toggle_check = dbc.Checkbox(
+            value=False,
+            id=str(uuid.uuid1())
+        )
+        self.energy_axis_toggle_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Energy axis On/Off'),
+                dbc.InputGroupText(
+                    self.energy_ax_toggle_check
+                )
+            ],
+            justify=True
+        )
+
         self.pe_colour_input = dbc.Input(
             id=str(uuid.uuid1()),
             type='color',
@@ -604,13 +618,17 @@ class OptionsDiv(com.Div):
         self.make_div_contents()
         return
 
-    def make_input_group(self, elements):
+    def make_input_group(self, elements, justify=False):
 
         group = dbc.InputGroup(
             id=str(uuid.uuid1()),
             children=elements,
-            class_name='mb-3',
+            class_name='mb-3'
         )
+
+        if justify:
+            group.style = {'justify-content': 'center'}
+
         return group
 
     def make_modal(self, elements):
@@ -728,7 +746,7 @@ class OptionsDiv(com.Div):
                         ],
                         class_name='mb-3 text-center',
                         sm=12,
-                        md=6
+                        md=4
                     ),
                     dbc.Col(
                         [
@@ -737,7 +755,15 @@ class OptionsDiv(com.Div):
                         ],
                         class_name='mb-3 text-center',
                         sm=12,
-                        md=6
+                        md=4
+                    ),
+                    dbc.Col(
+                        [
+                            self.energy_axis_toggle_ig,
+                        ],
+                        class_name='mb-3 text-center',
+                        sm=12,
+                        md=4
                     )
                 ],
                 justify='center'
@@ -838,7 +864,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
         Input(options.pe_linewidth_input, 'value'),
         Input(options.wf_linewidth_input, 'value'),
         Input(options.wf_scale_input, 'value'),
-        Input(options.wf_ftype_select, 'value')
+        Input(options.wf_ftype_select, 'value'),
+        Input(options.energy_ax_toggle_check, 'value'),
     ]
 
     callback(
@@ -1023,7 +1050,7 @@ def calc_data(vars: dict[str, float], max_n: int):
 def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
                 toggle_states: bool, colour_pe: str, pcolour_wf: str,
                 ncolour_wf: str, lw_pe: float, lw_wf: float, wf_scale: float,
-                wf_prob: str) -> Patch:
+                wf_prob: str, energy_toggle: bool) -> Patch:
     '''
     Plots harmonic state energies and wavefunctions, and harmonic potential
 
@@ -1035,6 +1062,28 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
         'wf': list[list[float]] Harmonic wavefunction(s) at x
         'states': list[float] Harmonic state energies
         'potential': list[float] Harmonic potential at x
+    pe_toggle: bool
+        If True, potential energy is plotted
+    wf_toggle: bool
+        If True, wavefunction is plotted
+    toggle_states: bool
+        If True, state energies are plotted
+    colour_pe: str
+        Colour of potential energy curve
+    pcolour_wf: str
+        Colour of positive wavefunction parts
+    ncolour_wf: str
+        Colour of negative wavefunction parts
+    lw_pe: float
+        Linewidth of potential energy curve
+    lw_wf: float
+        Linewidth of wavefunction and energy levels
+    wf_scale: float
+        Scale factor for wavefunction
+    wf_prob: str {'psi', 'psi2'}
+        Which function to plot, either wavefunction or wavefunction^2
+    energy_toggle: bool
+        If True, energy axis is shown
     Returns
     -------
     Patch
@@ -1165,6 +1214,11 @@ def update_plot(data: dict[str, list], toggle_pe: bool, toggle_wf: bool,
 
     fig = Patch()
     fig['data'] = traces
+
+    if energy_toggle:
+        fig.layout.yaxis.visible = True
+    else:
+        fig.layout.yaxis.visible = False
 
     return fig
 

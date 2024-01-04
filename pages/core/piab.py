@@ -247,7 +247,8 @@ class OptionsDiv(com.Div):
                 dbc.InputGroupText(
                     self.energy_ax_toggle_check
                 )
-            ]
+            ],
+            justify=True
         )
 
         self.wf_toggle_check = dbc.Checkbox(
@@ -260,7 +261,8 @@ class OptionsDiv(com.Div):
                 dbc.InputGroupText(
                     self.wf_toggle_check
                 )
-            ]
+            ],
+            justify=True
         )
 
         self.wf_pos_colour_input = dbc.Input(
@@ -377,13 +379,17 @@ class OptionsDiv(com.Div):
         self.make_div_contents()
         return
 
-    def make_input_group(self, elements):
+    def make_input_group(self, elements, justify=False):
 
         group = dbc.InputGroup(
             id=str(uuid.uuid1()),
             children=elements,
-            class_name='mb-3',
+            class_name='mb-3'
         )
+
+        if justify:
+            group.style = {'justify-content': 'center'}
+
         return group
 
     def make_div_contents(self):
