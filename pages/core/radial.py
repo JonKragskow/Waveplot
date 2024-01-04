@@ -73,7 +73,7 @@ RADIAL_LAYOUT.xaxis.autorange = False
 RADIAL_CONFIG = copy.deepcopy(com.BASIC_CONFIG)
 
 
-def s_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
+def s_2d(n: int, r: ArrayLike, wf_type: str, z: float) -> NDArray:
     '''
     Calculates s orbital radial wavefunction or radial distribution function
 
@@ -82,9 +82,11 @@ def s_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     n: int
         prinipal quantum number of orbital
     r: array_like
-        values of distance r
+        values of distance r in bohr radii
     wf_type: str {'RDF', 'RWF'}
         type of wavefunction to calculate
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -94,12 +96,12 @@ def s_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_s(n, 2. * r / n)**2
+        return r**2. * radial_s(n, r, z)**2
     if 'rwf' in wf_type:
-        return radial_s(n, 2. * r / n)
+        return radial_s(n, r, z)
 
 
-def p_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
+def p_2d(n: int, r: ArrayLike, wf_type: str, z: float) -> NDArray:
     '''
     Calculates p orbital radial wavefunction or radial distribution function
 
@@ -108,9 +110,11 @@ def p_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     n: int
         prinipal quantum number of orbital
     r: array_like
-        values of distance r
+        values of distance r in bohr radii
     wf_type: str {'RDF', 'RWF'}
         type of wavefunction to calculate
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -120,12 +124,12 @@ def p_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_p(n, 2. * r / n)**2
+        return r**2. * radial_p(n, r, z)**2
     elif 'rwf' in wf_type:
-        return radial_p(n, 2. * r / n)
+        return radial_p(n, r, z)
 
 
-def d_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
+def d_2d(n: int, r: ArrayLike, wf_type: str, z: float) -> NDArray:
     '''
     Calculates d orbital radial wavefunction or radial distribution function
 
@@ -134,7 +138,7 @@ def d_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     n: int
         prinipal quantum number of orbital
     r: array_like
-        values of distance r
+        values of distance r in bohr radii
     wf_type: str {'RDF', 'RWF'}
         type of wavefunction to calculate
 
@@ -146,12 +150,12 @@ def d_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_d(n, 2. * r / n)**2
+        return r**2. * radial_d(n, r, z)**2
     if 'rwf' in wf_type:
-        return radial_d(n, 2. * r / n)
+        return radial_d(n, r, z)
 
 
-def f_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
+def f_2d(n: int, r: ArrayLike, wf_type: str, z: float) -> NDArray:
     '''
     Calculates f orbital radial wavefunction or radial distribution function
 
@@ -160,9 +164,11 @@ def f_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     n: int
         prinipal quantum number of orbital
     r: array_like
-        values of distance r
+        values of distance r in bohr radii
     wf_type: str {'RDF', 'RWF'}
         type of wavefunction to calculate
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -172,12 +178,12 @@ def f_2d(n: int, r: ArrayLike, wf_type: str) -> NDArray:
     '''
 
     if 'rdf' in wf_type:
-        return r**2. * radial_f(n, 2. * r / n)**2
+        return r**2. * radial_f(n, r, z)**2
     if 'rwf' in wf_type:
-        return radial_f(n, 2. * r / n)
+        return radial_f(n, r, z)
 
 
-def radial_s(n: int, rho: ArrayLike):
+def radial_s(n: int, r: ArrayLike, z: float) -> NDArray:
     '''
     Calculates radial Wavefunction of s orbital
     for the specified principal quantum number
@@ -186,8 +192,10 @@ def radial_s(n: int, rho: ArrayLike):
     ----------
     n: int
         principal quantum number
-    rho: array_like
-        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
+    r: array_like
+        Distance in bohr radii where r^2 = x^2+y^2+z^2
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -195,25 +203,27 @@ def radial_s(n: int, rho: ArrayLike):
         radial wavefunction as a function of rho
     '''
 
+    rho = 2 * z * r / n
+
     if n == 1:
-        rad = 2. * np.exp(-rho / 2.)
+        rad = z**1.5 * 2. * np.exp(-rho / 2.)
     if n == 2:
-        rad = 1. / (2. * np.sqrt(2.)) * (2. - rho) * np.exp(-rho / 2.)
+        rad = z**1.5 / (2. * np.sqrt(2.)) * (2. - rho) * np.exp(-rho / 2.)
     if n == 3:
-        rad = 1. / (9. * np.sqrt(3.)) * (6. - 6. * rho + rho**2.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (9. * np.sqrt(3.)) * (6. - 6. * rho + rho**2.) * np.exp(-rho / 2.) # noqa
     if n == 4:
-        rad = (1. / 96.) * (24.-36. * rho + 12. * rho**2. - rho**3.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / 96. * (24.-36. * rho + 12. * rho**2. - rho**3.) * np.exp(-rho / 2.) # noqa
     if n == 5:
-        rad = (1. / (300. * np.sqrt(5.)))*(120.-240. * rho + 120. * rho**2.-20. * rho**3. + rho**4.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (300. * np.sqrt(5.))*(120.-240. * rho + 120. * rho**2.-20. * rho**3. + rho**4.) * np.exp(-rho / 2.) # noqa
     if n == 6:
-        rad = (1. / (2160. * np.sqrt(6.)))*(720.-1800. * rho + 1200. * rho**2.-300. * rho**3.+30. * rho**4.-rho**5.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (2160. * np.sqrt(6.))*(720.-1800. * rho + 1200. * rho**2.-300. * rho**3.+30. * rho**4.-rho**5.) * np.exp(-rho / 2.) # noqa
     if n == 7:
-        rad = (1. / (17640. * np.sqrt(7)))*(5040. - 15120. * rho + 12600. * rho**2. - 4200. * rho**3. + 630. * rho**4. -42* rho**5. + rho**6) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (17640. * np.sqrt(7))*(5040. - 15120. * rho + 12600. * rho**2. - 4200. * rho**3. + 630. * rho**4. -42* rho**5. + rho**6) * np.exp(-rho / 2.) # noqa
 
     return rad
 
 
-def avg_r(n: int, l: int) -> float:
+def avg_r(n: int, l: int, z: float) -> float:
     '''
     Computes expectation value of r for a given radial wavefunction
 
@@ -223,16 +233,18 @@ def avg_r(n: int, l: int) -> float:
         n quantum number
     l: int
         l quantum number
+    z: float
+        Z or Z_eff
 
     Returns
     -------
     float
         <r> for given wavefunction in units of bohr radii
     '''
-    return n ** 2 * (1 + 0.5 * (1 - (l**2 + l) / (n**2)))
+    return n ** 2 / z * (1 + 0.5 * (1 - (l**2 + l) / (n**2)))
 
 
-def radial_p(n: int, rho: ArrayLike) -> NDArray:
+def radial_p(n: int, r: ArrayLike, z: float) -> NDArray:
     '''
     Calculates radial Wavefunction of p orbital
     for the specified principal quantum number
@@ -241,8 +253,10 @@ def radial_p(n: int, rho: ArrayLike) -> NDArray:
     ----------
     n: int
         principal quantum number
-    rho: array_like
-        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
+    r: array_like
+        Distance in bohr radii where r^2 = x^2+y^2+z^2
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -250,22 +264,24 @@ def radial_p(n: int, rho: ArrayLike) -> NDArray:
         radial wavefunction as a function of rho
     '''
 
+    rho = 2 * z * r / n
+
     if n == 2:
-        rad = 1. / (2. * np.sqrt(6.)) * rho * np.exp(-rho / 2.)
+        rad = z**1.5 / (2. * np.sqrt(6.)) * rho * np.exp(-rho / 2.)
     elif n == 3:
-        rad = 1. / (9. * np.sqrt(6.)) * rho * (4. - rho) * np.exp(-rho / 2.)
+        rad = z**1.5 / (9. * np.sqrt(6.)) * rho * (4. - rho) * np.exp(-rho / 2.) # noqa
     elif n == 4:
-        rad = 1. / (32. * np.sqrt(15.)) * rho * (20.-10. * rho + rho**2.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (32. * np.sqrt(15.)) * rho * (20.-10. * rho + rho**2.) * np.exp(-rho / 2.) # noqa
     elif n == 5:
-        rad = 1. / (150. * np.sqrt(30.)) * rho * (120.-90. * rho + 18. * rho**2. - rho**3.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (150. * np.sqrt(30.)) * rho * (120.-90. * rho + 18. * rho**2. - rho**3.) * np.exp(-rho / 2.) # noqa
     elif n == 6:
-        rad = 1. / (432. * np.sqrt(210.)) * rho * (840.-840. * rho + 252. * rho**2.-28. * rho**3. + rho**4.) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (432. * np.sqrt(210.)) * rho * (840.-840. * rho + 252. * rho**2.-28. * rho**3. + rho**4.) * np.exp(-rho / 2.) # noqa
     elif n == 7:
-        rad = 1. / (11760. * np.sqrt(21.)) * rho * (6720. - 8400. * rho + 3360. * rho**2.-560. * rho**3.+40 * rho**4. - rho**5) * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (11760. * np.sqrt(21.)) * rho * (6720. - 8400. * rho + 3360. * rho**2.-560. * rho**3.+40 * rho**4. - rho**5) * np.exp(-rho / 2.) # noqa
     return rad
 
 
-def radial_d(n: int, rho: ArrayLike) -> NDArray:
+def radial_d(n: int, r: ArrayLike, z: float) -> NDArray:
     '''
     Calculates radial Wavefunction of d orbital
     for the specified principal quantum number
@@ -274,8 +290,10 @@ def radial_d(n: int, rho: ArrayLike) -> NDArray:
     ----------
     n: int
         principal quantum number
-    rho: array_like
-        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
+    r: array_like
+        Distance in bohr radii where r^2 = x^2+y^2+z^2
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -283,21 +301,23 @@ def radial_d(n: int, rho: ArrayLike) -> NDArray:
         radial wavefunction as a function of rho
     '''
 
+    rho = 2 * z * r / n
+
     if n == 3:
-        rad = 1. / (9. * np.sqrt(30.)) * rho**2. * np.exp(-rho / 2.)
+        rad = z**1.5 / (9. * np.sqrt(30.)) * rho**2. * np.exp(-rho / 2.)
     elif n == 4:
-        rad = 1. / (96. * np.sqrt(5.))*(6.-rho) * rho**2. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (96. * np.sqrt(5.))*(6.-rho) * rho**2. * np.exp(-rho / 2.) # noqa
     elif n == 5:
-        rad = 1. / (150. * np.sqrt(70.))*(42.-14. * rho + rho**2) * rho**2. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (150. * np.sqrt(70.))*(42.-14. * rho + rho**2) * rho**2. * np.exp(-rho / 2.) # noqa
     elif n == 6:
-        rad = 1. / (864. * np.sqrt(105.))*(336.-168. * rho + 24. * rho**2. - rho**3.) * rho**2. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (864. * np.sqrt(105.))*(336.-168. * rho + 24. * rho**2. - rho**3.) * rho**2. * np.exp(-rho / 2.) # noqa
     elif n == 7:
-        rad = 1. / (7056. * np.sqrt(105.))*(3024. - 2016. * rho + 432. * rho**2. -36* rho**3. + rho**4) * rho**2. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (7056. * np.sqrt(105.))*(3024. - 2016. * rho + 432. * rho**2. -36* rho**3. + rho**4) * rho**2. * np.exp(-rho / 2.) # noqa
 
     return rad
 
 
-def radial_f(n: int, rho: ArrayLike) -> NDArray:
+def radial_f(n: int, r: ArrayLike, z: float) -> NDArray:
     '''
     Calculates radial wavefunction of f orbital
     for the specified principal quantum number
@@ -306,8 +326,10 @@ def radial_f(n: int, rho: ArrayLike) -> NDArray:
     ----------
     n: int
         principal quantum number
-    rho: array_like
-        values of rho = 2. * r / n, where r^2 = x^2+y^2+z^2
+    r: array_like
+        Distance in bohr radii where r^2 = x^2+y^2+z^2
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -315,14 +337,16 @@ def radial_f(n: int, rho: ArrayLike) -> NDArray:
         radial wavefunction as a function of rho
     '''
 
+    rho = 2 * z * r / n
+
     if n == 4:
-        rad = 1. / (96. * np.sqrt(35.)) * rho**3. * np.exp(-rho / 2.)
+        rad = z**1.5 / (96. * np.sqrt(35.)) * rho**3. * np.exp(-rho / 2.)
     elif n == 5:
-        rad = 1. / (300. * np.sqrt(70.)) * (8. - rho) * rho**3. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (300. * np.sqrt(70.)) * (8. - rho) * rho**3. * np.exp(-rho / 2.) # noqa
     elif n == 6:
-        rad = 1. / (2592. * np.sqrt(35.)) * (rho**2.-18. * rho + 72.) * rho**3. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (2592. * np.sqrt(35.)) * (rho**2.-18. * rho + 72.) * rho**3. * np.exp(-rho / 2.) # noqa
     elif n == 7:
-        rad = 1. / (17640. * np.sqrt(42.)) * (-rho**3 + 30 * rho**2. - 270. * rho + 720.) * rho**3. * np.exp(-rho / 2.) # noqa
+        rad = z**1.5 / (17640. * np.sqrt(42.)) * (-rho**3 + 30 * rho**2. - 270. * rho + 720.) * rho**3. * np.exp(-rho / 2.) # noqa
 
     return rad
 
@@ -463,6 +487,23 @@ class OptionsDiv(com.Div):
             ]
         )
 
+        self.z_input = dbc.Input(
+            id=str(uuid.uuid1()),
+            placeholder=1,
+            value=1,
+            min=1,
+            type='number',
+            style={'textAlign': 'center'}
+        )
+
+        self.z_ig = self.make_input_group(
+            [
+                dbc.InputGroupText('Z'),
+                self.z_input
+            ],
+            justify=True
+        )
+
         # Legend toggle checkbox
         self.legend_toggle = dbc.Checkbox(
             value=True,
@@ -538,7 +579,8 @@ class OptionsDiv(com.Div):
             [
                 dbc.InputGroupText('Linewidth'),
                 self.linewidth_input
-            ]
+            ],
+            justify=True
         )
 
         self.image_format_select = dbc.Select(
@@ -649,9 +691,9 @@ class OptionsDiv(com.Div):
                         md=6
                     ),
                     dbc.Col(
-                        self.legend_ig,
+                        self.z_ig,
                         class_name='mb-3 text-center mwmob',
-                        sm=3,
+                        sm=3
                     ),
                     dbc.Col(
                         [
@@ -675,7 +717,7 @@ class OptionsDiv(com.Div):
                         ],
                         class_name='mb-3 text-center mwmob',
                         sm=12,
-                        md=6
+                        md=4
                     ),
                     dbc.Col(
                         [
@@ -683,8 +725,14 @@ class OptionsDiv(com.Div):
                         ],
                         class_name='mb-3 text-center mwmob',
                         sm=12,
-                        md=6
-                    )
+                        md=4
+                    ),
+                    dbc.Col(
+                        self.legend_ig,
+                        class_name='mb-3 text-center mwmob',
+                        sm=12,
+                        md=4
+                    ),
                 ],
                 justify='center'
             ),
@@ -756,7 +804,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv) -> None:
         State(options.func_select, 'value'),
         State(options.orb_select, 'value'),
         State(options.x_unit_select, 'value'),
-        State(options.upper_x_input, 'value')
+        State(options.upper_x_input, 'value'),
+        State(options.z_input, 'value')
     ]
     callback(
         Output(options.download_trigger, 'data'),
@@ -775,12 +824,14 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv) -> None:
         Input(options.legend_toggle, 'value'),
         Input(options.avg_distance_toggle, 'value'),
         Input(options.font_size_input, 'value'),
-        Input(options.linewidth_input, 'value')
+        Input(options.linewidth_input, 'value'),
+        Input(options.z_input, 'value')
     ]
     callback(
         [
             Output(plot_div.plot, 'figure', allow_duplicate=True),
             Output(plot_div.plot, 'config', allow_duplicate=True),
+            Output(plot_div.below_div, 'children')
         ],
         inputs,
         prevent_initial_call='initial_duplicate'
@@ -806,7 +857,8 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv) -> None:
     return
 
 
-def compute_radials(func: str, orbs: list[str], r: ArrayLike) -> NDArray:
+def compute_radials(func: str, orbs: list[str], r: ArrayLike,
+                    z: float) -> NDArray:
     '''
     Computes radial wavefunction or radial distribution function
 
@@ -816,8 +868,10 @@ def compute_radials(func: str, orbs: list[str], r: ArrayLike) -> NDArray:
         Name of function
     orbs: list[str]
         Orbitals to include
-    r: ArrayLike
+    r: array_like
         r values in Bohr radii
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -837,7 +891,7 @@ def compute_radials(func: str, orbs: list[str], r: ArrayLike) -> NDArray:
     }
 
     full_data = [
-        orb_funcs[orb[1]](int(orb[0]), r, func)
+        orb_funcs[orb[1]](int(orb[0]), r, func, z)
         for orb in orbs
     ]
 
@@ -845,7 +899,7 @@ def compute_radials(func: str, orbs: list[str], r: ArrayLike) -> NDArray:
 
 
 def download_data(_nc: int, func: str, orbs: list[str], unit: str,
-                  x_max: float) -> dict:
+                  x_max: float, z: float) -> dict:
     '''
     Creates output file for Radial wavefunction/distribution function
 
@@ -861,13 +915,16 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str,
         Distance unit
     x_max: float
         Upper x value in either Angstrom or Bohr radii (depends on `unit`)
+    z: float
+        Z or Z_eff
+
     Returns
     -------
     dict
         Output dictionary used by dcc.Download
     '''
 
-    if None in [unit, func, orbs]:
+    if None in [unit, func, orbs, z]:
         return no_update
 
     if not len(orbs):
@@ -877,7 +934,7 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str,
     r = np.linspace(0, x_max / UNIT_VALUE[unit], 5000)
 
     # R(r) or RDF where r has units of Bohr radii
-    radial = np.array(compute_radials(func, orbs, r))
+    radial = np.array(compute_radials(func, orbs, r, z))
 
     func_to_name = {
         'rdf': 'Radial Distribution Function',
@@ -911,7 +968,7 @@ def download_data(_nc: int, func: str, orbs: list[str], unit: str,
 def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
                 colour_scheme: str, legend: bool,
                 avg_distance: bool, font_size: float,
-                lw: float) -> tuple[Patch, Patch]:
+                lw: float, z: float) -> tuple[Patch, Patch]:
     '''
     Plots Radial wavefunction/distribution function data
 
@@ -935,6 +992,8 @@ def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
         Font size for axis and tick labels
     lw: float
         Linewidth of traces
+    z: float
+        Z or Z_eff
 
     Returns
     -------
@@ -946,7 +1005,7 @@ def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
 
     fig = Patch()
 
-    if None in [x_max, unit, func, orbs, font_size]:
+    if None in [x_max, unit, func, orbs, font_size, z]:
         return no_update
 
     if not len(orbs):
@@ -965,11 +1024,11 @@ def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
     r = np.linspace(0, x_max / UNIT_VALUE[unit], 5000)
 
     # R(r) or RDF where r has units of Bohr radii
-    radial = compute_radials(func, orbs, r)
+    radial = compute_radials(func, orbs, r, z)
 
     # Average distance in Bohr radii
     average_r = [
-        avg_r(int(orb[0]), LABEL_TO_L[orb[1]])
+        avg_r(int(orb[0]), LABEL_TO_L[orb[1]], z)
         for orb in orbs
     ]
 
@@ -1033,7 +1092,46 @@ def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
 
     config['toImageButtonOptions']['filename'] = func_to_fname[func]
 
-    return fig, config
+    RAD_TO_LATEX = {
+        '1s': r'$$R_{1,0}(\rho) = 2 Z^{\frac{3}{2}} e^{-\rho /2}$$', # noqa
+        '2s': r'$$R_{2,0}(\rho) = \frac{Z^{\frac{3}{2}}}{2 \sqrt{2}}e^{-\rho /2} (2-\rho)$$', # noqa
+        '2p': r'$$R_{2,1}(\rho) = \frac{Z^{\frac{3}{2}}}{2 \sqrt{6}}e^{-\rho /2} \rho$$', # noqa
+        '3s': r'$$R_{3,0}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{3}} e^{-\rho /2} (\rho ^2-6 \rho +6)$$', # noqa
+        '3p': r'$$R_{3,1}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{6}}e^{-\rho /2} (4-\rho ) \rho$$', # noqa
+        '3d': r'$$R_{3,2}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{30}}e^{-\rho /2} \rho ^2$$', # noqa
+        '4s': r'$$R_{4,0}(\rho) = \frac{Z^{\frac{3}{2}}}{96} e^{-\rho /2} (-\rho ^3+12 \rho ^2-36 \rho +24)$$', # noqa
+        '4p': r'$$R_{4,1}(\rho) = \frac{Z^{\frac{3}{2}}}{32 \sqrt{15}}e^{-\rho /2} \rho  (\rho ^2-10 \rho +20)$$', # noqa
+        '4d': r'$$R_{4,2}(\rho) = \frac{Z^{\frac{3}{2}}}{96 \sqrt{5}}e^{-\rho /2} (6-\rho ) \rho ^2$$', # noqa
+        '4f': r'$$R_{4,3}(\rho) = \frac{Z^{\frac{3}{2}}}{96 \sqrt{35}} e^{-\rho /2} \rho ^3$$', # noqa
+        '5s': r'$$R_{5,0}(\rho) = \frac{Z^{\frac{3}{2}}}{300 \sqrt{5}} e^{-\rho /2} (\rho ^4-20 \rho ^3+120 \rho ^2-240 \rho +120)$$', # noqa
+        '5p': r'$$R_{5,1}(\rho) = \frac{Z^{\frac{3}{2}}}{150 \sqrt{30}}e^{-\rho /2} \rho  (-\rho ^3+18 \rho ^2-90 \rho +120)$$', # noqa
+        '5d': r'$$R_{5,2}(\rho) = \frac{Z^{\frac{3}{2}}}{150 \sqrt{70}}e^{-\rho /2} \rho ^2 (\rho ^2-14 \rho +42)$$', # noqa
+        '5f': r'$$R_{5,3}(\rho) = \frac{Z^{\frac{3}{2}}}{300 \sqrt{70}}e^{-\rho /2} (8-\rho ) \rho ^3$$', # noqa
+        '6s': r'$$R_{6,0}(\rho) = \frac{Z^{\frac{3}{2}}}{2160 \sqrt{6}} e^{-\rho /2} (-\rho ^5+30 \rho ^4-300 \rho ^3+1200 \rho ^2-1800 \rho +720)$$', # noqa
+        '6p': r'$$R_{6,1}(\rho) = \frac{Z^{\frac{3}{2}}}{432 \sqrt{210}} e^{-\rho /2} \rho (\rho ^4-28 \rho ^3+252 \rho ^2-840 \rho +840)$$', # noqa
+        '6d': r'$$R_{6,2}(\rho) = \frac{Z^{\frac{3}{2}}}{864 \sqrt{105}}e^{-\rho /2} \rho ^2 (-\rho ^3+24 \rho ^2-168 \rho +336)$$', # noqa
+        '6f': r'$$R_{6,3}(\rho) = \frac{Z^{\frac{3}{2}}}{2592 \sqrt{35}}e^{-\rho /2} \rho ^3 (\rho ^2-18 \rho +72)$$', # noqa
+        '7s': r'$$R_{7,0}(\rho) = \frac{Z^{\frac{3}{2}}}{17640 \sqrt{7}} e^{-\rho /2} (\rho ^6-42 \rho ^5+630 \rho ^4-4200 \rho ^3+12600 \rho ^2-15120 \rho +5040)$$', # noqa
+        '7p': r'$$R_{7,1}(\rho) = \frac{Z^{\frac{3}{2}}}{11760 \sqrt{21}}e^{-\rho /2} \rho  (-\rho ^5+40 \rho ^4-560 \rho ^3+3360 \rho ^2-8400 \rho +6720)$$', # noqa
+        '7d': r'$$R_{7,2}(\rho) = \frac{Z^{\frac{3}{2}}}{7056 \sqrt{105}}e^{-\rho /2} \rho ^2 (\rho ^4-36 \rho ^3+432 \rho ^2-2016 \rho +3024)$$', # noqa
+        '7f': r'$$R_{7,3}(\rho) = \frac{Z^{\frac{3}{2}}}{17640 \sqrt{42}}e^{-\rho /2} \rho ^3 (-\rho ^3+30 \rho ^2-270 \rho +720)$$', # noqa
+    }
+
+    orb_eqns = html.Div(
+        [
+            dcc.Markdown(
+                RAD_TO_LATEX[orb],
+                mathjax=True,
+                style={'textAlign': 'center'}
+            )
+            for orb in orbs
+        ],
+        style={
+            'marginTop': '15px'
+        }
+    )
+
+    return fig, config, orb_eqns
 
 
 def update_save_format(fmt: str, func: str, unit: str, x_max: int):

@@ -219,6 +219,8 @@ class PlotDiv(Div):
         else:
             self.plotwrapper = [self.plot]
 
+        self.below_div = html.Div()
+
         self.make_div_contents()
 
     def make_div_contents(self):
@@ -233,7 +235,8 @@ class PlotDiv(Div):
                         [
                             self.error_alert,
                             *self.plotwrapper,
-                            *self.storewrapper
+                            *self.storewrapper,
+                            self.below_div
                         ]
                     )
                 ]
