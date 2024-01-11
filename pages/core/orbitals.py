@@ -17,13 +17,14 @@
 '''
 import numpy as np
 from dash import html, Input, Output, callback, no_update, \
-    Patch, State
+    Patch, State, dcc
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from skimage import measure
 import pandas as pd
 import uuid
 import copy
+import io
 
 from . import common as com
 from . import radial as rc
@@ -131,8 +132,41 @@ DEFAULT_ISO = {
     'sp3': 0.01
 }
 
+BOUNDSTEP = {
+    's': {
+        1: {'bound': 5.0, 'step': 0.1},
+        2: {'bound': 30.0, 'step': 0.5},
+        3: {'bound': 40.0, 'step': 0.5},
+        4: {'bound': 40.0, 'step': 0.5},
+        5: {'bound': 60.0, 'step': 1.0},
+        6: {'bound': 80.0, 'step': 1.0}
+    },
+    'p': {
+        2: {'bound': 20, 'step': 0.5},
+        3: {'bound': 30, 'step': 0.5},
+        4: {'bound': 60, 'step': 1.0},
+        5: {'bound': 60, 'step': 1.0},
+        6: {'bound': 80, 'step': 1.0}
+    },
+    'd': {
+        3: {'bound': 60.0, 'step': 1.0},
+        4: {'bound': 80.0, 'step': 1.0},
+        5: {'bound': 110.0, 'step': 2.0},
+        6: {'bound': 150.0, 'step': 2.0}
+    },
+    'f': {
+        4: {'bound': 100.0, 'step': 2.0},
+        5: {'bound': 100.0, 'step': 2.0},
+        6: {'bound': 130.0, 'step': 2.0}
+    },
+    'sp': {'bound': 20, 'step': 0.5},
+    'sp2': {'bound': 20, 'step': 0.5},
+    'sp3': {'bound': 20, 'step': 0.5}
 
-def s_3d(n: int, half: str = ''):
+}
+
+
+def s_3d(n: int, bound: float, step: float, half: str = ''):
     '''
     Calculates s orbital wavefunction on a grid
 
@@ -140,34 +174,19 @@ def s_3d(n: int, half: str = ''):
     ----------
     n: int
         principal quantum number of orbital
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
-        If empty then no truncation is performed.
+        If empty then no truncation is performed
 
     Returns
     -------
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-
-    if n == 1:
-        bound = 5.
-        step = 0.1
-    elif n == 2:
-        bound = 30.
-        step = 0.5
-    elif n == 3:
-        bound = 40.
-        step = 0.5
-    elif n == 4:
-        bound = 40.
-        step = 0.5
-    elif n == 5:
-        bound = 60.
-        step = 1.
-    elif n == 6:
-        bound = 80.
-        step = 1.
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -198,7 +217,7 @@ def s_3d(n: int, half: str = ''):
     return wav
 
 
-def p_3d(n: int, ml: int, half: str = ''):
+def p_3d(n: int, bound: float, step: float, ml: int, half: str = ''):
     '''
     Calculates p orbital wavefunction on a grid
 
@@ -206,6 +225,10 @@ def p_3d(n: int, ml: int, half: str = ''):
     ----------
     n: int
         principal quantum number of orbital
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     ml: int
         magnetic quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
@@ -217,22 +240,6 @@ def p_3d(n: int, ml: int, half: str = ''):
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-
-    if n == 2:
-        bound = 20
-        step = 0.5
-    elif n == 3:
-        bound = 30
-        step = 0.5
-    elif n == 4:
-        bound = 60
-        step = 1.
-    elif n == 5:
-        bound = 60
-        step = 1.
-    elif n == 6:
-        bound = 80
-        step = 1.
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -272,21 +279,8 @@ def p_3d(n: int, ml: int, half: str = ''):
 
     return wav
 
-    # if n == 3:
-    #     bound = 70.
-    #     step = 1.
-    # elif n == 4:
-    #     bound = 90.
-    #     step = 2.
-    # elif n == 5:
-    #     bound = 110.
-    #     step = 2.
-    # elif n == 6:
-    #     bound = 140.
-    #     step = 2.
 
-
-def d_3d(n: int, ml: int, half: str = ''):
+def d_3d(n: int, bound: float, step: float, ml: int, half: str = ''):
     '''
     Calculates d orbital wavefunction on a grid
 
@@ -294,6 +288,10 @@ def d_3d(n: int, ml: int, half: str = ''):
     ----------
     n: int
         principal quantum number of orbital
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     ml: int
         magnetic quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
@@ -305,19 +303,6 @@ def d_3d(n: int, ml: int, half: str = ''):
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-
-    if n == 3:
-        bound = 60.
-        step = 1.
-    elif n == 4:
-        bound = 80.
-        step = 1.
-    elif n == 5:
-        bound = 110.
-        step = 2.
-    elif n == 6:
-        bound = 150.
-        step = 2.
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -359,7 +344,8 @@ def d_3d(n: int, ml: int, half: str = ''):
     return wav
 
 
-def f_3d(n: int, ml: int, half: str = '', cubic: bool = False):
+def f_3d(n: int, bound: float, step: float, ml: int, half: str = '',
+         cubic: bool = False):
     '''
     Calculates f orbital wavefunction on a grid
 
@@ -367,6 +353,10 @@ def f_3d(n: int, ml: int, half: str = '', cubic: bool = False):
     ----------
     n: int
         principal quantum number of orbital
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     ml: int
         magnetic quantum number of orbital
     half: str {'', 'x', 'y', 'z'}
@@ -380,16 +370,6 @@ def f_3d(n: int, ml: int, half: str = '', cubic: bool = False):
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-
-    if n == 4:
-        bound = 100.
-        step = 2.
-    elif n == 5:
-        bound = 100.
-        step = 2.
-    elif n == 6:
-        bound = 130.
-        step = 2.
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -447,7 +427,7 @@ def f_3d(n: int, ml: int, half: str = '', cubic: bool = False):
     return wav
 
 
-def sp_3d(half: str):
+def sp_3d(half: str, bound: float, step: float):
     '''
     Calculates three-dimensional sp orbital on a grid of x, y, and z points\n
 
@@ -456,14 +436,15 @@ def sp_3d(half: str):
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
-
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     Returns
     -------
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-    bound = 20
-    step = 0.5
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -502,7 +483,7 @@ def sp_3d(half: str):
     return wav
 
 
-def sp3_3d(half: str):
+def sp3_3d(half: str, bound: float, step: float):
     '''
     Calculates three-dimensional sp3 orbital on a grid of x, y, and z points\n
 
@@ -511,15 +492,15 @@ def sp3_3d(half: str):
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
-
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     Returns
     -------
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-
-    bound = 20
-    step = 0.5
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -558,7 +539,7 @@ def sp3_3d(half: str):
     return wav
 
 
-def sp2_3d(half: str):
+def sp2_3d(half: str, bound: float, step: float):
     '''
     Calculates three-dimensional sp2 orbital on a grid of x, y, and z points\n
 
@@ -567,14 +548,15 @@ def sp2_3d(half: str):
     half: str {'', 'x', 'y', 'z'}
         Truncates x, y, or z at zero to create cross section of orbital data\n
         If empty then no truncation is performed.
-
+    bound: float
+        ± value of x, y, z (i.e. equal) used to generate grid
+    step: float
+        Step used to generate grid
     Returns
     -------
     ndarray of floats
         Meshgrid containing wavefunction
     '''
-    bound = 20
-    step = 0.5
 
     x = np.arange(-bound, bound, step)
     y = np.arange(-bound, bound, step)
@@ -718,6 +700,18 @@ class OptionsDiv(com.Div):
                 self.orb_select
             ]
         )
+
+        # self.download_button = dbc.Button(
+        #     'Download Data',
+        #     id=str(uuid.uuid1()),
+        #     style={
+        #         'boxShadow': 'none',
+        #         'width': '100%'
+        #     }
+        # )
+        # self.download_trigger = dcc.Download(
+        #     id=str(uuid.uuid1()),
+        # )
 
         self.font_size_input = dbc.Input(
             id=str(uuid.uuid1()),
@@ -942,83 +936,85 @@ class OptionsDiv(com.Div):
                     )
                 ],
                 justify='center'
-            )
+            ),
+            # dbc.Row(
+            #     [dbc.Col([self.download_button, self.download_trigger])]
+            # )
         ]
 
         self.div.children = contents
         return
 
 
-def assemble_callbacks(plot_div: com.PlotDiv, options_div: OptionsDiv):
+def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
 
     # Catch orbital name and update isovalue display
     callback(
         [
-            Output(options_div.isoval_input, 'value', allow_duplicate=True),
+            Output(options.isoval_input, 'value', allow_duplicate=True),
             Output(plot_div.store, 'data')
         ],
-        Input(options_div.orb_select, 'value'),
+        Input(options.orb_select, 'value'),
         prevent_initial_call=True
     )(lambda x: (DEFAULT_ISO[x], x))
 
     # Suggest new isovalue from list of "good" values
     callback(
-        Output(options_div.isoval_input, 'value', allow_duplicate=True),
-        Input(options_div.update_isoval_btn, 'n_clicks'),
-        State(options_div.orb_select, 'value'),
+        Output(options.isoval_input, 'value', allow_duplicate=True),
+        Input(options.update_isoval_btn, 'n_clicks'),
+        State(options.orb_select, 'value'),
         prevent_initial_call=True
     )(lambda x, y: DEFAULT_ISO[y])
 
     callback(
         [
-            Output(options_div.x_axis_col_input, 'disabled'),
-            Output(options_div.y_axis_col_input, 'disabled'),
-            Output(options_div.z_axis_col_input, 'disabled')
+            Output(options.x_axis_col_input, 'disabled'),
+            Output(options.y_axis_col_input, 'disabled'),
+            Output(options.z_axis_col_input, 'disabled')
         ],
-        Input(options_div.axes_check, 'value')
+        Input(options.axes_check, 'value')
     )(lambda x: [not x] * 3)
 
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
             Input(plot_div.store, 'data'),
-            Input(options_div.axes_check, 'value'),
-            Input(options_div.isoval_input, 'value'),
-            Input(options_div.half_select, 'value'),
+            Input(options.axes_check, 'value'),
+            Input(options.isoval_input, 'value'),
+            Input(options.half_select, 'value'),
         ],
         [
-            State(options_div.x_axis_col_input, 'value'),
-            State(options_div.y_axis_col_input, 'value'),
-            State(options_div.z_axis_col_input, 'value'),
-            State(options_div.colour_input_a, 'value'),
-            State(options_div.colour_input_b, 'value'),
-            State(options_div.font_size_input, 'value')
+            State(options.x_axis_col_input, 'value'),
+            State(options.y_axis_col_input, 'value'),
+            State(options.z_axis_col_input, 'value'),
+            State(options.colour_input_a, 'value'),
+            State(options.colour_input_b, 'value'),
+            State(options.font_size_input, 'value')
         ],
         prevent_initial_call='initial_duplicate'
-    )(plot_data)
+    )(update_plot)
 
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
         [
-            Input(options_div.x_axis_col_input, 'value'),
-            Input(options_div.y_axis_col_input, 'value'),
-            Input(options_div.z_axis_col_input, 'value'),
-            Input(options_div.colour_input_a, 'value'),
-            Input(options_div.colour_input_b, 'value'),
+            Input(options.x_axis_col_input, 'value'),
+            Input(options.y_axis_col_input, 'value'),
+            Input(options.z_axis_col_input, 'value'),
+            Input(options.colour_input_a, 'value'),
+            Input(options.colour_input_b, 'value'),
         ],
         prevent_initial_call=True
     )(update_iso_colour)
 
     callback(
         Output(plot_div.plot, 'figure', allow_duplicate=True),
-        Input(options_div.font_size_input, 'value'),
+        Input(options.font_size_input, 'value'),
         prevent_initial_call=True
     )(update_text_size)
 
     return
 
-
-def calc_wav(orbital_name: str, half: str = '') -> None:
+def calc_wav(orb_name: str, half: str = '') -> None:
     '''
     Calculates given wavefunction's 3d data and saves to assets folder
 
@@ -1044,41 +1040,112 @@ def calc_wav(orbital_name: str, half: str = '') -> None:
         'sp3': sp3_3d
     }
 
-    special = ['sp', 'sp2', 'sp3']
-
-    if orbital_name not in special:
-
-        n = int(orbital_name[0])
-        name = orbital_name[1]
-        ml = int(orbital_name[2:4])
+    if orb_name in ['sp', 'sp2', 'sp3']:
+        wav = orb_func_dict[orb_name](
+            half,
+            BOUNDSTEP[orb_name]['bound'],
+            BOUNDSTEP[orb_name]['step']
+        )
+    else:
+        n = int(orb_name[0])
+        name = orb_name[1]
+        ml = int(orb_name[2:4])
 
         # Cubic f
-        if len(orbital_name) == 5:
+        if len(orb_name) == 5:
             wav = orb_func_dict[name](
-                n, ml, half, True
+                n, ml, BOUNDSTEP[name][n]['bound'], BOUNDSTEP[name][n]['step'],
+                half, True
             )
         # s orbitals (ml always zero)
         elif name == 's':
             wav = orb_func_dict[name](
-                n, half
+                n, BOUNDSTEP[name][n]['bound'], BOUNDSTEP[name][n]['step'],
+                half
             )
         # everything else
         else:
             wav = orb_func_dict[name](
-                n, ml, half
+                n, ml, BOUNDSTEP[name][n]['bound'],
+                BOUNDSTEP[name][n]['step'], half
             )
-    else:
-        wav = orb_func_dict[orbital_name](half)
 
-    name = f'assets/{half}{orbital_name}'
+    name = f'assets/{half}{orb_name}'
     np.save(name, wav)
 
     return
 
 
-def plot_data(orb_name: str, axes_check: bool, isoval: float, half: str,
-              x_col: str, y_col: str, z_col: str, pos_col: str, neg_col: str,
-              font_size: float):
+# def download_data(nc: int, orb_name: str, half: str) -> dict:
+    '''
+    Saves isosurface to cube file for download
+
+    Parameters
+    ----------
+    orb_name: str
+        Name of orbital e.g. 3d-1 or 3d+0
+    half: str
+        Specifies which plane to cut along
+
+    Returns
+    -------
+    dict
+        Download button contents dict
+    '''
+    if half == 'full':
+        half = ''
+
+    wav = np.load(f'assets/{half}{orb_name}.npy')
+
+    if orb_name in ['sp', 'sp2', 'sp3']:
+        bound = BOUNDSTEP[orb_name]['bound']
+        step = BOUNDSTEP[orb_name]['step']
+    else:
+        n = int(orb_name[0])
+        name = orb_name[1]
+        bound = BOUNDSTEP[name][n]['bound']
+        step = BOUNDSTEP[name][n]['step']
+
+    dim_pts = wav.shape[0]
+
+    data_str = ''
+
+    comment = 'Orbital'
+
+    data_str += '{}\n'.format(comment)
+    data_str += '1     {:.6f} {:.6f} {:.6f}\n'.format(-bound, -bound, -bound)
+    data_str += '{:d}   {:.6f}    0.000000    0.000000\n'.format(dim_pts, step)
+    data_str += '{:d}   0.000000    {:.6f}    0.000000\n'.format(dim_pts, step)
+    data_str += '{:d}   0.000000    0.000000    {:.6f}\n'.format(dim_pts, step)
+    data_str += ' 1   0.000000    0.000000   0.000000  0.000000\n'
+
+    a = 0
+
+    for xit in range(dim_pts):
+        for yit in range(dim_pts):
+            for zit in range(dim_pts):
+                a += 1
+                data_str += "{:.5e} ".format(wav[xit, yit, zit])
+                if a == 6:
+                    data_str += "\n"
+                    a = 0
+            data_str += "\n"
+            a = 0
+
+    data_str = io.StringIO(data_str)
+
+    # Create output dictionary for dcc.Download
+    output = {
+        'content': data_str.getvalue(),
+        'filename': 'orbital.cube'
+    }
+
+    return output
+
+
+def update_plot(orb_name: str, axes_check: bool, isoval: float, half: str,
+                x_col: str, y_col: str, z_col: str, pos_col: str,
+                neg_col: str, font_size: float) -> Patch:
     '''
     Finds isosurface for given wavefunction data using marching cubes,
     then smooths the surface and plots as mesh

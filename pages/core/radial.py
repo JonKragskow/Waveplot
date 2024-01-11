@@ -49,6 +49,31 @@ LABEL_TO_L = {
     'f': 3,
 }
 
+RAD_TO_LATEX = {
+    '1s': r'$$R_{1,0}(\rho) = 2 Z^{\frac{3}{2}} e^{-\rho /2}$$', # noqa
+    '2s': r'$$R_{2,0}(\rho) = \frac{Z^{\frac{3}{2}}}{2 \sqrt{2}}e^{-\rho /2} (2-\rho)$$', # noqa
+    '2p': r'$$R_{2,1}(\rho) = \frac{Z^{\frac{3}{2}}}{2 \sqrt{6}}e^{-\rho /2} \rho$$', # noqa
+    '3s': r'$$R_{3,0}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{3}} e^{-\rho /2} (\rho ^2-6 \rho +6)$$', # noqa
+    '3p': r'$$R_{3,1}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{6}}e^{-\rho /2} (4-\rho ) \rho$$', # noqa
+    '3d': r'$$R_{3,2}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{30}}e^{-\rho /2} \rho ^2$$', # noqa
+    '4s': r'$$R_{4,0}(\rho) = \frac{Z^{\frac{3}{2}}}{96} e^{-\rho /2} (-\rho ^3+12 \rho ^2-36 \rho +24)$$', # noqa
+    '4p': r'$$R_{4,1}(\rho) = \frac{Z^{\frac{3}{2}}}{32 \sqrt{15}}e^{-\rho /2} \rho  (\rho ^2-10 \rho +20)$$', # noqa
+    '4d': r'$$R_{4,2}(\rho) = \frac{Z^{\frac{3}{2}}}{96 \sqrt{5}}e^{-\rho /2} (6-\rho ) \rho ^2$$', # noqa
+    '4f': r'$$R_{4,3}(\rho) = \frac{Z^{\frac{3}{2}}}{96 \sqrt{35}} e^{-\rho /2} \rho ^3$$', # noqa
+    '5s': r'$$R_{5,0}(\rho) = \frac{Z^{\frac{3}{2}}}{300 \sqrt{5}} e^{-\rho /2} (\rho ^4-20 \rho ^3+120 \rho ^2-240 \rho +120)$$', # noqa
+    '5p': r'$$R_{5,1}(\rho) = \frac{Z^{\frac{3}{2}}}{150 \sqrt{30}}e^{-\rho /2} \rho  (-\rho ^3+18 \rho ^2-90 \rho +120)$$', # noqa
+    '5d': r'$$R_{5,2}(\rho) = \frac{Z^{\frac{3}{2}}}{150 \sqrt{70}}e^{-\rho /2} \rho ^2 (\rho ^2-14 \rho +42)$$', # noqa
+    '5f': r'$$R_{5,3}(\rho) = \frac{Z^{\frac{3}{2}}}{300 \sqrt{70}}e^{-\rho /2} (8-\rho ) \rho ^3$$', # noqa
+    '6s': r'$$R_{6,0}(\rho) = \frac{Z^{\frac{3}{2}}}{2160 \sqrt{6}} e^{-\rho /2} (-\rho ^5+30 \rho ^4-300 \rho ^3+1200 \rho ^2-1800 \rho +720)$$', # noqa
+    '6p': r'$$R_{6,1}(\rho) = \frac{Z^{\frac{3}{2}}}{432 \sqrt{210}} e^{-\rho /2} \rho (\rho ^4-28 \rho ^3+252 \rho ^2-840 \rho +840)$$', # noqa
+    '6d': r'$$R_{6,2}(\rho) = \frac{Z^{\frac{3}{2}}}{864 \sqrt{105}}e^{-\rho /2} \rho ^2 (-\rho ^3+24 \rho ^2-168 \rho +336)$$', # noqa
+    '6f': r'$$R_{6,3}(\rho) = \frac{Z^{\frac{3}{2}}}{2592 \sqrt{35}}e^{-\rho /2} \rho ^3 (\rho ^2-18 \rho +72)$$', # noqa
+    '7s': r'$$R_{7,0}(\rho) = \frac{Z^{\frac{3}{2}}}{17640 \sqrt{7}} e^{-\rho /2} (\rho ^6-42 \rho ^5+630 \rho ^4-4200 \rho ^3+12600 \rho ^2-15120 \rho +5040)$$', # noqa
+    '7p': r'$$R_{7,1}(\rho) = \frac{Z^{\frac{3}{2}}}{11760 \sqrt{21}}e^{-\rho /2} \rho  (-\rho ^5+40 \rho ^4-560 \rho ^3+3360 \rho ^2-8400 \rho +6720)$$', # noqa
+    '7d': r'$$R_{7,2}(\rho) = \frac{Z^{\frac{3}{2}}}{7056 \sqrt{105}}e^{-\rho /2} \rho ^2 (\rho ^4-36 \rho ^3+432 \rho ^2-2016 \rho +3024)$$', # noqa
+    '7f': r'$$R_{7,3}(\rho) = \frac{Z^{\frac{3}{2}}}{17640 \sqrt{42}}e^{-\rho /2} \rho ^3 (-\rho ^3+30 \rho ^2-270 \rho +720)$$', # noqa
+}
+
 RADIAL_LAYOUT = copy.deepcopy(com.BASIC_LAYOUT)
 RADIAL_LAYOUT.xaxis.title = {
     'text': 'r (a<sub>0</sup>)',
@@ -830,8 +855,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv) -> None:
     callback(
         [
             Output(plot_div.plot, 'figure', allow_duplicate=True),
-            Output(plot_div.plot, 'config', allow_duplicate=True),
-            Output(plot_div.below_div, 'children')
+            Output(plot_div.plot, 'config', allow_duplicate=True)
         ],
         inputs,
         prevent_initial_call='initial_duplicate'
@@ -1092,46 +1116,7 @@ def update_plot(func: str, orbs: list[str], x_max: float, unit: str,
 
     config['toImageButtonOptions']['filename'] = func_to_fname[func]
 
-    RAD_TO_LATEX = {
-        '1s': r'$$R_{1,0}(\rho) = 2 Z^{\frac{3}{2}} e^{-\rho /2}$$', # noqa
-        '2s': r'$$R_{2,0}(\rho) = \frac{Z^{\frac{3}{2}}}{2 \sqrt{2}}e^{-\rho /2} (2-\rho)$$', # noqa
-        '2p': r'$$R_{2,1}(\rho) = \frac{Z^{\frac{3}{2}}}{2 \sqrt{6}}e^{-\rho /2} \rho$$', # noqa
-        '3s': r'$$R_{3,0}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{3}} e^{-\rho /2} (\rho ^2-6 \rho +6)$$', # noqa
-        '3p': r'$$R_{3,1}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{6}}e^{-\rho /2} (4-\rho ) \rho$$', # noqa
-        '3d': r'$$R_{3,2}(\rho) = \frac{Z^{\frac{3}{2}}}{9 \sqrt{30}}e^{-\rho /2} \rho ^2$$', # noqa
-        '4s': r'$$R_{4,0}(\rho) = \frac{Z^{\frac{3}{2}}}{96} e^{-\rho /2} (-\rho ^3+12 \rho ^2-36 \rho +24)$$', # noqa
-        '4p': r'$$R_{4,1}(\rho) = \frac{Z^{\frac{3}{2}}}{32 \sqrt{15}}e^{-\rho /2} \rho  (\rho ^2-10 \rho +20)$$', # noqa
-        '4d': r'$$R_{4,2}(\rho) = \frac{Z^{\frac{3}{2}}}{96 \sqrt{5}}e^{-\rho /2} (6-\rho ) \rho ^2$$', # noqa
-        '4f': r'$$R_{4,3}(\rho) = \frac{Z^{\frac{3}{2}}}{96 \sqrt{35}} e^{-\rho /2} \rho ^3$$', # noqa
-        '5s': r'$$R_{5,0}(\rho) = \frac{Z^{\frac{3}{2}}}{300 \sqrt{5}} e^{-\rho /2} (\rho ^4-20 \rho ^3+120 \rho ^2-240 \rho +120)$$', # noqa
-        '5p': r'$$R_{5,1}(\rho) = \frac{Z^{\frac{3}{2}}}{150 \sqrt{30}}e^{-\rho /2} \rho  (-\rho ^3+18 \rho ^2-90 \rho +120)$$', # noqa
-        '5d': r'$$R_{5,2}(\rho) = \frac{Z^{\frac{3}{2}}}{150 \sqrt{70}}e^{-\rho /2} \rho ^2 (\rho ^2-14 \rho +42)$$', # noqa
-        '5f': r'$$R_{5,3}(\rho) = \frac{Z^{\frac{3}{2}}}{300 \sqrt{70}}e^{-\rho /2} (8-\rho ) \rho ^3$$', # noqa
-        '6s': r'$$R_{6,0}(\rho) = \frac{Z^{\frac{3}{2}}}{2160 \sqrt{6}} e^{-\rho /2} (-\rho ^5+30 \rho ^4-300 \rho ^3+1200 \rho ^2-1800 \rho +720)$$', # noqa
-        '6p': r'$$R_{6,1}(\rho) = \frac{Z^{\frac{3}{2}}}{432 \sqrt{210}} e^{-\rho /2} \rho (\rho ^4-28 \rho ^3+252 \rho ^2-840 \rho +840)$$', # noqa
-        '6d': r'$$R_{6,2}(\rho) = \frac{Z^{\frac{3}{2}}}{864 \sqrt{105}}e^{-\rho /2} \rho ^2 (-\rho ^3+24 \rho ^2-168 \rho +336)$$', # noqa
-        '6f': r'$$R_{6,3}(\rho) = \frac{Z^{\frac{3}{2}}}{2592 \sqrt{35}}e^{-\rho /2} \rho ^3 (\rho ^2-18 \rho +72)$$', # noqa
-        '7s': r'$$R_{7,0}(\rho) = \frac{Z^{\frac{3}{2}}}{17640 \sqrt{7}} e^{-\rho /2} (\rho ^6-42 \rho ^5+630 \rho ^4-4200 \rho ^3+12600 \rho ^2-15120 \rho +5040)$$', # noqa
-        '7p': r'$$R_{7,1}(\rho) = \frac{Z^{\frac{3}{2}}}{11760 \sqrt{21}}e^{-\rho /2} \rho  (-\rho ^5+40 \rho ^4-560 \rho ^3+3360 \rho ^2-8400 \rho +6720)$$', # noqa
-        '7d': r'$$R_{7,2}(\rho) = \frac{Z^{\frac{3}{2}}}{7056 \sqrt{105}}e^{-\rho /2} \rho ^2 (\rho ^4-36 \rho ^3+432 \rho ^2-2016 \rho +3024)$$', # noqa
-        '7f': r'$$R_{7,3}(\rho) = \frac{Z^{\frac{3}{2}}}{17640 \sqrt{42}}e^{-\rho /2} \rho ^3 (-\rho ^3+30 \rho ^2-270 \rho +720)$$', # noqa
-    }
-
-    orb_eqns = html.Div(
-        [
-            dcc.Markdown(
-                RAD_TO_LATEX[orb],
-                mathjax=True,
-                style={'textAlign': 'center'}
-            )
-            for orb in orbs
-        ],
-        style={
-            'marginTop': '15px'
-        }
-    )
-
-    return fig, config, orb_eqns
+    return fig, config
 
 
 def update_save_format(fmt: str, func: str, unit: str, x_max: int):
