@@ -239,7 +239,7 @@ class OptionsDiv(com.Div):
         )
 
         self.energy_ax_toggle_check = dbc.Checkbox(
-            value=False,
+            value=True,
             id=str(uuid.uuid1())
         )
         self.energy_axis_toggle_ig = self.make_input_group(
