@@ -287,7 +287,7 @@ class OptionsDiv(com.Div):
         self.wf_ftype_select = dbc.Select(
             options=[
                 {
-                    'label': 'Probability',
+                    'label': 'Probability density',
                     'value': 'psi2'
                 },
                 {
