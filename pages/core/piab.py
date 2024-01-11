@@ -295,7 +295,10 @@ class OptionsDiv(com.Div):
                     'value': 'psi'
                 }
             ],
-            value='psi'
+            value='psi',
+            style={
+                'textAlign': 'center'
+            }
         )
 
         self.wf_ftype_ig = self.make_input_group(
