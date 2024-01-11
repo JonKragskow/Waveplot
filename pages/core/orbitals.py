@@ -17,7 +17,7 @@
 '''
 import numpy as np
 from dash import html, Input, Output, callback, no_update, \
-    Patch, State, dcc
+    Patch, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from skimage import measure
@@ -1013,6 +1013,7 @@ def assemble_callbacks(plot_div: com.PlotDiv, options: OptionsDiv):
     )(update_text_size)
 
     return
+
 
 def calc_wav(orb_name: str, half: str = '') -> None:
     '''
